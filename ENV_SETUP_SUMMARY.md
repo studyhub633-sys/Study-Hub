@@ -72,3 +72,4 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
    - Should start on http://localhost:3001
    - Visit http://localhost:3001/health to test
 
+

@@ -26,3 +26,4 @@ ADD COLUMN IF NOT EXISTS subjects TEXT;
 -- ✅ subjects - Comma-separated list of subjects
 -- ============================================
 
+
