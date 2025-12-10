@@ -1,28 +1,106 @@
+import { useState, useEffect } from "react";
 import { Lightbulb, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
-const suggestions = [
-  {
-    title: "Complete your Biology revision",
-    description: "You've covered 60% of the Cell Biology topic. Keep going!",
-    action: "Continue",
-    path: "/notes",
-  },
-  {
-    title: "Review weak flashcards",
-    description: "12 cards need more practice based on your quiz results.",
-    action: "Practice Now",
-    path: "/flashcards",
-  },
-  {
-    title: "Try a timed past paper",
-    description: "Challenge yourself with a Chemistry paper under exam conditions.",
-    action: "Start Quiz",
-    path: "/past-papers",
-  },
-];
+interface Suggestion {
+  title: string;
+  description: string;
+  action: string;
+  path: string;
+}
 
 export function SuggestedResources() {
+  const { supabase, user } = useAuth();
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchSuggestions = async () => {
+      try {
+        const newSuggestions: Suggestion[] = [];
+
+        // Check if user has notes
+        const { count: notesCount } = await supabase
+          .from("notes")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        // Check if user has flashcards
+        const { count: flashcardsCount } = await supabase
+          .from("flashcards")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        // Check if user has past papers
+        const { count: papersCount } = await supabase
+          .from("past_papers")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        // Generate suggestions based on data
+        if (notesCount === 0) {
+          newSuggestions.push({
+            title: "Create your first note",
+            description: "Start organizing your studies by creating exam notes.",
+            action: "Get Started",
+            path: "/notes",
+          });
+        } else if (notesCount && notesCount > 0) {
+          newSuggestions.push({
+            title: "Continue your notes",
+            description: `You have ${notesCount} note${notesCount > 1 ? "s" : ""}. Keep adding more!`,
+            action: "View Notes",
+            path: "/notes",
+          });
+        }
+
+        if (flashcardsCount === 0) {
+          newSuggestions.push({
+            title: "Create flashcards",
+            description: "Build your flashcard deck to improve your memory retention.",
+            action: "Create Cards",
+            path: "/flashcards",
+          });
+        } else if (flashcardsCount && flashcardsCount > 0) {
+          newSuggestions.push({
+            title: "Review your flashcards",
+            description: `You have ${flashcardsCount} flashcard${flashcardsCount > 1 ? "s" : ""}. Practice them regularly!`,
+            action: "Practice Now",
+            path: "/flashcards",
+          });
+        }
+
+        if (papersCount === 0) {
+          newSuggestions.push({
+            title: "Try a past paper",
+            description: "Practice with past papers to prepare for your exams.",
+            action: "Add Papers",
+            path: "/past-papers",
+          });
+        } else if (papersCount && papersCount > 0) {
+          newSuggestions.push({
+            title: "Complete a past paper",
+            description: `You have ${papersCount} past paper${papersCount > 1 ? "s" : ""}. Challenge yourself!`,
+            action: "Start Quiz",
+            path: "/past-papers",
+          });
+        }
+
+        setSuggestions(newSuggestions.slice(0, 3));
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSuggestions();
+  }, [user, supabase]);
+
   return (
     <div className="glass-card p-6 relative overflow-hidden">
       {/* Decorative gradient */}
@@ -40,24 +118,31 @@ export function SuggestedResources() {
         </div>
 
         <div className="space-y-3">
-          {suggestions.map((suggestion, index) => (
-            <div
-              key={index}
-              className="p-4 rounded-xl bg-muted/50 hover:bg-muted transition-all duration-200 cursor-pointer group animate-slide-up"
-              style={{ animationDelay: `${index * 0.1}s`, opacity: 0 }}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <p className="font-medium text-foreground mb-1">{suggestion.title}</p>
-                  <p className="text-sm text-muted-foreground">{suggestion.description}</p>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Loading suggestions...</p>
+          ) : suggestions.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">No suggestions available. Start creating content to get personalized recommendations!</p>
+          ) : (
+            suggestions.map((suggestion, index) => (
+              <Link
+                key={index}
+                to={suggestion.path}
+                className="block p-4 rounded-xl bg-muted/50 hover:bg-muted transition-all duration-200 cursor-pointer group animate-slide-up"
+                style={{ animationDelay: `${index * 0.1}s`, opacity: 0 }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground mb-1">{suggestion.title}</p>
+                    <p className="text-sm text-muted-foreground">{suggestion.description}</p>
+                  </div>
+                  <Button size="sm" variant="ghost" className="flex-shrink-0 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    {suggestion.action}
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
                 </div>
-                <Button size="sm" variant="ghost" className="flex-shrink-0 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  {suggestion.action}
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-            </div>
-          ))}
+              </Link>
+            ))
+          )}
         </div>
 
         {/* Premium CTA */}

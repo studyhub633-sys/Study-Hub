@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   LayoutDashboard,
   BookOpen,
@@ -16,6 +18,9 @@ import {
   Bell,
   User,
   Sparkles,
+  LogOut,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +42,41 @@ const bottomNavItems = [
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { user, signOut, supabase } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchAvatar = async () => {
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("avatar_url")
+          .eq("id", user.id)
+          .single();
+
+        if (profile?.avatar_url) {
+          setAvatarUrl(profile.avatar_url);
+        }
+      } catch (error) {
+        console.error("Error fetching avatar:", error);
+      }
+    };
+
+    fetchAvatar();
+  }, [user, supabase]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate("/landing");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <aside
@@ -161,16 +201,56 @@ export function Sidebar() {
           collapsed && "justify-center p-2"
         )}>
           <Avatar className="h-9 w-9 border-2 border-primary/20">
-            <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" />
-            <AvatarFallback>JS</AvatarFallback>
+            <AvatarImage 
+              src={avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`} 
+            />
+            <AvatarFallback>
+              {user?.email?.charAt(0).toUpperCase() || "U"}
+            </AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0 animate-fade-in">
-              <p className="text-sm font-semibold text-sidebar-foreground truncate">Jamie Student</p>
-              <p className="text-xs text-muted-foreground truncate">Year 12 • 5 Subjects</p>
+              <p className="text-sm font-semibold text-sidebar-foreground truncate">
+                {user?.email?.split("@")[0] || "User"}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
           )}
         </div>
+
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          onClick={toggleTheme}
+          className={cn(
+            "mt-2 w-full justify-start text-muted-foreground hover:text-foreground",
+            collapsed && "justify-center px-2"
+          )}
+        >
+          {theme === "light" ? (
+            <Moon className="h-5 w-5 flex-shrink-0" />
+          ) : (
+            <Sun className="h-5 w-5 flex-shrink-0" />
+          )}
+          {!collapsed && (
+            <span className="font-medium text-sm ml-3">
+              {theme === "light" ? "Dark Mode" : "Light Mode"}
+            </span>
+          )}
+        </Button>
+
+        {/* Sign Out Button */}
+        <Button
+          variant="ghost"
+          onClick={handleSignOut}
+          className={cn(
+            "mt-2 w-full justify-start text-muted-foreground hover:text-destructive",
+            collapsed && "justify-center px-2"
+          )}
+        >
+          <LogOut className="h-5 w-5 flex-shrink-0" />
+          {!collapsed && <span className="font-medium text-sm ml-3">Sign Out</span>}
+        </Button>
       </div>
 
       {/* Collapse Toggle (when collapsed) */}

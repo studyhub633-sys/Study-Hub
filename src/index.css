@@ -139,6 +139,40 @@
 }
 
 @layer components {
+  .landing-grid-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(to right, hsl(var(--foreground) / 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 1;
+    mask-image: 
+      linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 8%,
+        black 92%,
+        transparent 100%
+      );
+    -webkit-mask-image: 
+      linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 8%,
+        black 92%,
+        transparent 100%
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .landing-grid-bg > * {
+    position: relative;
+    z-index: 1;
+  }
+
   .glass-card {
     @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-card rounded-xl;
   }
