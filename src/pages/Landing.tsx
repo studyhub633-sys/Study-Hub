@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ArrowRight, Award, BookOpen, Brain, Check, FileText, Layers, Moon, Sparkles, Sun } from "lucide-react";
+import AnimatedLogo from "@/components/AnimatedLogo";
+import AnimatedLogoIcon from "@/components/AnimatedLogoIcon";
 import { Link } from "react-router-dom";
 
 export default function Landing() {
@@ -55,9 +57,7 @@ export default function Landing() {
       <header className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">SH</span>
-            </div>
+            <AnimatedLogoIcon />
             <h1 className="font-bold text-xl">Study Spark Hub</h1>
           </div>
           <div className="flex items-center gap-3">
@@ -86,27 +86,30 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 md:py-32">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-            Your All-in-One
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              {" "}Study Companion
-            </span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Organize notes, practice with flashcards, review past papers, and track your progress—all in one powerful platform designed for students.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Button size="lg" asChild className="text-lg px-8">
-              <Link to="/signup">
-                Get Started Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild className="text-lg px-8">
-              <Link to="/login">Sign In</Link>
-            </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6 text-center lg:text-left">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+              Your All-in-One
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                {" "}Study Companion
+              </span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0">
+              Organize notes, practice with flashcards, review past papers, and track your progress—all in one powerful platform designed for students.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
+              <Button size="lg" asChild className="text-lg px-8">
+                <Link to="/signup">
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild className="text-lg px-8">
+                <Link to="/login">Sign In</Link>
+              </Button>
+            </div>
           </div>
+          <AnimatedLogo />
         </div>
       </section>
 
@@ -183,9 +186,7 @@ export default function Landing() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xs">SH</span>
-              </div>
+              <AnimatedLogoIcon />
               <p className="text-sm text-muted-foreground">© 2024 Study Spark Hub. All rights reserved.</p>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">

@@ -17,7 +17,6 @@ import {
   Search,
   Bell,
   User,
-  Sparkles,
   LogOut,
   Moon,
   Sun,
@@ -25,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AnimatedLogoIcon from "@/components/AnimatedLogoIcon";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -88,9 +88,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
         <div className={cn("flex items-center gap-3", collapsed && "justify-center w-full")}>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-glow">
-            <Sparkles className="w-5 h-5 text-primary-foreground" />
-          </div>
+          <AnimatedLogoIcon />
           {!collapsed && (
             <div className="animate-fade-in">
               <h1 className="font-bold text-lg text-sidebar-foreground">Study Hub</h1>
