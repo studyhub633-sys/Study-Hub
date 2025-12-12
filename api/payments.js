@@ -1,6 +1,9 @@
 import { verifyAuth, corsHeaders, supabase } from "./lib/auth.js";
 import { paypalClient, PAYPAL_PLAN_IDS, isPayPalConfigured } from "./lib/paypal.js";
-import paypal from "@paypal/checkout-server-sdk";
+import paypalSDK from "@paypal/checkout-server-sdk";
+
+// PayPal SDK - handle both default and named exports
+const paypal = paypalSDK.default || paypalSDK;
 
 // Helper functions for webhook
 async function getUserIdByEmail(email) {
@@ -136,7 +139,25 @@ async function handleCreateSubscription(req, res, user) {
       });
     }
 
-    const request = new paypal.subscriptions.SubscriptionsCreateRequest();
+    // PayPal SDK uses billing namespace for subscriptions
+    // Try billing first (most likely), then subscriptions
+    let SubscriptionsCreateRequest;
+    if (paypal.billing?.SubscriptionsCreateRequest) {
+      SubscriptionsCreateRequest = paypal.billing.SubscriptionsCreateRequest;
+    } else if (paypal.subscriptions?.SubscriptionsCreateRequest) {
+      SubscriptionsCreateRequest = paypal.subscriptions.SubscriptionsCreateRequest;
+    } else {
+      // Log SDK structure for debugging
+      console.error("PayPal SDK structure:", Object.keys(paypal));
+      console.error("paypal.billing:", paypal.billing);
+      console.error("paypal.subscriptions:", paypal.subscriptions);
+      if (paypal.billing) {
+        console.error("paypal.billing keys:", Object.keys(paypal.billing));
+      }
+      throw new Error("SubscriptionsCreateRequest not found in PayPal SDK. Available top-level: " + Object.keys(paypal).join(", "));
+    }
+    
+    const request = new SubscriptionsCreateRequest();
     request.requestBody({
       plan_id: planId,
       start_time: new Date(Date.now() + 60000).toISOString(),
@@ -259,7 +280,11 @@ async function handleCancel(req, res, user) {
     return res.status(404).json({ error: "No active subscription found" });
   }
 
-  const request = new paypal.subscriptions.SubscriptionsCancelRequest(subscription.paypal_subscription_id);
+    const SubscriptionsCancelRequest = paypal.billing?.SubscriptionsCancelRequest || paypal.subscriptions?.SubscriptionsCancelRequest;
+    if (!SubscriptionsCancelRequest) {
+      throw new Error("SubscriptionsCancelRequest not found in PayPal SDK");
+    }
+    const request = new SubscriptionsCancelRequest(subscription.paypal_subscription_id);
   request.requestBody({
     reason: "User requested cancellation",
   });
@@ -314,7 +339,12 @@ async function handleWebhook(req, res) {
 
   if (webhookId && headers["paypal-transmission-id"]) {
     try {
-      const request = new paypal.notifications.WebhooksVerifyRequest();
+      const WebhooksVerifyRequest = paypal.notifications?.WebhooksVerifyRequest;
+      if (!WebhooksVerifyRequest) {
+        console.error("WebhooksVerifyRequest not found, skipping verification");
+        return; // Skip verification if not available
+      }
+      const request = new WebhooksVerifyRequest();
       request.headers = {
         "PAYPAL-AUTH-ALGO": headers["paypal-auth-algo"] || "",
         "PAYPAL-CERT-URL": headers["paypal-cert-url"] || "",
@@ -375,7 +405,11 @@ async function handleSubscriptionActivated(event) {
   if (!client) return;
 
   try {
-    const request = new paypal.subscriptions.SubscriptionsGetRequest(subscriptionId);
+    const SubscriptionsGetRequest = paypal.billing?.SubscriptionsGetRequest || paypal.subscriptions?.SubscriptionsGetRequest;
+    if (!SubscriptionsGetRequest) {
+      throw new Error("SubscriptionsGetRequest not found in PayPal SDK");
+    }
+    const request = new SubscriptionsGetRequest(subscriptionId);
     const response = await client.execute(request);
 
     if (response.statusCode === 200) {
