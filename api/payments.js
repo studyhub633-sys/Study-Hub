@@ -35,9 +35,17 @@ export default async function handler(req, res) {
   }
 
   // Extract route from URL
+  // Vercel rewrites preserve the original path in req.url
   let path = req.url || "";
   path = path.split("?")[0]; // Remove query string
-  path = path.replace(/^\/api\/payments/, "").replace(/^\//, "");
+  
+  // Handle both /api/payments and /api/payments/create-subscription formats
+  if (path.startsWith("/api/payments/")) {
+    path = path.replace("/api/payments/", "");
+  } else if (path.startsWith("/api/payments")) {
+    path = path.replace("/api/payments", "").replace(/^\//, "");
+  }
+  
   const route = path.split("/").filter(Boolean)[0] || "";
   
   // Determine route based on path and method
@@ -52,6 +60,9 @@ export default async function handler(req, res) {
       actualRoute = "subscription";
     }
   }
+  
+  // Debug logging
+  console.log(`[Payments API] Path: ${path}, Route: ${route}, ActualRoute: ${actualRoute}, Method: ${req.method}`);
 
   try {
     // Webhook doesn't need auth - handle it separately
@@ -77,13 +88,21 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: `Route not found: ${actualRoute || route}` });
     }
   } catch (error) {
-    console.error(`Payment API error (${route}):`, error);
+    console.error(`Payment API error (${actualRoute || route}):`, error);
+    console.error("Error stack:", error.stack);
+    console.error("Request URL:", req.url);
+    console.error("Request method:", req.method);
     
     if (error.message === "Authorization header required" || error.message === "Invalid or expired token") {
       return res.status(401).json({ error: error.message });
     }
     
-    return res.status(500).json({ error: "Internal server error", message: error.message });
+    return res.status(500).json({ 
+      error: "Internal server error", 
+      message: error.message,
+      route: actualRoute || route,
+      path: path
+    });
   }
 }
 
@@ -95,73 +114,103 @@ async function handleCreateSubscription(req, res, user) {
 
   const client = paypalClient();
   if (!client || !isPayPalConfigured()) {
+    console.error("PayPal not configured. Client:", !!client, "Configured:", isPayPalConfigured());
     return res.status(503).json({ 
       error: "PayPal not configured. Please set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET." 
     });
   }
 
-  const { planType } = req.body;
+  try {
+    const { planType } = req.body;
+    console.log("Creating subscription for planType:", planType);
 
-  if (!planType || !['monthly', 'yearly'].includes(planType)) {
-    return res.status(400).json({ error: "Invalid plan type. Must be 'monthly' or 'yearly'" });
-  }
+    if (!planType || !['monthly', 'yearly'].includes(planType)) {
+      return res.status(400).json({ error: "Invalid plan type. Must be 'monthly' or 'yearly'" });
+    }
 
-  const planId = PAYPAL_PLAN_IDS[planType];
-  if (!planId) {
-    return res.status(500).json({ 
-      error: `PayPal plan ID for ${planType} plan not configured` 
-    });
-  }
-
-  const request = new paypal.subscriptions.SubscriptionsCreateRequest();
-  request.requestBody({
-    plan_id: planId,
-    start_time: new Date(Date.now() + 60000).toISOString(),
-    subscriber: {
-      name: {
-        given_name: user.user_metadata?.full_name?.split(' ')[0] || "User",
-        surname: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || "",
-      },
-      email_address: user.email,
-    },
-    application_context: {
-      brand_name: "Study Spark Hub",
-      locale: "en-GB",
-      shipping_preference: "NO_SHIPPING",
-      user_action: "SUBSCRIBE_NOW",
-      payment_method: {
-        payer_selected: "PAYPAL",
-        payee_preferred: "IMMEDIATE_PAYMENT_REQUIRED",
-      },
-      return_url: `${process.env.FRONTEND_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5173')}/premium?success=true`,
-      cancel_url: `${process.env.FRONTEND_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5173')}/premium?canceled=true`,
-    },
-  });
-
-  const response = await client.execute(request);
-
-  if (response.statusCode === 201) {
-    await supabase
-      .from("subscriptions")
-      .insert({
-        user_id: user.id,
-        plan_type: planType,
-        status: "pending",
-        paypal_subscription_id: response.result.id,
-        current_period_start: new Date().toISOString(),
-        current_period_end: new Date(Date.now() + (planType === 'monthly' ? 30 : 365) * 24 * 60 * 60 * 1000).toISOString(),
+    const planId = PAYPAL_PLAN_IDS[planType];
+    if (!planId) {
+      console.error(`PayPal plan ID for ${planType} not configured`);
+      return res.status(500).json({ 
+        error: `PayPal plan ID for ${planType} plan not configured` 
       });
+    }
 
-    const approvalUrl = response.result.links.find(link => link.rel === "approve")?.href;
-
-    return res.status(200).json({
-      subscriptionId: response.result.id,
-      approvalUrl: approvalUrl,
+    const request = new paypal.subscriptions.SubscriptionsCreateRequest();
+    request.requestBody({
+      plan_id: planId,
+      start_time: new Date(Date.now() + 60000).toISOString(),
+      subscriber: {
+        name: {
+          given_name: user.user_metadata?.full_name?.split(' ')[0] || "User",
+          surname: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || "",
+        },
+        email_address: user.email,
+      },
+      application_context: {
+        brand_name: "Study Spark Hub",
+        locale: "en-GB",
+        shipping_preference: "NO_SHIPPING",
+        user_action: "SUBSCRIBE_NOW",
+        payment_method: {
+          payer_selected: "PAYPAL",
+          payee_preferred: "IMMEDIATE_PAYMENT_REQUIRED",
+        },
+        return_url: `${process.env.FRONTEND_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5173')}/premium?success=true`,
+        cancel_url: `${process.env.FRONTEND_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5173')}/premium?canceled=true`,
+      },
     });
-  } else {
-    return res.status(response.statusCode).json({ 
-      error: "Failed to create subscription",
-      details: response.result 
+
+    const response = await client.execute(request);
+    console.log("PayPal response status:", response.statusCode);
+
+    if (response.statusCode === 201) {
+      console.log("Subscription created, ID:", response.result.id);
+      
+      const { error: dbError } = await supabase
+        .from("subscriptions")
+        .insert({
+          user_id: user.id,
+          plan_type: planType,
+          status: "pending",
+          paypal_subscription_id: response.result.id,
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + (planType === 'monthly' ? 30 : 365) * 24 * 60 * 60 * 1000).toISOString(),
+        });
+
+      if (dbError) {
+        console.error("Database error:", dbError);
+        // Continue anyway - subscription is created in PayPal
+      }
+
+      const approvalUrl = response.result.links.find(link => link.rel === "approve")?.href;
+      console.log("Approval URL:", approvalUrl);
+
+      if (!approvalUrl) {
+        console.error("No approval URL found in response:", response.result);
+        return res.status(500).json({ 
+          error: "Failed to get approval URL",
+          subscriptionId: response.result.id
+        });
+      }
+
+      return res.status(200).json({
+        subscriptionId: response.result.id,
+        approvalUrl: approvalUrl,
+      });
+    } else {
+      console.error("PayPal API error:", response.statusCode, response.result);
+      return res.status(response.statusCode).json({ 
+        error: "Failed to create subscription",
+        details: response.result 
+      });
+    }
+  } catch (error) {
+    console.error("Error in handleCreateSubscription:", error);
+    console.error("Error stack:", error.stack);
+    return res.status(500).json({ 
+      error: "Internal server error",
+      message: error.message 
     });
   }
 }
