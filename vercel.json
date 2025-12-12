@@ -4,6 +4,30 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/payments",
+      "destination": "/api/payments.js"
+    },
+    {
+      "source": "/api/payments/:path*",
+      "destination": "/api/payments.js"
+    },
+    {
+      "source": "/api/ai",
+      "destination": "/api/ai.js"
+    },
+    {
+      "source": "/api/ai/:path*",
+      "destination": "/api/ai.js"
+    },
+    {
+      "source": "/api/admin",
+      "destination": "/api/admin.js"
+    },
+    {
+      "source": "/api/admin/:path*",
+      "destination": "/api/admin.js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
