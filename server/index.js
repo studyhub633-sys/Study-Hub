@@ -1,15 +1,40 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, join, resolve } from "path";
 import { createClient } from "@supabase/supabase-js";
+import aiRoutes from "./routes/ai.js";
+import paymentRoutes from "./routes/payments.js";
+import adminRoutes from "./routes/admin.js";
 
-dotenv.config();
+// Get the directory of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load .env from server directory first, then fallback to root directory
+const serverEnvPath = join(__dirname, ".env");
+const rootEnvPath = resolve(__dirname, "..", ".env");
+
+const serverEnvResult = dotenv.config({ path: serverEnvPath });
+const rootEnvResult = dotenv.config({ path: rootEnvPath }); // Also check root directory
+
+// Debug: Show which .env file was loaded
+if (rootEnvResult.parsed || serverEnvResult.parsed) {
+  const loadedFrom = rootEnvResult.parsed ? "root directory" : "server directory";
+  console.log(`📁 Loaded .env from ${loadedFrom}`);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express.json());
 
 // Initialize Supabase client
@@ -29,6 +54,14 @@ if (!supabaseServiceKey) {
   console.warn("2. Select your project → Settings → API");
   console.warn("3. Copy the 'service_role' key (secret)");
   console.warn("4. Add it to your .env file as SUPABASE_SERVICE_ROLE_KEY");
+  console.warn("");
+  console.warn("💡 Debug info:");
+  console.warn(`   - Checked: ${serverEnvPath}`);
+  console.warn(`   - Checked: ${rootEnvPath}`);
+  console.warn(`   - SUPABASE_URL found: ${!!supabaseUrl}`);
+  console.warn(`   - SUPABASE_SERVICE_ROLE_KEY found: ${!!supabaseServiceKey}`);
+} else {
+  console.log("✅ Supabase service role key loaded successfully");
 }
 
 // Only create Supabase client if we have the required keys
@@ -112,9 +145,30 @@ app.get("/api/user/profile", async (req, res) => {
   }
 });
 
+// AI Routes
+app.use("/api/ai", aiRoutes);
+
+// Payment Routes
+app.use("/api/payments", paymentRoutes);
+
+// Admin Routes
+app.use("/api/admin", adminRoutes);
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🤖 AI endpoints: http://localhost:${PORT}/api/ai`);
+  
+  // Check for Hugging Face API key
+  if (!process.env.HUGGINGFACE_API_KEY && !process.env.HF_API_KEY) {
+    console.warn("⚠️  Missing HUGGINGFACE_API_KEY!");
+    console.warn("AI features will not work. To get your API key:");
+    console.warn("1. Go to https://huggingface.co/settings/tokens");
+    console.warn("2. Create a new token with 'Read' access");
+    console.warn("3. Add it to your .env file as HUGGINGFACE_API_KEY");
+  } else {
+    console.log("✅ Hugging Face API key configured");
+  }
 });
 
