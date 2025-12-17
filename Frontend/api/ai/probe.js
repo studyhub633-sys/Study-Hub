@@ -1,17 +1,17 @@
 
-const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.HUGGING_FACE_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 export default async function handler(req, res) {
-    if (!HF_API_KEY) {
-        return res.status(500).json({ error: "No API Key found" });
+    if (!GROQ_API_KEY) {
+        return res.status(500).json({ error: "No Groq API Key found" });
     }
 
     const endpoints = [
         {
-            name: "Chat Completions (New - Recommended)",
-            url: "https://router.huggingface.co/v1/chat/completions",
+            name: "Groq Chat Completions",
+            url: "https://api.groq.com/openai/v1/chat/completions",
             body: {
-                model: "google/gemma-2-2b-it",
+                model: "llama-3.1-8b-instant",
                 messages: [{ role: "user", content: "Hello" }],
                 max_tokens: 5
             }
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
             const response = await fetch(endpoint.url, {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${HF_API_KEY}`,
+                    "Authorization": `Bearer ${GROQ_API_KEY}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(endpoint.body),
@@ -57,8 +57,8 @@ export default async function handler(req, res) {
     }
 
     res.status(200).json({
-        apiKeyConfigured: !!HF_API_KEY,
-        apiKeyPrefix: HF_API_KEY ? HF_API_KEY.substring(0, 8) + "..." : null,
+        apiKeyConfigured: !!GROQ_API_KEY,
+        apiKeyPrefix: GROQ_API_KEY ? GROQ_API_KEY.substring(0, 8) + "..." : null,
         results
     });
 }

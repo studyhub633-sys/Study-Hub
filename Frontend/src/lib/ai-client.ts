@@ -260,7 +260,7 @@ export async function generateFlashcards(
 export async function checkAiHealth(): Promise<ApiResponse<{
   status: string;
   services: {
-    huggingface: string;
+    groq: string;
     authentication: string;
   };
   message: string;

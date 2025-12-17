@@ -1,8 +1,7 @@
 import { verifyAuth } from '../_utils/auth.js';
 
-const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.HUGGING_FACE_API_KEY;
-// For sentence similarity, we use the sentence-transformers pipeline which is often free tier friendly
-const HF_EMBEDDINGS_URL = "https://router.huggingface.co/hf-inference/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2";
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -18,8 +17,8 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    if (!HF_API_KEY) {
-        return res.status(503).json({ error: "Hugging Face API key not configured." });
+    if (!GROQ_API_KEY) {
+        return res.status(503).json({ error: "Groq API key not configured." });
     }
 
     try {
@@ -30,20 +29,75 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: "Both 'correctAnswer' and 'studentAnswer' are required" });
         }
 
-        const [correctEmbedding, studentEmbedding] = await Promise.all([
-            getEmbedding(correctAnswer),
-            getEmbedding(studentAnswer)
-        ]);
+        // Use Groq to evaluate the answer
+        const response = await fetch(GROQ_API_URL, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${GROQ_API_KEY}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an educational evaluator. Compare the student's answer to the correct answer and determine how similar/correct it is. Return ONLY a JSON object with these fields: similarity (a number between 0 and 1), isCorrect (boolean), feedback (a brief explanation)."
+                    },
+                    {
+                        role: "user",
+                        content: `Correct Answer: "${correctAnswer}"\n\nStudent Answer: "${studentAnswer}"\n\nEvaluate the student's answer and return JSON only.`
+                    }
+                ],
+                max_tokens: 200,
+                temperature: 0.3,
+            }),
+        });
 
-        let similarity = 0;
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Groq API error:', response.status, errorData);
 
-        if (correctEmbedding && studentEmbedding) {
-            similarity = cosineSimilarity(correctEmbedding, studentEmbedding);
-        } else {
-            similarity = simpleTextSimilarity(correctAnswer, studentAnswer);
+            // Fallback to simple text comparison
+            const similarity = simpleTextSimilarity(correctAnswer, studentAnswer);
+            const isCorrect = similarity >= threshold;
+
+            return res.status(200).json({
+                similarity: Math.round(similarity * 100) / 100,
+                isCorrect,
+                threshold,
+                feedback: isCorrect
+                    ? "Your answer appears correct!"
+                    : `Your answer is partially correct. Similarity: ${Math.round(similarity * 100)}%`,
+            });
         }
 
-        similarity = Math.max(0, Math.min(1, similarity));
+        const data = await response.json();
+        let result = null;
+
+        if (data.choices && data.choices[0]?.message?.content) {
+            const content = data.choices[0].message.content.trim();
+            try {
+                // Try to extract JSON from the response
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    result = JSON.parse(jsonMatch[0]);
+                }
+            } catch (e) {
+                console.error('Failed to parse evaluation response:', e);
+            }
+        }
+
+        if (result && typeof result.similarity === 'number') {
+            return res.status(200).json({
+                similarity: Math.round(result.similarity * 100) / 100,
+                isCorrect: result.isCorrect ?? (result.similarity >= threshold),
+                threshold,
+                feedback: result.feedback || (result.isCorrect ? "Correct!" : "Try again."),
+            });
+        }
+
+        // Fallback to simple text comparison
+        const similarity = simpleTextSimilarity(correctAnswer, studentAnswer);
         const isCorrect = similarity >= threshold;
 
         return res.status(200).json({
@@ -59,54 +113,6 @@ export default async function handler(req, res) {
         console.error("Answer evaluation error:", error);
         return res.status(500).json({ error: error.message || "Internal server error" });
     }
-}
-
-async function getEmbedding(text) {
-    try {
-        const response = await fetch(HF_EMBEDDINGS_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${HF_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ inputs: text }),
-        });
-
-        if (!response.ok) {
-            console.error("Embedding API error:", response.status);
-            return null;
-        }
-
-        const data = await response.json();
-        if (Array.isArray(data)) {
-            return Array.isArray(data[0]) ? data[0] : data;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error getting embedding:", error);
-        return null;
-    }
-}
-
-function cosineSimilarity(a, b) {
-    if (!a || !b || a.length !== b.length) return 0;
-
-    let dotProduct = 0;
-    let normA = 0;
-    let normB = 0;
-
-    for (let i = 0; i < a.length; i++) {
-        dotProduct += a[i] * b[i];
-        normA += a[i] * a[i];
-        normB += b[i] * b[i];
-    }
-
-    normA = Math.sqrt(normA);
-    normB = Math.sqrt(normB);
-
-    if (normA === 0 || normB === 0) return 0;
-
-    return dotProduct / (normA * normB);
 }
 
 function simpleTextSimilarity(text1, text2) {

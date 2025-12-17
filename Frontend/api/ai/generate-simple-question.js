@@ -1,7 +1,7 @@
 import { verifyAuth } from '../_utils/auth.js';
 
-const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.HUGGING_FACE_API_KEY;
-const HF_CHAT_URL = "https://router.huggingface.co/v1/chat/completions";
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -17,8 +17,8 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    if (!HF_API_KEY) {
-        return res.status(503).json({ error: "Hugging Face API key not configured." });
+    if (!GROQ_API_KEY) {
+        return res.status(503).json({ error: "Groq API key not configured." });
     }
 
     try {
@@ -29,17 +29,16 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: "Context is required" });
         }
 
-        console.log('Making request to Hugging Face Chat Completions API...');
+        console.log('Making request to Groq API...');
 
-        // Use the new chat completions format (free tier compatible)
-        const response = await fetch(HF_CHAT_URL, {
+        const response = await fetch(GROQ_API_URL, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${HF_API_KEY}`,
+                "Authorization": `Bearer ${GROQ_API_KEY}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                model: "google/gemma-2-2b-it",
+                model: "llama-3.1-8b-instant",
                 messages: [
                     {
                         role: "user",
@@ -51,7 +50,7 @@ export default async function handler(req, res) {
             }),
         });
 
-        console.log('Chat API Response status:', response.status);
+        console.log('Groq API Response status:', response.status);
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -62,39 +61,27 @@ export default async function handler(req, res) {
                 errorData = { error: errorText };
             }
 
-            console.error('Chat API error:', response.status, errorData);
-
-            if (response.status === 503) {
-                return res.status(503).json({
-                    error: "Model is loading. Please try again in 20 seconds.",
-                    retryAfter: 20
-                });
-            }
+            console.error('Groq API error:', response.status, errorData);
 
             if (response.status === 401 || response.status === 403) {
                 return res.status(500).json({
-                    error: "Authentication failed. Please check your Hugging Face API key in Vercel settings."
+                    error: "Authentication failed. Please check your Groq API key."
                 });
             }
 
             return res.status(response.status).json({
-                error: errorData.error || "Failed to generate question",
+                error: errorData.error?.message || errorData.error || "Failed to generate question",
                 details: errorData
             });
         }
 
         const data = await response.json();
-        console.log('Chat API Response received');
+        console.log('Groq API Response received');
 
         let question = "";
 
-        // Handle chat completions response format
         if (data.choices && data.choices[0]?.message?.content) {
             question = data.choices[0].message.content.trim();
-        } else if (data.generated_text) {
-            question = data.generated_text.trim();
-        } else if (typeof data === "string") {
-            question = data.trim();
         }
 
         // Cleanup
