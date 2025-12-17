@@ -1,5 +1,6 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -74,6 +75,10 @@ export default function Flashcards() {
     subject: "",
     topic: "",
   });
+
+  // Bulk Selection State
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user) {
@@ -333,6 +338,66 @@ export default function Flashcards() {
       fetchCards();
     } catch (error: any) {
       console.error("Error updating review:", error);
+      console.error("Error updating review:", error);
+    }
+  };
+
+  // Bulk Actions
+  const handleToggleSelectMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    setSelectedCards(new Set()); // Clear selection when toggling
+  };
+
+  const handleSelectCard = (cardId: string) => {
+    const newSelected = new Set(selectedCards);
+    if (newSelected.has(cardId)) {
+      newSelected.delete(cardId);
+    } else {
+      newSelected.add(cardId);
+    }
+    setSelectedCards(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedCards.size === filteredCards.length) {
+      setSelectedCards(new Set());
+    } else {
+      const allIds = new Set(filteredCards.map((c) => c.id));
+      setSelectedCards(allIds);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!user || selectedCards.size === 0) return;
+
+    if (!confirm(`Are you sure you want to delete ${selectedCards.size} flashcards? This action cannot be undone.`)) return;
+
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from("flashcards")
+        .delete()
+        .in("id", Array.from(selectedCards))
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Deleted ${selectedCards.size} flashcards successfully`,
+      });
+
+      setSelectedCards(new Set());
+      setIsSelectionMode(false);
+      fetchCards();
+    } catch (error: any) {
+      console.error("Error deleting flashcards:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete flashcards. Please try again.",
+        variant: "destructive",
+      });
+      setLoading(false); // Only set loading false on error, fetchCards will handle it on success
     }
   };
 
@@ -419,14 +484,41 @@ export default function Flashcards() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant={quizMode ? "default" : "outline"} onClick={() => setQuizMode(!quizMode)}>
-              <Play className="h-4 w-4 mr-2" />
-              {quizMode ? "Exit Quiz" : "Quiz Mode"}
-            </Button>
-            <Button onClick={handleCreateCard}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Card
-            </Button>
+            {!isSelectionMode ? (
+              <>
+                <Button variant="outline" onClick={handleToggleSelectMode}>
+                  Select
+                </Button>
+                <Button variant={quizMode ? "default" : "outline"} onClick={() => setQuizMode(!quizMode)}>
+                  <Play className="h-4 w-4 mr-2" />
+                  {quizMode ? "Exit Quiz" : "Quiz Mode"}
+                </Button>
+                <Button onClick={handleCreateCard}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Card
+                </Button>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium mr-2">
+                  {selectedCards.size} selected
+                </span>
+                <Button variant="outline" onClick={handleSelectAll}>
+                  {selectedCards.size === filteredCards.length ? "Deselect All" : "Select All"}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleBulkDelete}
+                  disabled={selectedCards.size === 0}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete ({selectedCards.size})
+                </Button>
+                <Button variant="ghost" onClick={handleToggleSelectMode}>
+                  Cancel
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -617,17 +709,34 @@ export default function Flashcards() {
                       <button
                         key={card.id}
                         onClick={() => {
-                          setCurrentIndex(index);
-                          setIsFlipped(false);
+                          if (isSelectionMode) {
+                            handleSelectCard(card.id);
+                          } else {
+                            setCurrentIndex(index);
+                            setIsFlipped(false);
+                          }
                         }}
                         className={cn(
-                          "p-4 rounded-xl text-left transition-all duration-200",
-                          currentIndex === index
+                          "p-4 rounded-xl text-left transition-all duration-200 relative group",
+                          currentIndex === index && !isSelectionMode
                             ? "bg-primary text-primary-foreground shadow-glow"
-                            : "bg-muted/50 hover:bg-muted text-foreground"
+                            : "bg-muted/50 hover:bg-muted text-foreground",
+                          isSelectionMode && selectedCards.has(card.id) && "ring-2 ring-primary bg-primary/10"
                         )}
                       >
-                        <p className="text-xs font-medium mb-1 opacity-70">{card.subject || "General"}</p>
+                        {isSelectionMode && (
+                          <div className="absolute top-2 right-2 z-10">
+                            <Checkbox
+                              checked={selectedCards.has(card.id)}
+                              onCheckedChange={() => handleSelectCard(card.id)}
+                              className={cn(
+                                "data-[state=checked]:bg-primary data-[state=checked]:border-primary",
+                                selectedCards.has(card.id) ? "border-primary" : "border-muted-foreground/50"
+                              )}
+                            />
+                          </div>
+                        )}
+                        <p className={cn("text-xs font-medium mb-1 opacity-70", isSelectionMode && "mr-6")}>{card.subject || "General"}</p>
                         <p className="text-sm font-medium line-clamp-2">{card.front}</p>
                       </button>
                     ))}
