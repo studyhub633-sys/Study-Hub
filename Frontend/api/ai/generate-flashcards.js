@@ -34,7 +34,7 @@ export default async function handler(req, res) {
         }
 
         const flashcards = [];
-        const promptBase = `Generate a flashcard (question and answer) for ${subject} based on: ${notes}. Format as: Q: [question] A: [answer]`;
+        const promptBase = `Generate a flashcard (question and answer) for ${subject} based on: ${notes}. Format as: Q: [question] A: [answer]. Do not use markdown formatting like ** or ##. Return plain text only.`;
 
         // Generate flashcards in parallel
         const fetchPromises = [];
@@ -74,21 +74,24 @@ export default async function handler(req, res) {
                     text = data.generated_text.trim();
                 }
 
+                // Helper to clean markdown
+                const cleanText = (t) => t.replace(/[*_#`]/g, "").trim();
+
                 const questionMatch = text.match(/Q:\s*(.+?)(?:\s*A:|$)/i);
                 const answerMatch = text.match(/A:\s*(.+?)$/i);
 
                 if (questionMatch && answerMatch) {
                     flashcards.push({
-                        question: questionMatch[1].trim(),
-                        answer: answerMatch[1].trim(),
+                        question: cleanText(questionMatch[1]),
+                        answer: cleanText(answerMatch[1]),
                         subject,
                     });
                 } else {
                     const parts = text.split(/\n/).filter(p => p.trim());
                     if (parts.length >= 2) {
                         flashcards.push({
-                            question: parts[0].replace(/^Q:\s*/i, "").trim(),
-                            answer: parts.slice(1).join(" ").replace(/^A:\s*/i, "").trim(),
+                            question: cleanText(parts[0].replace(/^Q:\s*/i, "")),
+                            answer: cleanText(parts.slice(1).join(" ").replace(/^A:\s*/i, "")),
                             subject,
                         });
                     }
