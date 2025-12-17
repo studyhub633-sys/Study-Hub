@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: study-spark-backend
+    runtime: node
+    buildCommand: cd Backend/server && npm install
+    startCommand: cd Backend/server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+  # Frontend as STATIC SITE (not web service)
+  - type: static
+    name: study-spark-frontend
+    buildCommand: cd Frontend && npm install && npm run build
+    staticPublishPath: ./Frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

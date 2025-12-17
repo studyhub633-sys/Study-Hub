@@ -1,0 +1,45 @@
+{"location":"App.tsx:29","message":"App component rendering","data":{},"timestamp":1765682810327,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"B"}
+{"location":"App.tsx:29","message":"App component rendering","data":{},"timestamp":1765682818331,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"B"}
+{"location":"main.tsx:7","message":"main.tsx executing","data":{"rootExists":true},"timestamp":1765682818550,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:12","message":"Root element check","data":{"rootElement":true,"rootId":"root"},"timestamp":1765682818550,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:22","message":"Creating root and rendering App","data":{},"timestamp":1765682818551,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:27","message":"Root created, about to render","data":{},"timestamp":1765682818552,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:36","message":"App render called successfully","data":{},"timestamp":1765682818552,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"App.tsx:29","message":"App component rendering","data":{},"timestamp":1765682818560,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"B"}
+{"location":"main.tsx:7","message":"main.tsx executing","data":{"rootExists":true},"timestamp":1765683166595,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:22","message":"Creating root and rendering App","data":{},"timestamp":1765683166596,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:27","message":"Root created, about to render","data":{},"timestamp":1765683166598,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:12","message":"Root element check","data":{"rootElement":true,"rootId":"root"},"timestamp":1765683166596,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:36","message":"App render called successfully","data":{},"timestamp":1765683166601,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"App.tsx:29","message":"App component rendering","data":{},"timestamp":1765683166625,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"B"}
+{"location":"App.tsx:29","message":"App component rendering","data":{},"timestamp":1765683173350,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"B"}
+{"location":"main.tsx:7","message":"main.tsx executing","data":{"rootExists":true},"timestamp":1765683735145,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:22","message":"Creating root and rendering App","data":{},"timestamp":1765683735146,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:12","message":"Root element check","data":{"rootElement":true,"rootId":"root"},"timestamp":1765683735146,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:27","message":"Root created, about to render","data":{},"timestamp":1765683735146,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:36","message":"App render called successfully","data":{},"timestamp":1765683735147,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"App.tsx:29","message":"App component rendering","data":{},"timestamp":1765683735150,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"B"}
+{"location":"main.tsx:7","message":"main.tsx executing","data":{"rootExists":true},"timestamp":1765695376107,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:22","message":"Creating root and rendering App","data":{},"timestamp":1765695376107,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:12","message":"Root element check","data":{"rootElement":true,"rootId":"root"},"timestamp":1765695376107,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:27","message":"Root created, about to render","data":{},"timestamp":1765695376109,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:36","message":"App render called successfully","data":{},"timestamp":1765695376110,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"App.tsx:29","message":"App component rendering","data":{},"timestamp":1765695376117,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"B"}
+{"location":"main.tsx:7","message":"main.tsx executing","data":{"rootExists":true},"timestamp":1765695378844,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:12","message":"Root element check","data":{"rootElement":true,"rootId":"root"},"timestamp":1765695378844,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:22","message":"Creating root and rendering App","data":{},"timestamp":1765695378844,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:27","message":"Root created, about to render","data":{},"timestamp":1765695378845,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:36","message":"App render called successfully","data":{},"timestamp":1765695378845,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"App.tsx:29","message":"App component rendering","data":{},"timestamp":1765695378848,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"B"}
+{"location":"main.tsx:7","message":"main.tsx executing","data":{"rootExists":true},"timestamp":1765695380670,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:12","message":"Root element check","data":{"rootElement":true,"rootId":"root"},"timestamp":1765695380670,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:22","message":"Creating root and rendering App","data":{},"timestamp":1765695380670,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:27","message":"Root created, about to render","data":{},"timestamp":1765695380670,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:36","message":"App render called successfully","data":{},"timestamp":1765695380671,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"App.tsx:29","message":"App component rendering","data":{},"timestamp":1765695380674,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"B"}
+{"location":"main.tsx:7","message":"main.tsx executing","data":{"rootExists":true},"timestamp":1765695683339,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:22","message":"Creating root and rendering App","data":{},"timestamp":1765695683340,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:12","message":"Root element check","data":{"rootElement":true,"rootId":"root"},"timestamp":1765695683340,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:27","message":"Root created, about to render","data":{},"timestamp":1765695683342,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"main.tsx:36","message":"App render called successfully","data":{},"timestamp":1765695683344,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"A"}
+{"location":"App.tsx:29","message":"App component rendering","data":{},"timestamp":1765695683375,"sessionId":"debug-session","runId":"frontend-startup","hypothesisId":"B"}

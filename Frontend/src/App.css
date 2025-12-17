@@ -1,0 +1,12 @@
+/* App-specific styles - most styles are in index.css design system */
+
+/* Safe area padding for mobile devices with notches */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Ensure proper rendering on all devices */
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
