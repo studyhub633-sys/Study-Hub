@@ -1,4 +1,5 @@
-import { supabase, verifyAuth } from '../_utils/auth.js';
+import { checkAndRecordUsage } from '../_utils/ai-usage.js';
+import { verifyAuth } from '../_utils/auth.js';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -29,19 +30,19 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: "Prompt is required" });
         }
 
-        // Check usage limits
-        const { count: usageCount, error: countError } = await supabase
-            .from("ai_usage_tracking")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", user.id)
-            .eq("feature_type", "knowledge_organizer");
-
-        if (!countError && usageCount && usageCount >= 10) {
-            return res.status(429).json({
-                error: "You have reached the limit of 10 AI generation attempts for knowledge organizers. Please upgrade to premium for unlimited access.",
-                usageCount: usageCount,
-                limit: 10
-            });
+        // Check global usage limits
+        let usageData;
+        try {
+            usageData = await checkAndRecordUsage(user, "knowledge_organizer");
+        } catch (error) {
+            if (error.status === 429) {
+                return res.status(429).json({
+                    error: error.message,
+                    usageCount: error.usageCount,
+                    limit: error.limit
+                });
+            }
+            throw error;
         }
 
         const generationPrompt = `Create a structured knowledge organizer with sections and key points based on this topic: ${prompt}${subject ? ` Subject: ${subject}` : ""}${topic ? ` Topic: ${topic}` : ""}. Format the response as JSON with this structure: {"sections": [{"title": "Section Title", "content": "Detailed content", "keyPoints": ["Point 1", "Point 2"]}]}. Generate 3-5 sections with relevant content and 3-5 key points per section.`;
@@ -165,7 +166,7 @@ export default async function handler(req, res) {
             reviewed: false
         }));
 
-        await supabase.from("ai_usage_tracking").insert({ user_id: user.id, feature_type: "knowledge_organizer" });
+
 
         res.status(200).json({
             sections,

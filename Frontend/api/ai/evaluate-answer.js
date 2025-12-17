@@ -1,3 +1,4 @@
+import { checkAndRecordUsage } from '../_utils/ai-usage.js';
 import { verifyAuth } from '../_utils/auth.js';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -27,6 +28,20 @@ export default async function handler(req, res) {
 
         if (!correctAnswer || !studentAnswer) {
             return res.status(400).json({ error: "Both 'correctAnswer' and 'studentAnswer' are required" });
+        }
+
+        // Check global usage limits
+        try {
+            await checkAndRecordUsage(user, "evaluate_answer");
+        } catch (error) {
+            if (error.status === 429) {
+                return res.status(429).json({
+                    error: error.message,
+                    usageCount: error.usageCount,
+                    limit: error.limit
+                });
+            }
+            throw error;
         }
 
         // Use Groq to evaluate the answer

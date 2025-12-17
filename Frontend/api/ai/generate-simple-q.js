@@ -1,3 +1,4 @@
+import { checkAndRecordUsage } from '../_utils/ai-usage.js';
 import { verifyAuth } from '../_utils/auth.js';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -27,6 +28,20 @@ export default async function handler(req, res) {
 
         if (!context) {
             return res.status(400).json({ error: "Context is required" });
+        }
+
+        // Check global usage limits
+        try {
+            await checkAndRecordUsage(user, "simple_question");
+        } catch (error) {
+            if (error.status === 429) {
+                return res.status(429).json({
+                    error: error.message,
+                    usageCount: error.usageCount,
+                    limit: error.limit
+                });
+            }
+            throw error;
         }
 
         console.log('Making request to Groq API...');
