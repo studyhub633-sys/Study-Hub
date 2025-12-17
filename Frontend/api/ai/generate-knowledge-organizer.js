@@ -172,8 +172,8 @@ export default async function handler(req, res) {
             sections,
             subject: subject || null,
             topic: topic || null,
-            usageCount: (usageCount || 0) + 1,
-            limit: 10
+            usageCount: usageData?.usageCount || 0,
+            limit: usageData?.limit || 15
         });
 
     } catch (error) {

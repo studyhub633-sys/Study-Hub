@@ -609,25 +609,30 @@ export default function Flashcards() {
 
             {/* Card Grid Preview */}
             {filteredCards.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-slide-up" style={{ animationDelay: "0.5s", opacity: 0 }}>
-                {filteredCards.slice(0, 8).map((card, index) => (
-                  <button
-                    key={card.id}
-                    onClick={() => {
-                      setCurrentIndex(index);
-                      setIsFlipped(false);
-                    }}
-                    className={cn(
-                      "p-4 rounded-xl text-left transition-all duration-200",
-                      currentIndex === index
-                        ? "bg-primary text-primary-foreground shadow-glow"
-                        : "bg-muted/50 hover:bg-muted text-foreground"
-                    )}
-                  >
-                    <p className="text-xs font-medium mb-1 opacity-70">{card.subject || "General"}</p>
-                    <p className="text-sm font-medium line-clamp-2">{card.front}</p>
-                  </button>
-                ))}
+              <div className="mt-8">
+                <h3 className="text-sm font-medium text-muted-foreground mb-3">All Cards</h3>
+                <div className="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-slide-up" style={{ animationDelay: "0.5s", opacity: 0 }}>
+                    {filteredCards.map((card, index) => (
+                      <button
+                        key={card.id}
+                        onClick={() => {
+                          setCurrentIndex(index);
+                          setIsFlipped(false);
+                        }}
+                        className={cn(
+                          "p-4 rounded-xl text-left transition-all duration-200",
+                          currentIndex === index
+                            ? "bg-primary text-primary-foreground shadow-glow"
+                            : "bg-muted/50 hover:bg-muted text-foreground"
+                        )}
+                      >
+                        <p className="text-xs font-medium mb-1 opacity-70">{card.subject || "General"}</p>
+                        <p className="text-sm font-medium line-clamp-2">{card.front}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </>
