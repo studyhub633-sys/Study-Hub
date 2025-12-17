@@ -366,7 +366,7 @@ export default function Flashcards() {
       setSelectedCards(allIds);
     }
   };
-
+  //yes
   const handleBulkDelete = async () => {
     if (!user || selectedCards.size === 0) return;
 
