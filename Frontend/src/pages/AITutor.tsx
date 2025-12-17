@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { chatWithAI, evaluateAnswer, generateQuestion, generateSimpleQuestion } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Bot, Loader2, Send, Sparkles, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface Message {
@@ -17,6 +17,11 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+}
+
+interface PendingQuestion {
+  question: string;
+  context: string;
 }
 
 export default function AITutor() {
@@ -35,6 +40,10 @@ export default function AITutor() {
   const [context, setContext] = useState("");
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<"chat" | "question" | "evaluate">("chat");
+
+  // Track the pending question waiting for an answer
+  const [pendingQuestion, setPendingQuestion] = useState<PendingQuestion | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Handle navigation state from Knowledge page
   useEffect(() => {
@@ -56,6 +65,13 @@ export default function AITutor() {
     }
   }, [location.state]);
 
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
@@ -70,55 +86,27 @@ export default function AITutor() {
     const userInput = input;
     setInput("");
     setLoading(true);
-    console.log("[AITutor] handleSend triggered", { mode, inputLength: userInput.length, contextLength: context.length });
+    console.log("[AITutor] handleSend triggered", { mode, inputLength: userInput.length, contextLength: context.length, hasPendingQuestion: !!pendingQuestion });
 
     try {
       let responseContent = "";
 
-      // Detect if user wants to generate a question (even in chat mode)
-      const wantsQuestion = mode === "question" ||
-        userInput.toLowerCase().includes("generate question") ||
-        userInput.toLowerCase().includes("create question") ||
-        userInput.toLowerCase().includes("make a question") ||
-        userInput.toLowerCase().includes("ask me a question");
+      // Check if there's a pending question waiting for an answer
+      if (pendingQuestion) {
+        console.log("[AITutor] Evaluating answer for pending question...");
 
-      // Use context if available, otherwise use user input as context
-      const questionContext = context.trim() || userInput;
-      console.log("[AITutor] Decision logic", { wantsQuestion, hasContext: !!context.trim(), hasInputAsContext: !!userInput, finalContext: questionContext.substring(0, 50) + "..." });
-
-      if (wantsQuestion && questionContext) {
-        // Use simple question generation if coming from Knowledge Organizer "Test Your Knowledge"
-        const isFromKnowledgeOrganizer = location.state?.organizerTitle;
-        const generateFunction = isFromKnowledgeOrganizer ? generateSimpleQuestion : generateQuestion;
-        console.log("[AITutor] Generating question...", { isFromKnowledgeOrganizer, function: isFromKnowledgeOrganizer ? "generateSimpleQuestion" : "generateQuestion" });
-
-        // Generate a question from context
-        const result = await generateFunction(
-          {
-            context: questionContext,
-            subject: "General",
-            difficulty: "medium",
-          },
-          supabase
-        );
-
-        if (result.error) {
-          throw new Error(result.error);
-        }
-
-        responseContent = result.data
-          ? `Here's a practice question based on your context:\n\n**Question:** ${result.data.question}\n\nTry to answer it, and I can help evaluate your response!`
-          : "I couldn't generate a question. Please try again.";
-      } else if (mode === "evaluate" && context.trim()) {
-        // Evaluate answer
+        // Evaluate the user's answer against the pending question's context
         const result = await evaluateAnswer(
           {
-            correctAnswer: context,
+            correctAnswer: pendingQuestion.context,
             studentAnswer: userInput,
-            threshold: 0.7,
+            threshold: 0.6,
           },
           supabase
         );
+
+        // Clear pending question
+        setPendingQuestion(null);
 
         if (result.error) {
           throw new Error(result.error);
@@ -126,26 +114,90 @@ export default function AITutor() {
 
         if (result.data) {
           const { isCorrect, similarity, feedback } = result.data;
-          responseContent = `**Evaluation:**\n\n${isCorrect ? "✅ Correct!" : "❌ Not quite right"}\n\n**Similarity Score:** ${(similarity * 100).toFixed(1)}%\n\n**Feedback:** ${feedback || "Keep practicing!"}`;
+          responseContent = `**Evaluation:**\n\n${isCorrect ? "✅ Correct!" : "❌ Not quite right"}\n\n**Similarity Score:** ${(similarity * 100).toFixed(1)}%\n\n**Feedback:** ${feedback || "Keep practicing!"}\n\n---\n\nWould you like another question? Just say "yes" or "next question"!`;
+        } else {
+          responseContent = "I couldn't evaluate your answer. Would you like to try another question?";
         }
-      } else {
-        console.log("[AITutor] Defaulting to Chat...");
-        // Regular chat mode - use AI chat endpoint
-        const result = await chatWithAI(
-          {
-            message: userInput,
-            context: questionContext,
-            // Simple history: just the last few messages could be passed if we wanted context awareness
-            // For now, we'll rely on the backend to just answer the current prompt
-          },
-          supabase
-        );
+      }
+      // Detect if user wants to generate a question
+      else {
+        const wantsQuestion = mode === "question" ||
+          userInput.toLowerCase().includes("generate question") ||
+          userInput.toLowerCase().includes("create question") ||
+          userInput.toLowerCase().includes("make a question") ||
+          userInput.toLowerCase().includes("ask me a question") ||
+          userInput.toLowerCase().includes("yes") ||
+          userInput.toLowerCase().includes("next question") ||
+          userInput.toLowerCase().includes("another question");
 
-        if (result.error) {
-          throw new Error(result.error);
+        const questionContext = context.trim() || userInput;
+        console.log("[AITutor] Decision logic", { wantsQuestion, hasContext: !!context.trim(), hasInputAsContext: !!userInput });
+
+        if (wantsQuestion && questionContext) {
+          const isFromKnowledgeOrganizer = location.state?.organizerTitle;
+          const generateFunction = isFromKnowledgeOrganizer ? generateSimpleQuestion : generateQuestion;
+          console.log("[AITutor] Generating question...", { isFromKnowledgeOrganizer });
+
+          const result = await generateFunction(
+            {
+              context: questionContext,
+              subject: "General",
+              difficulty: "medium",
+            },
+            supabase
+          );
+
+          if (result.error) {
+            throw new Error(result.error);
+          }
+
+          if (result.data?.question) {
+            // Store the pending question so we know to evaluate the next response
+            setPendingQuestion({
+              question: result.data.question,
+              context: questionContext,
+            });
+
+            responseContent = `Here's a practice question based on your context:\n\n**Question:** ${result.data.question}\n\nType your answer below, and I'll evaluate it!`;
+          } else {
+            responseContent = "I couldn't generate a question. Please try again.";
+          }
+        } else if (mode === "evaluate" && context.trim()) {
+          // Manual evaluate mode
+          const result = await evaluateAnswer(
+            {
+              correctAnswer: context,
+              studentAnswer: userInput,
+              threshold: 0.7,
+            },
+            supabase
+          );
+
+          if (result.error) {
+            throw new Error(result.error);
+          }
+
+          if (result.data) {
+            const { isCorrect, similarity, feedback } = result.data;
+            responseContent = `**Evaluation:**\n\n${isCorrect ? "✅ Correct!" : "❌ Not quite right"}\n\n**Similarity Score:** ${(similarity * 100).toFixed(1)}%\n\n**Feedback:** ${feedback || "Keep practicing!"}`;
+          }
+        } else {
+          // Regular chat mode
+          console.log("[AITutor] Defaulting to Chat...");
+          const result = await chatWithAI(
+            {
+              message: userInput,
+              context: questionContext,
+            },
+            supabase
+          );
+
+          if (result.error) {
+            throw new Error(result.error);
+          }
+
+          responseContent = (result.data as any)?.reply || "I couldn't generate a response. Please try again.";
         }
-
-        responseContent = (result.data as any)?.reply || "I couldn't generate a response. Please try again.";
       }
 
       const assistantMessage: Message = {
@@ -210,7 +262,7 @@ export default function AITutor() {
           <Button
             variant={mode === "chat" ? "default" : "outline"}
             size="sm"
-            onClick={() => setMode("chat")}
+            onClick={() => { setMode("chat"); setPendingQuestion(null); }}
           >
             Chat
           </Button>
@@ -224,11 +276,19 @@ export default function AITutor() {
           <Button
             variant={mode === "evaluate" ? "default" : "outline"}
             size="sm"
-            onClick={() => setMode("evaluate")}
+            onClick={() => { setMode("evaluate"); setPendingQuestion(null); }}
           >
             Evaluate Answer
           </Button>
         </div>
+
+        {/* Pending Question Indicator */}
+        {pendingQuestion && (
+          <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 text-sm">
+            <span className="font-medium text-primary">📝 Waiting for your answer:</span>
+            <p className="mt-1 text-foreground">{pendingQuestion.question}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Chat Area */}
@@ -288,6 +348,7 @@ export default function AITutor() {
                         </div>
                       </div>
                     )}
+                    <div ref={scrollRef} />
                   </div>
                 </ScrollArea>
                 <div className="p-6 border-t border-border">
@@ -302,9 +363,11 @@ export default function AITutor() {
                         }
                       }}
                       placeholder={
-                        mode === "evaluate"
+                        pendingQuestion
                           ? "Type your answer here..."
-                          : "Type your message..."
+                          : mode === "evaluate"
+                            ? "Type your answer here..."
+                            : "Type your message..."
                       }
                       disabled={loading}
                     />
@@ -354,8 +417,8 @@ export default function AITutor() {
               <CardContent className="space-y-2 text-sm text-muted-foreground">
                 <p>• Provide clear context from your notes for better questions</p>
                 <p>• Use "Generate Question" mode to create practice questions</p>
-                <p>• Use "Evaluate Answer" to check your responses</p>
-                <p>• The AI uses semantic similarity to evaluate answers</p>
+                <p>• After a question is generated, just type your answer</p>
+                <p>• The AI will automatically evaluate your response</p>
               </CardContent>
             </Card>
           </div>
@@ -364,5 +427,3 @@ export default function AITutor() {
     </AppLayout>
   );
 }
-
-
