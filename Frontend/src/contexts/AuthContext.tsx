@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { createClient, SupabaseClient, User, Session } from "@supabase/supabase-js";
+import { createClient, Session, SupabaseClient, User } from "@supabase/supabase-js";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
   user: User | null;
@@ -15,9 +15,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 // Support both variable names for the anon key
-const supabaseAnonKey = 
-  import.meta.env.VITE_SUPABASE_ANON_KEY || 
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY || 
+const supabaseAnonKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
   "";
 
 if (!supabaseUrl || !supabaseAnonKey) {
@@ -59,6 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
     });
 
     if (error) throw error;
@@ -67,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Wait a moment for the trigger to create the profile
     // Then verify it was created (optional, but helpful for debugging)
     await new Promise(resolve => setTimeout(resolve, 500));
-    
+
     // Try to fetch the profile to verify it was created
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
