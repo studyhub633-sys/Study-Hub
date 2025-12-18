@@ -1,6 +1,8 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { validateDiscountCode } from "@/lib/discount";
 import { getSubscription as getPaymentSubscription } from "@/lib/payment-client";
 import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
@@ -15,6 +17,7 @@ import {
   Shield,
   Sparkles,
   Star,
+  Ticket,
   Users,
   X,
   Zap,
@@ -93,6 +96,9 @@ export default function Premium() {
   const [isPremium, setIsPremium] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
   const [checkingStatus, setCheckingStatus] = useState(true);
+  const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
+  const [applyingCode, setApplyingCode] = useState(false);
 
   // Check for Stripe redirect
   useEffect(() => {
@@ -143,7 +149,47 @@ export default function Premium() {
   };
 
   const handleSubscribe = async (planType: "monthly" | "yearly") => {
+    if (appliedDiscount && appliedDiscount.type === "free_lifetime") {
+      await handleApplyLifetime();
+      return;
+    }
     toast.info("Subscriptions are currently disabled during beta testing. Tester accounts have automatic premium access.");
+  };
+
+  const handleApplyCode = () => {
+    if (!discountCode) return;
+
+    const discount = validateDiscountCode(discountCode);
+    if (discount) {
+      setAppliedDiscount(discount);
+      toast.success(`Discount code applied: ${discount.description}`);
+      if (discount.type === "free_lifetime") {
+        toast.info("This code provides lifetime free access!");
+      }
+    } else {
+      toast.error("Invalid discount code");
+    }
+  };
+
+  const handleApplyLifetime = async () => {
+    if (!user || !supabase) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ is_premium: true })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      toast.success("Lifetime premium access granted!");
+      setIsPremium(true);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to grant premium access");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = async () => {
@@ -313,13 +359,48 @@ export default function Premium() {
                 ) : (
                   <>
                     {plan.popular && <Rocket className="h-4 w-4 mr-2" />}
-                    Get {plan.name}
+                    {appliedDiscount?.type === "free_lifetime" ? "Get Lifetime" : `Get ${plan.name}`}
                   </>
                 )}
               </Button>
             </div>
           ))}
         </div>
+
+        {/* Discount Code Section */}
+        {!isPremium && (
+          <div className="glass-card p-6 mb-12 animate-slide-up" style={{ animationDelay: "0.4s", opacity: 0 }}>
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <div className="flex-1 w-full">
+                <div className="flex items-center gap-2 mb-2">
+                  <Ticket className="h-5 w-5 text-premium" />
+                  <h3 className="text-lg font-semibold text-foreground">Have a discount code?</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Enter your code below to unlock premium access or get a special discount.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter code (e.g., FREE_BETA)"
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value)}
+                    className="max-w-xs"
+                  />
+                  <Button variant="secondary" onClick={handleApplyCode}>
+                    Apply
+                  </Button>
+                </div>
+              </div>
+              {appliedDiscount && (
+                <div className="p-4 rounded-xl bg-premium/10 border border-premium/20 w-full md:w-auto">
+                  <div className="text-sm font-semibold text-premium mb-1">Applied:</div>
+                  <div className="text-lg font-bold text-foreground">{appliedDiscount.code}</div>
+                  <div className="text-xs text-muted-foreground">{appliedDiscount.description}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* FAQ / Guarantee */}
         <div className="glass-card p-6 md:p-8 text-center animate-slide-up" style={{ animationDelay: "0.5s", opacity: 0 }}>

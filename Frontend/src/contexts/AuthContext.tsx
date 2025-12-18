@@ -67,23 +67,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
     if (!data.user) throw new Error("Failed to create user");
 
-    // Wait a moment for the trigger to create the profile
-    // Then verify it was created (optional, but helpful for debugging)
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // During Beta: Automatically grant premium access
+    try {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ is_premium: true })
+        .eq("id", data.user.id);
 
-    // Try to fetch the profile to verify it was created
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", data.user.id)
-      .single();
-
-    if (profileError && profileError.code !== "PGRST116") {
-      // PGRST116 is "not found" - this is okay, the trigger might create it later
-      // Other errors should be logged
-      console.warn("Profile not found immediately after signup:", profileError.message);
-      console.warn("This is normal if the database trigger hasn't run yet.");
+      if (profileError) {
+        console.warn("Failed to automatically grant premium:", profileError.message);
+      }
+    } catch (e) {
+      console.warn("Error granting premium:", e);
     }
+
+    // Wait a moment for the trigger to create the profile (if update didn't work yet)
+    await new Promise(resolve => setTimeout(resolve, 500));
   };
 
   const signIn = async (email: string, password: string) => {
