@@ -17,22 +17,22 @@ export default async function handler(req, res) {
     try {
         const user = await verifyAuth(req);
 
-        // SIMPLEST LOGIC: Direct update to the profiles table
-        // We use upsert so it works even if the profile row hasn't been created yet
+        // ULTRA-SIMPLE: Just set is_premium to true
+        // If upsert still fails, we'll get the exact error message
         const { error } = await supabase
             .from("profiles")
             .upsert({
                 id: user.id,
-                is_premium: true,
-                email: user.email,
-                updated_at: new Date().toISOString()
+                is_premium: true
             }, { onConflict: 'id' });
 
         if (error) {
-            console.error("Simple grant failure:", error);
+            console.error("Grant premium database error:", error);
             return res.status(500).json({
-                error: "Failed to grant access.",
-                details: error.message
+                error: "Database error.",
+                details: error.message,
+                code: error.code,
+                hint: error.hint
             });
         }
 

@@ -95,7 +95,7 @@ export async function grantBetaAccessWithBackend(supabase: SupabaseClient): Prom
 
     if (!response.ok) {
       const error = await response.json();
-      console.error("Premium grant backend error:", error);
+      console.error("Premium grant backend error:", JSON.stringify(error, null, 2));
       return false;
     }
 
