@@ -27,6 +27,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { generateKnowledgeOrganizer } from "@/lib/ai-client";
 import { EXAM_BOARDS } from "@/lib/constants";
+import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
   Brain,
@@ -127,20 +128,12 @@ export default function Knowledge() {
         return;
       }
 
-      // Fetch limit from profile
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_premium, email")
-        .eq("id", user.id)
-        .single();
-
-      const TESTER_EMAILS = ['admin@studyhub.com', 'tester@studyhub.com', 'andre@studyhub.com'];
-      const isPremium = profile?.is_premium || TESTER_EMAILS.includes(profile?.email || '');
+      const isPremium = await hasPremium(supabase, user.id);
       const limit = isPremium ? 500 : 10;
 
       setAiUsageCount(count || 0);
       setAiLimit(limit);
-      setIsPremiumUser(!!isPremium);
+      setIsPremiumUser(isPremium);
     } catch (error) {
       console.error("Error fetching AI usage count:", error);
     }

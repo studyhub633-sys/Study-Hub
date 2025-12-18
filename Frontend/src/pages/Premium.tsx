@@ -154,6 +154,7 @@ export default function Premium() {
       setLoading(true);
       try {
         await checkAndGrantBetaPremium(supabase, user.id);
+        setIsPremium(true); // Immediate UI update
         await checkPremiumStatus(); // Refresh status
         toast.success("Lifetime beta access granted!");
       } catch (error) {

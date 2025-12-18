@@ -1,5 +1,6 @@
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasPremium } from "@/lib/premium";
 import { Brain, Sparkles, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -57,15 +58,8 @@ export function WelcomeCard() {
           .gt("created_at", oneDayAgo);
 
         // Get limit based on premium
-        const { data: profileData2 } = await supabase
-          .from("profiles")
-          .select("is_premium, email")
-          .eq("id", user.id)
-          .single();
-
-        const TESTER_EMAILS = ['admin@studyhub.com', 'tester@studyhub.com', 'andre@studyhub.com'];
-        const isPremium = profileData2?.is_premium || TESTER_EMAILS.includes(user.email || '');
-        setAiUsage({ count: aiCount || 0, limit: isPremium ? 500 : 10, isPremium: !!isPremium });
+        const isPremium = await hasPremium(supabase, user.id);
+        setAiUsage({ count: aiCount || 0, limit: isPremium ? 500 : 10, isPremium });
 
       } catch (error) {
         console.error("Error fetching welcome card data:", error);
