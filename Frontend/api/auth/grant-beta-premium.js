@@ -17,49 +17,29 @@ export default async function handler(req, res) {
     try {
         const user = await verifyAuth(req);
 
-        // Check if user already has an active subscription
-        const { data: existingSubscription } = await supabase
-            .from("subscriptions")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("status", "active")
-            .single();
+        // SIMPLEST LOGIC: Direct update to the profiles table
+        // We use upsert so it works even if the profile row hasn't been created yet
+        const { error } = await supabase
+            .from("profiles")
+            .upsert({
+                id: user.id,
+                is_premium: true,
+                email: user.email,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'id' });
 
-        if (existingSubscription) {
-            console.log(`User ${user.id} already has active premium subscription`);
-            return res.status(200).json({ success: true, message: "Lifetime beta access already granted!" });
-        }
-
-        // Grant lifetime beta access by inserting a subscription
-        // Since the backend uses the service role key, this will bypass RLS
-        console.log(`Granting lifetime beta premium to user: ${user.id}`);
-
-        const { error: insertError } = await supabase
-            .from("subscriptions")
-            .insert({
-                user_id: user.id,
-                plan_type: "yearly", // Use yearly for lifetime beta
-                status: "active",
-                current_period_start: new Date().toISOString(),
-                current_period_end: "9999-12-31T23:59:59.999Z" // Far future date for lifetime
-            });
-
-        if (insertError) {
-            console.error("Failed to grant premium subscription:", insertError);
+        if (error) {
+            console.error("Simple grant failure:", error);
             return res.status(500).json({
-                error: "Failed to grant premium subscription.",
-                details: insertError.message,
-                code: insertError.code
+                error: "Failed to grant access.",
+                details: error.message
             });
         }
 
-        console.log(`Successfully granted lifetime beta premium to ${user.id}`);
-        return res.status(200).json({ success: true, message: "Lifetime beta access granted!" });
+        return res.status(200).json({ success: true, message: "Lifetime access granted!" });
 
     } catch (error) {
-        console.error("Grant premium error:", error);
-        return res.status(error.message.includes("Authorization") ? 401 : 500).json({
-            error: error.message || "Internal server error"
-        });
+        console.error("Simple grant error:", error);
+        return res.status(500).json({ error: error.message || "Internal server error" });
     }
 }

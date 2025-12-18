@@ -58,7 +58,7 @@ export function WelcomeCard() {
           .gt("created_at", oneDayAgo);
 
         // Get limit based on premium
-        const isPremium = await hasPremium(supabase, user.id);
+        const isPremium = await hasPremium(supabase);
         setAiUsage({ count: aiCount || 0, limit: isPremium ? 500 : 10, isPremium });
 
       } catch (error) {

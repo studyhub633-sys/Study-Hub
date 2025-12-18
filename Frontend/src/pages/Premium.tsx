@@ -132,7 +132,7 @@ export default function Premium() {
 
     setCheckingStatus(true);
     try {
-      const premium = await hasPremium(supabase, user.id);
+      const premium = await hasPremium(supabase);
       setIsPremium(premium);
 
       if (premium) {

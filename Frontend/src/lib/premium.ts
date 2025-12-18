@@ -15,42 +15,21 @@ export interface Subscription {
 }
 
 /**
- * Check if user has active premium subscription
+ * Check if the current user has premium access
  */
-export async function hasPremium(supabase: SupabaseClient, userId: string): Promise<boolean> {
+export async function hasPremium(supabase: SupabaseClient): Promise<boolean> {
   try {
-    // Check profile first (faster)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    // Simplest logic: Check the is_premium column in the profile
     const { data: profile } = await supabase
       .from("profiles")
       .select("is_premium")
-      .eq("id", userId)
-      .single();
+      .eq("id", user.id)
+      .maybeSingle();
 
-    if (profile?.is_premium) {
-      return true;
-    }
-
-    // Check active subscription
-    const { data: subscription } = await supabase
-      .from("subscriptions")
-      .select("status, current_period_end")
-      .eq("user_id", userId)
-      .eq("status", "active")
-      .single();
-
-    if (subscription) {
-      const periodEnd = new Date(subscription.current_period_end);
-      return periodEnd > new Date();
-    }
-
-    // Check for tester accounts
-    const TESTER_EMAILS = ['admin@studyhub.com', 'tester@studyhub.com', 'andre@studyhub.com'];
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.email && TESTER_EMAILS.includes(user.email)) {
-      return true;
-    }
-
-    return false;
+    return profile?.is_premium || false;
   } catch (error) {
     console.error("Error checking premium status:", error);
     return false;
@@ -74,13 +53,9 @@ export async function getSubscription(
       .limit(1)
       .single();
 
-    if (error || !data) {
-      return null;
-    }
-
+    if (error || !data) return null;
     return data as Subscription;
   } catch (error) {
-    console.error("Error getting subscription:", error);
     return null;
   }
 }
@@ -94,18 +69,14 @@ export async function isAdmin(supabase: SupabaseClient, userId: string): Promise
       .from("profiles")
       .select("is_admin")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
     return profile?.is_admin || false;
   } catch (error) {
-    console.error("Error checking admin status:", error);
     return false;
   }
 }
 
-/**
- * Automatically grant premium to users during beta
- */
 /**
  * Automatically grant premium to users during beta (Backend Version)
  */
@@ -124,7 +95,8 @@ export async function grantBetaAccessWithBackend(supabase: SupabaseClient): Prom
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || "Failed to grant premium");
+      console.error("Premium grant backend error:", error);
+      return false;
     }
 
     return true;
@@ -135,10 +107,8 @@ export async function grantBetaAccessWithBackend(supabase: SupabaseClient): Prom
 }
 
 /**
- * Automatically grant premium to users during beta (Legacy wrapper)
+ * Legacy wrapper
  */
 export async function checkAndGrantBetaPremium(supabase: SupabaseClient, userId: string): Promise<void> {
-  // We prefer the backend method now
   await grantBetaAccessWithBackend(supabase);
 }
-

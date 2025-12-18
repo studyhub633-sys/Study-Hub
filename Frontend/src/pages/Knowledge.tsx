@@ -128,7 +128,7 @@ export default function Knowledge() {
         return;
       }
 
-      const isPremium = await hasPremium(supabase, user.id);
+      const isPremium = await hasPremium(supabase);
       const limit = isPremium ? 500 : 10;
 
       setAiUsageCount(count || 0);
