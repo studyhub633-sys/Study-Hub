@@ -18,6 +18,10 @@ export interface Subscription {
  * Check if user has active premium subscription
  */
 export async function hasPremium(supabase: SupabaseClient, userId: string): Promise<boolean> {
+  // BETA OVERRIDE: Everyone gets premium access
+  return true;
+
+  /* Original Logic - Disabled for Beta
   try {
     // Check profile first (faster)
     const { data: profile } = await supabase
@@ -55,6 +59,7 @@ export async function hasPremium(supabase: SupabaseClient, userId: string): Prom
     console.error("Error checking premium status:", error);
     return false;
   }
+  */
 }
 
 /**
@@ -106,35 +111,59 @@ export async function isAdmin(supabase: SupabaseClient, userId: string): Promise
 /**
  * Automatically grant premium to users during beta
  */
+/**
+ * Automatically grant premium to users during beta
+ */
 export async function checkAndGrantBetaPremium(supabase: SupabaseClient, userId: string): Promise<void> {
-  try {
-    // Check if user already has premium
-    const { data: profile, error: fetchError } = await supabase
-      .from("profiles")
-      .select("is_premium")
-      .eq("id", userId)
-      .single();
+  let attempts = 0;
+  const maxAttempts = 3;
 
-    if (fetchError && fetchError.code !== "PGRST116") {
-      console.error("Error fetching profile for beta grant:", fetchError);
-      return;
-    }
-
-    // If not premium, grant it
-    if (!profile?.is_premium) {
-      const { error: updateError } = await supabase
+  while (attempts < maxAttempts) {
+    try {
+      // Check if user already has premium
+      const { data: profile, error: fetchError } = await supabase
         .from("profiles")
-        .update({ is_premium: true })
-        .eq("id", userId);
+        .select("is_premium")
+        .eq("id", userId)
+        .single();
 
-      if (updateError) {
-        console.warn("Failed to automatically grant premium:", updateError.message);
-      } else {
-        console.log("Automatically granted premium access for beta tester");
+      // If profile not found, wait and retry (trigger latency)
+      if (fetchError && fetchError.code === "PGRST116") {
+        console.log(`Profile not found (attempt ${attempts + 1}/${maxAttempts}), waiting...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        attempts++;
+        continue;
       }
+
+      if (fetchError) {
+        console.error("Error fetching profile for beta grant:", fetchError);
+        return;
+      }
+
+      // If not premium, grant it
+      if (!profile?.is_premium) {
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({ is_premium: true })
+          .eq("id", userId);
+
+        if (updateError) {
+          console.warn("Failed to automatically grant premium:", updateError.message);
+        } else {
+          console.log("Automatically granted premium access for beta tester");
+          return; // Success
+        }
+      } else {
+        return; // Already premium
+      }
+    } catch (error) {
+      console.error("Error in checkAndGrantBetaPremium:", error);
     }
-  } catch (error) {
-    console.error("Error in checkAndGrantBetaPremium:", error);
+
+    attempts++;
+    if (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   }
 }
 
