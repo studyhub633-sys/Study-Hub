@@ -38,28 +38,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      })
+      .catch((error) => {
+        console.error("Error getting initial session:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-
-      if (session?.user) {
-        // Automatically grant premium if not yet set (for beta)
-        await checkAndGrantBetaPremium(supabase, session.user.id);
-      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Dedicated effect for beta premium grant
+  useEffect(() => {
+    if (user) {
+      checkAndGrantBetaPremium(supabase, user.id);
+    }
+  }, [user]);
 
   const signUp = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({
