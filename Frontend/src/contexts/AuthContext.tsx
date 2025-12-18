@@ -1,3 +1,4 @@
+import { checkAndGrantBetaPremium } from "@/lib/premium";
 import { createClient, Session, SupabaseClient, User } from "@supabase/supabase-js";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
@@ -46,10 +47,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      if (session?.user) {
+        // Automatically grant premium if not yet set (for beta)
+        await checkAndGrantBetaPremium(supabase, session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -67,21 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
     if (!data.user) throw new Error("Failed to create user");
 
-    // During Beta: Automatically grant premium access
-    try {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ is_premium: true })
-        .eq("id", data.user.id);
+    // During Beta: Automatic premium will be handled by the auth state change 
+    // listener when the user eventually logs in after email confirmation.
 
-      if (profileError) {
-        console.warn("Failed to automatically grant premium:", profileError.message);
-      }
-    } catch (e) {
-      console.warn("Error granting premium:", e);
-    }
-
-    // Wait a moment for the trigger to create the profile (if update didn't work yet)
+    // Wait a moment for the trigger to create the profile
     await new Promise(resolve => setTimeout(resolve, 500));
   };
 

@@ -103,3 +103,38 @@ export async function isAdmin(supabase: SupabaseClient, userId: string): Promise
   }
 }
 
+/**
+ * Automatically grant premium to users during beta
+ */
+export async function checkAndGrantBetaPremium(supabase: SupabaseClient, userId: string): Promise<void> {
+  try {
+    // Check if user already has premium
+    const { data: profile, error: fetchError } = await supabase
+      .from("profiles")
+      .select("is_premium")
+      .eq("id", userId)
+      .single();
+
+    if (fetchError && fetchError.code !== "PGRST116") {
+      console.error("Error fetching profile for beta grant:", fetchError);
+      return;
+    }
+
+    // If not premium, grant it
+    if (!profile?.is_premium) {
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ is_premium: true })
+        .eq("id", userId);
+
+      if (updateError) {
+        console.warn("Failed to automatically grant premium:", updateError.message);
+      } else {
+        console.log("Automatically granted premium access for beta tester");
+      }
+    }
+  } catch (error) {
+    console.error("Error in checkAndGrantBetaPremium:", error);
+  }
+}
+
