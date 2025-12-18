@@ -1,4 +1,5 @@
-import { supabase, verifyAuth } from '../_utils/auth.js';
+import { checkAndRecordUsage, updateAiResponse } from '../_utils/ai-usage.js';
+import { verifyAuth } from '../_utils/auth.js';
 
 const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.HUGGING_FACE_API_KEY;
 const HF_CHAT_URL = "https://router.huggingface.co/v1/chat/completions";
@@ -54,6 +55,17 @@ async function handleChat(req, res) {
             return res.status(400).json({ error: "Message is required" });
         }
 
+        // Check and record usage
+        let usageData;
+        try {
+            usageData = await checkAndRecordUsage(user, "chat", message, null, null);
+        } catch (error) {
+            if (error.status === 429) {
+                return res.status(429).json({ error: error.message, usageCount: error.usageCount, limit: error.limit });
+            }
+            throw error;
+        }
+
         let systemPrompt = "You are a helpful, encouraging, and knowledgeable AI tutor. Your goal is to help students learn and understand concepts clearly. Keep answers concise but informative.";
         if (context) {
             systemPrompt += `\n\nContext/Notes provided by student:\n${context}`;
@@ -96,6 +108,10 @@ async function handleChat(req, res) {
             reply = data.trim();
         }
 
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, reply);
+        }
+
         return res.status(200).json({ reply });
 
     } catch (error) {
@@ -128,6 +144,17 @@ async function handleGenerateQuestion(req, res) {
 
         if (!context || !subject) {
             return res.status(400).json({ error: "Both 'context' and 'subject' are required" });
+        }
+
+        // Check and record usage
+        let usageData;
+        try {
+            usageData = await checkAndRecordUsage(user, "generate-question", context.substring(0, 100), subject, null);
+        } catch (error) {
+            if (error.status === 429) {
+                return res.status(429).json({ error: error.message, usageCount: error.usageCount, limit: error.limit });
+            }
+            throw error;
         }
 
         const userPrompt = `You are an educational AI tutor. Create a ${difficulty} difficulty ${subject} practice question based on the following study material.
@@ -212,6 +239,10 @@ Generate only the question, nothing else.`;
             .replace(/\s+/g, " ")
             .trim();
 
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, question);
+        }
+
         return res.status(200).json({
             question,
             subject,
@@ -249,6 +280,17 @@ async function handleGenerateFlashcards(req, res) {
 
         if (!notes || !subject) {
             return res.status(400).json({ error: "Both 'notes' and 'subject' are required" });
+        }
+
+        // Check and record usage
+        let usageData;
+        try {
+            usageData = await checkAndRecordUsage(user, "generate-flashcards", notes.substring(0, 100), subject, null);
+        } catch (error) {
+            if (error.status === 429) {
+                return res.status(429).json({ error: error.message, usageCount: error.usageCount, limit: error.limit });
+            }
+            throw error;
         }
 
         if (count > 10) {
@@ -319,6 +361,10 @@ async function handleGenerateFlashcards(req, res) {
             return res.status(500).json({ error: "Failed to generate any flashcards. Please try again." });
         }
 
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, flashcards);
+        }
+
         return res.status(200).json({
             flashcards,
             count: flashcards.length,
@@ -357,18 +403,15 @@ async function handleGenerateKnowledgeOrganizer(req, res) {
             return res.status(400).json({ error: "Prompt is required" });
         }
 
-        const { count: usageCount, error: countError } = await supabase
-            .from("ai_usage_tracking")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", user.id)
-            .eq("feature_type", "knowledge_organizer");
-
-        if (!countError && usageCount && usageCount >= 10) {
-            return res.status(429).json({
-                error: "You have reached the limit of 10 AI generation attempts for knowledge organizers. Please upgrade to premium for unlimited access.",
-                usageCount: usageCount,
-                limit: 10
-            });
+        // Check and record usage
+        let usageData;
+        try {
+            usageData = await checkAndRecordUsage(user, "knowledge_organizer", prompt, subject, topic);
+        } catch (error) {
+            if (error.status === 429) {
+                return res.status(429).json({ error: error.message, usageCount: error.usageCount, limit: error.limit });
+            }
+            throw error;
         }
 
         const generationPrompt = `Create a structured knowledge organizer with sections and key points based on this topic: ${prompt}${subject ? ` Subject: ${subject}` : ""}${topic ? ` Topic: ${topic}` : ""}. Format the response as JSON with this structure: {"sections": [{"title": "Section Title", "content": "Detailed content", "keyPoints": ["Point 1", "Point 2"]}]}. Generate 3-5 sections with relevant content and 3-5 key points per section.`;
@@ -459,14 +502,16 @@ async function handleGenerateKnowledgeOrganizer(req, res) {
             reviewed: false
         }));
 
-        await supabase.from("ai_usage_tracking").insert({ user_id: user.id, feature_type: "knowledge_organizer" });
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, { sections, subject, topic });
+        }
 
         res.status(200).json({
             sections,
             subject: subject || null,
             topic: topic || null,
-            usageCount: (usageCount || 0) + 1,
-            limit: 10
+            usageCount: usageData?.usageCount || 0,
+            limit: usageData?.limit || (usageData?.isPremium ? 500 : 10)
         });
 
     } catch (error) {
@@ -664,6 +709,17 @@ async function handleGenerateSimpleQuestion(req, res) {
             return res.status(400).json({ error: "Context is required" });
         }
 
+        // Check and record usage
+        let usageData;
+        try {
+            usageData = await checkAndRecordUsage(user, "generate-simple-question", context.substring(0, 100), subject, null);
+        } catch (error) {
+            if (error.status === 429) {
+                return res.status(429).json({ error: error.message, usageCount: error.usageCount, limit: error.limit });
+            }
+            throw error;
+        }
+
         const response = await fetch(HF_CHAT_URL, {
             method: "POST",
             headers: {
@@ -735,6 +791,10 @@ async function handleGenerateSimpleQuestion(req, res) {
                 details: "Could not extract question from API response",
                 rawResponse: data
             });
+        }
+
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, question);
         }
 
         return res.status(200).json({

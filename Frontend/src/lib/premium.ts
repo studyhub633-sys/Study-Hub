@@ -107,58 +107,38 @@ export async function isAdmin(supabase: SupabaseClient, userId: string): Promise
  * Automatically grant premium to users during beta
  */
 /**
- * Automatically grant premium to users during beta
+ * Automatically grant premium to users during beta (Backend Version)
+ */
+export async function grantBetaAccessWithBackend(supabase: SupabaseClient): Promise<boolean> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return false;
+
+    const response = await fetch("/api/auth/grant-beta-premium", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`,
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to grant premium");
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error granting premium via backend:", error);
+    return false;
+  }
+}
+
+/**
+ * Automatically grant premium to users during beta (Legacy wrapper)
  */
 export async function checkAndGrantBetaPremium(supabase: SupabaseClient, userId: string): Promise<void> {
-  let attempts = 0;
-  const maxAttempts = 3;
-
-  while (attempts < maxAttempts) {
-    try {
-      // Check if user already has premium
-      const { data: profile, error: fetchError } = await supabase
-        .from("profiles")
-        .select("is_premium")
-        .eq("id", userId)
-        .single();
-
-      // If profile not found, wait and retry (trigger latency)
-      if (fetchError && fetchError.code === "PGRST116") {
-        console.log(`Profile not found (attempt ${attempts + 1}/${maxAttempts}), waiting...`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        attempts++;
-        continue;
-      }
-
-      if (fetchError) {
-        console.error("Error fetching profile for beta grant:", fetchError);
-        return;
-      }
-
-      // If not premium, grant it
-      if (!profile?.is_premium) {
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({ is_premium: true })
-          .eq("id", userId);
-
-        if (updateError) {
-          console.warn("Failed to automatically grant premium:", updateError.message);
-        } else {
-          console.log("Automatically granted premium access for beta tester");
-          return; // Success
-        }
-      } else {
-        return; // Already premium
-      }
-    } catch (error) {
-      console.error("Error in checkAndGrantBetaPremium:", error);
-    }
-
-    attempts++;
-    if (attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
+  // We prefer the backend method now
+  await grantBetaAccessWithBackend(supabase);
 }
 

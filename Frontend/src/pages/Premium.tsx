@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { validateDiscountCode } from "@/lib/discount";
 import { getSubscription as getPaymentSubscription } from "@/lib/payment-client";
-import { checkAndGrantBetaPremium, hasPremium } from "@/lib/premium";
+import { grantBetaAccessWithBackend, hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
   Brain,
@@ -153,12 +153,16 @@ export default function Premium() {
     if (user && supabase) {
       setLoading(true);
       try {
-        await checkAndGrantBetaPremium(supabase, user.id);
-        setIsPremium(true); // Immediate UI update
-        await checkPremiumStatus(); // Refresh status
-        toast.success("Lifetime beta access granted!");
-      } catch (error) {
-        toast.error("Something went wrong. Please try again.");
+        const success = await grantBetaAccessWithBackend(supabase);
+        if (success) {
+          setIsPremium(true); // Immediate UI update
+          await checkPremiumStatus(); // Refresh status
+          toast.success("Lifetime beta access granted!");
+        } else {
+          toast.error("Failed to grant premium access. Please try again.");
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Something went wrong. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -178,7 +182,7 @@ export default function Premium() {
     const discount = validateDiscountCode(discountCode);
     if (discount) {
       setAppliedDiscount(discount);
-      toast.success(`Discount code applied: ${discount.description}`);
+      toast.success(`Discount code applied: ${discount.description} `);
       if (discount.type === "free_lifetime") {
         toast.info("This code provides lifetime free access!");
       }
@@ -295,7 +299,7 @@ export default function Premium() {
             <div
               key={feature.title}
               className="glass-card p-5 hover-lift animate-slide-up"
-              style={{ animationDelay: `${0.1 * index}s`, opacity: 0 }}
+              style={{ animationDelay: `${0.1 * index} s`, opacity: 0 }}
             >
               <div className="p-2.5 rounded-xl bg-premium/10 w-fit mb-3">
                 <feature.icon className="h-5 w-5 text-premium" />
@@ -317,7 +321,7 @@ export default function Premium() {
                   ? "border-2 border-premium shadow-lg"
                   : "glass-card"
               )}
-              style={{ animationDelay: `${0.3 + 0.1 * index}s`, opacity: 0 }}
+              style={{ animationDelay: `${0.3 + 0.1 * index} s`, opacity: 0 }}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
