@@ -101,6 +101,7 @@ export default function Knowledge() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiUsageCount, setAiUsageCount] = useState<number | null>(null);
   const [aiLimit, setAiLimit] = useState<number>(10);
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -139,6 +140,7 @@ export default function Knowledge() {
 
       setAiUsageCount(count || 0);
       setAiLimit(limit);
+      setIsPremiumUser(!!isPremium);
     } catch (error) {
       console.error("Error fetching AI usage count:", error);
     }
@@ -725,7 +727,7 @@ export default function Knowledge() {
               Generate with AI
               {aiUsageCount !== null && (
                 <span className="ml-2 text-xs">
-                  ({aiLimit - aiUsageCount} left)
+                  {isPremiumUser ? "(Lifetime Access)" : `(${aiLimit - aiUsageCount} left)`}
                 </span>
               )}
             </Button>

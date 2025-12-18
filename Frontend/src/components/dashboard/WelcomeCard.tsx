@@ -13,7 +13,7 @@ export function WelcomeCard() {
     streak: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [aiUsage, setAiUsage] = useState<{ count: number; limit: number } | null>(null);
+  const [aiUsage, setAiUsage] = useState<{ count: number; limit: number; isPremium: boolean } | null>(null);
 
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
@@ -65,7 +65,7 @@ export function WelcomeCard() {
 
         const TESTER_EMAILS = ['admin@studyhub.com', 'tester@studyhub.com', 'andre@studyhub.com'];
         const isPremium = profileData2?.is_premium || TESTER_EMAILS.includes(user.email || '');
-        setAiUsage({ count: aiCount || 0, limit: isPremium ? 500 : 10 });
+        setAiUsage({ count: aiCount || 0, limit: isPremium ? 500 : 10, isPremium: !!isPremium });
 
       } catch (error) {
         console.error("Error fetching welcome card data:", error);
@@ -109,7 +109,7 @@ export function WelcomeCard() {
                   <Brain className="h-4 w-4" />
                   Generate with AI
                   <span className="text-xs opacity-80 ml-1">
-                    ({aiUsage.limit - aiUsage.count} left)
+                    {aiUsage.isPremium ? "(Lifetime Access)" : `(${aiUsage.limit - aiUsage.count} left)`}
                   </span>
                 </button>
               </div>
