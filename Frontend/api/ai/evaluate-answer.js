@@ -1,4 +1,7 @@
-import { checkAndRecordUsage, updateAiResponse } from './_utils/ai-usage.js';
+import { checkAndRecordUsage, updateAiResponse } from '../_utils/ai-usage.js';
+import { verifyAuth } from '../_utils/auth.js';
+
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export default async function handler(req, res) {

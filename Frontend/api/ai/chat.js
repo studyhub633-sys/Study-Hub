@@ -1,4 +1,4 @@
-import { checkAndRecordUsage } from '../_utils/ai-usage.js';
+import { checkAndRecordUsage, updateAiResponse } from '../_utils/ai-usage.js';
 import { verifyAuth } from '../_utils/auth.js';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
