@@ -5,7 +5,19 @@ export async function checkAndRecordUsage(user, featureType) {
         throw new Error("Supabase client not initialized");
     }
 
-    const MAX_DAILY_USAGE = 15;
+    // Check if user is a tester for lifetime premium
+    const TESTER_EMAILS = ['admin@studyhub.com', 'tester@studyhub.com', 'andre@studyhub.com'];
+    const isTester = TESTER_EMAILS.includes(user.email);
+
+    // Get premium status
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", user.id)
+        .single();
+
+    const isPremium = profile?.is_premium || isTester;
+    const MAX_DAILY_USAGE = isPremium ? 500 : 10;
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     // Count usage across ALL features in the last 24 hours
@@ -22,7 +34,7 @@ export async function checkAndRecordUsage(user, featureType) {
     if (count >= MAX_DAILY_USAGE) {
         throw {
             status: 429,
-            message: `You have reached the daily limit of ${MAX_DAILY_USAGE} AI requests. Please try again later.`,
+            message: `You have reached the daily limit of ${MAX_DAILY_USAGE} AI requests. ${!isPremium ? 'Please upgrade to premium for higher limits.' : 'Please try again tomorrow.'}`,
             usageCount: count,
             limit: MAX_DAILY_USAGE
         };
@@ -44,6 +56,7 @@ export async function checkAndRecordUsage(user, featureType) {
 
     return {
         usageCount: count + 1,
-        limit: MAX_DAILY_USAGE
+        limit: MAX_DAILY_USAGE,
+        isPremium
     };
 }

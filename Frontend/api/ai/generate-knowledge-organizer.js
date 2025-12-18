@@ -173,7 +173,7 @@ export default async function handler(req, res) {
             subject: subject || null,
             topic: topic || null,
             usageCount: usageData?.usageCount || 0,
-            limit: usageData?.limit || 15
+            limit: usageData?.limit || (usageData?.isPremium ? 500 : 10)
         });
 
     } catch (error) {

@@ -43,6 +43,13 @@ export async function hasPremium(supabase: SupabaseClient, userId: string): Prom
       return periodEnd > new Date();
     }
 
+    // Check for tester accounts
+    const TESTER_EMAILS = ['admin@studyhub.com', 'tester@studyhub.com', 'andre@studyhub.com'];
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.email && TESTER_EMAILS.includes(user.email)) {
+      return true;
+    }
+
     return false;
   } catch (error) {
     console.error("Error checking premium status:", error);

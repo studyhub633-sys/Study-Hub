@@ -1,7 +1,7 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { cancelSubscription, createCheckoutSession, getSubscription as getPaymentSubscription } from "@/lib/payment-client";
+import { getSubscription as getPaymentSubscription } from "@/lib/payment-client";
 import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
@@ -143,51 +143,11 @@ export default function Premium() {
   };
 
   const handleSubscribe = async (planType: "monthly" | "yearly") => {
-    if (!user) {
-      toast.error("Please sign in to subscribe");
-      navigate("/login");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await createCheckoutSession(planType, supabase);
-
-      if ("error" in result) {
-        toast.error(result.error);
-      } else if (result.approvalUrl) {
-        // Redirect to PayPal approval page
-        window.location.href = result.approvalUrl;
-      }
-    } catch (error) {
-      toast.error("Failed to start checkout. Please try again.");
-      console.error("Checkout error:", error);
-    } finally {
-      setLoading(false);
-    }
+    toast.info("Subscriptions are currently disabled during beta testing. Tester accounts have automatic premium access.");
   };
 
   const handleCancel = async () => {
-    if (!confirm("Are you sure you want to cancel your subscription? You'll continue to have access until the end of your billing period.")) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await cancelSubscription(supabase);
-
-      if ("error" in result) {
-        toast.error(result.error);
-      } else {
-        toast.success("Subscription canceled. You'll retain access until the end of your billing period.");
-        checkPremiumStatus();
-      }
-    } catch (error) {
-      toast.error("Failed to cancel subscription. Please try again.");
-      console.error("Cancel error:", error);
-    } finally {
-      setLoading(false);
-    }
+    toast.info("Subscriptions are currently disabled during beta testing.");
   };
 
   if (checkingStatus) {
@@ -223,8 +183,8 @@ export default function Premium() {
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {isPremium
-              ? "Thank you for being a premium member! Enjoy all the exclusive features."
-              : "Unlock AI-powered study tools, personalized recommendations, and advanced analytics to achieve your best grades."}
+              ? "You have lifetime access to all premium features during our beta testing phase."
+              : "During beta, premium features are reserved for authorized tester accounts."}
           </p>
         </div>
 

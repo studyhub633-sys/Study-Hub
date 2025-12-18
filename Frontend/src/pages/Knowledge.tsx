@@ -205,7 +205,7 @@ export default function Knowledge() {
     if (aiUsageCount !== null && aiUsageCount >= 10) {
       toast({
         title: "Limit Reached",
-        description: "You have reached the limit of 10 AI generation attempts. Please upgrade to premium for unlimited access.",
+        description: `You have reached the daily limit of AI generation attempts. Please upgrade to premium for higher limits (500/day).`,
         variant: "destructive",
       });
       return;
