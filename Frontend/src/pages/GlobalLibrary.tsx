@@ -4,12 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { SmartPaperParser } from "@/lib/paper-parser";
-import { ExternalLink, Globe, Info, Library, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Calendar, ExternalLink, Filter, Globe, Info, Library, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 interface GlobalPaper {
     id: string;
@@ -25,8 +26,21 @@ export default function GlobalLibrary() {
     const { supabase, user } = useAuth();
     const [papers, setPapers] = useState<GlobalPaper[]>([]);
     const [search, setSearch] = useState("");
+    const [yearFilter, setYearFilter] = useState<string>("all");
+    const [subjectFilter, setSubjectFilter] = useState<string>("all");
     const [quickAddUrl, setQuickAddUrl] = useState("");
     const [isParsing, setIsParsing] = useState(false);
+
+    // Get unique years and subjects for filters
+    const availableYears = useMemo(() => {
+        const years = [...new Set(papers.map(p => p.year))].filter(Boolean).sort((a, b) => b - a);
+        return years;
+    }, [papers]);
+
+    const availableSubjects = useMemo(() => {
+        const subjects = [...new Set(papers.map(p => p.subject))].filter(Boolean).sort();
+        return subjects;
+    }, [papers]);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -136,11 +150,14 @@ export default function GlobalLibrary() {
         }
     };
 
-    const filteredPapers = papers.filter((paper) =>
-        paper.title.toLowerCase().includes(search.toLowerCase()) ||
-        paper.subject?.toLowerCase().includes(search.toLowerCase()) ||
-        paper.exam_board?.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredPapers = papers.filter((paper) => {
+        const matchesSearch = paper.title.toLowerCase().includes(search.toLowerCase()) ||
+            paper.subject?.toLowerCase().includes(search.toLowerCase()) ||
+            paper.exam_board?.toLowerCase().includes(search.toLowerCase());
+        const matchesYear = yearFilter === "all" || paper.year?.toString() === yearFilter;
+        const matchesSubject = subjectFilter === "all" || paper.subject === subjectFilter;
+        return matchesSearch && matchesYear && matchesSubject;
+    });
 
     return (
         <AppLayout>
@@ -178,16 +195,56 @@ export default function GlobalLibrary() {
                     <TabsContent value="discovery" className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="md:col-span-2 space-y-6">
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
-                                        <Search className="h-5 w-5" />
+                                {/* Search and Filters */}
+                                <div className="space-y-4">
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+                                            <Search className="h-5 w-5" />
+                                        </div>
+                                        <Input
+                                            placeholder="Search papers..."
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            className="pl-10 h-12 bg-background border-primary/10 rounded-xl shadow-sm"
+                                        />
                                     </div>
-                                    <Input
-                                        placeholder="Search our curated starters..."
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        className="pl-10 h-14 bg-background border-primary/10 rounded-xl text-lg shadow-sm"
-                                    />
+
+                                    {/* Filter Row */}
+                                    <div className="flex flex-wrap gap-3">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                                            <Select value={yearFilter} onValueChange={setYearFilter}>
+                                                <SelectTrigger className="w-[130px] h-10">
+                                                    <SelectValue placeholder="Year" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Years</SelectItem>
+                                                    {availableYears.map(year => (
+                                                        <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                            <Filter className="h-4 w-4 text-muted-foreground" />
+                                            <Select value={subjectFilter} onValueChange={setSubjectFilter}>
+                                                <SelectTrigger className="w-[160px] h-10">
+                                                    <SelectValue placeholder="Subject" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Subjects</SelectItem>
+                                                    {availableSubjects.map(subject => (
+                                                        <SelectItem key={subject} value={subject}>{subject}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <Badge variant="secondary" className="h-10 px-4 flex items-center">
+                                            {filteredPapers.length} papers
+                                        </Badge>
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

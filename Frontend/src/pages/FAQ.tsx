@@ -16,6 +16,10 @@ export const faqs = [
     answer: "Study Spark Hub is an all-in-one study companion platform that helps students organize notes, create flashcards, practice with past papers, and track their academic progress. It's designed to make studying more efficient and effective.",
   },
   {
+    question: "Where do the past papers come from?",
+    answer: "All past papers are accessed via direct links to verified third-party educational repositories like Physics & Maths Tutor (PMT). Study Spark Hub acts as a search engine and organizer—we do not host, store, or modify any exam content ourselves. All papers open in a new tab on the original source website, ensuring full compliance with copyright and 'no framing' policies.",
+  },
+  {
     question: "Is Study Spark Hub free?",
     answer: "Yes! Study Spark Hub offers a free plan with access to basic features including notes, flashcards, and past papers. We also offer a Premium plan with advanced features like AI-powered tutoring and advanced analytics.",
   },
