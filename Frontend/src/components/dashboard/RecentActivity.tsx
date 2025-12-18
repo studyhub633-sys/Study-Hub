@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { BookOpen, Layers, FileText, Award, Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
+import { Award, BookOpen, Clock, FileText, Layers } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Activity {
   icon: typeof BookOpen;
@@ -15,7 +15,7 @@ interface Activity {
 function formatTimeAgo(date: Date): string {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
+
   if (diffInSeconds < 60) return "Just now";
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
@@ -129,7 +129,7 @@ export function RecentActivity() {
 
         // Sort by date (most recent first) and take most recent 4
         allActivities.sort((a, b) => b.date.getTime() - a.date.getTime());
-        
+
         // Remove the date property before setting state
         const activitiesWithoutDate = allActivities.slice(0, 4).map(({ date, ...rest }) => rest);
         setActivities(activitiesWithoutDate);
@@ -147,7 +147,18 @@ export function RecentActivity() {
     <div className="glass-card p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-foreground">Recent Activity</h3>
-        <button className="text-sm text-primary hover:underline">View all</button>
+        <button
+          onClick={() => {
+            const { toast } = require("@/hooks/use-toast");
+            toast({
+              title: "Coming Soon",
+              description: "The full activity history page is under development. For now, you can view your recent work here.",
+            });
+          }}
+          className="text-sm text-primary hover:underline hover:opacity-80 transition-opacity"
+        >
+          View all
+        </button>
       </div>
 
       <div className="space-y-4">

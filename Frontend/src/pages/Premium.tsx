@@ -1,26 +1,26 @@
-import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { cancelSubscription, createCheckoutSession, getSubscription as getPaymentSubscription } from "@/lib/payment-client";
+import { hasPremium } from "@/lib/premium";
+import { cn } from "@/lib/utils";
 import {
-  Crown,
-  Sparkles,
   Brain,
-  Zap,
+  Check,
   CheckCircle,
-  Star,
+  Clock,
+  Crown,
+  Loader2,
   Rocket,
   Shield,
-  Clock,
+  Sparkles,
+  Star,
   Users,
-  Loader2,
   X,
-  Check,
+  Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { hasPremium, getSubscription } from "@/lib/premium";
-import { createCheckoutSession, cancelSubscription, getSubscription as getPaymentSubscription } from "@/lib/payment-client";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 const features = [
@@ -31,7 +31,7 @@ const features = [
   },
   {
     icon: Sparkles,
-    title: "Medley AI Study Suggestions",
+    title: "Groq AI Study Suggestions",
     description: "Get personalized study recommendations based on your progress and weak areas",
   },
   {
@@ -152,7 +152,7 @@ export default function Premium() {
     setLoading(true);
     try {
       const result = await createCheckoutSession(planType, supabase);
-      
+
       if ("error" in result) {
         toast.error(result.error);
       } else if (result.approvalUrl) {
@@ -175,7 +175,7 @@ export default function Premium() {
     setLoading(true);
     try {
       const result = await cancelSubscription(supabase);
-      
+
       if ("error" in result) {
         toast.error(result.error);
       } else {
@@ -366,7 +366,7 @@ export default function Premium() {
           <Shield className="h-10 w-10 text-secondary mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">30-Day Money-Back Guarantee</h3>
           <p className="text-muted-foreground max-w-lg mx-auto">
-            Not satisfied? Get a full refund within 30 days, no questions asked. 
+            Not satisfied? Get a full refund within 30 days, no questions asked.
             We're confident you'll love Study Hub Premium.
           </p>
         </div>
@@ -390,7 +390,7 @@ export default function Premium() {
               <span className="font-medium">You have access to this feature!</span>
             </div>
           ) : (
-            <Button 
+            <Button
               className="bg-premium hover:bg-premium/90 text-premium-foreground"
               onClick={() => handleSubscribe("yearly")}
               disabled={loading}

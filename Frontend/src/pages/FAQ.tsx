@@ -55,6 +55,10 @@ export const faqs = [
     question: "How do I delete my account?",
     answer: "You can delete your account from the Settings page. Navigate to Settings → Privacy and click the 'Delete Account' button. Please note that this action is permanent and cannot be undone.",
   },
+  {
+    question: "Does Study Spark Hub comply with copyright laws for Past Papers?",
+    answer: "Absolutely. We do not host any copyrighted exam material on our servers. Instead, we provide a curated directory of direct links to the official download servers of exam boards and verified educational repositories like PMT. Our platform acts as a reference tool, ensuring that you always access the original files from their legal sources while staying compliant with intellectual property regulations.",
+  },
 ];
 
 export default function FAQ() {

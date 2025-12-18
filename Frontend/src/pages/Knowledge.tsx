@@ -822,221 +822,223 @@ export default function Knowledge() {
           </div>
 
           {/* Organizer Detail */}
-          <div className="lg:col-span-2 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
-            {selectedOrganizer ? (
-              <div className="glass-card p-6 md:p-8">
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      {selectedOrganizer.subject && (
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                          {selectedOrganizer.subject}
-                        </span>
-                      )}
-                      {selectedOrganizer.topic && (
-                        <span className="text-xs text-muted-foreground">{selectedOrganizer.topic}</span>
-                      )}
-                    </div>
-                    <h2 className="text-xl md:text-2xl font-bold text-foreground">
-                      {selectedOrganizer.title}
-                    </h2>
-                    <div className="flex items-center gap-3 mt-2">
-                      <div className="flex-1 max-w-[200px]">
-                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                          <span>Progress</span>
-                          <span>{progress}%</span>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary rounded-full transition-all duration-500"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
+          <div className="lg:col-span-2">
+            <div className="lg:sticky lg:top-24 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
+              {selectedOrganizer ? (
+                <div className="glass-card p-6 md:p-8">
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        {selectedOrganizer.subject && (
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                            {selectedOrganizer.subject}
+                          </span>
+                        )}
+                        {selectedOrganizer.topic && (
+                          <span className="text-xs text-muted-foreground">{selectedOrganizer.topic}</span>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Last updated {formatTimeAgo(selectedOrganizer.updated_at)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleEditOrganizer(selectedOrganizer)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleDeleteOrganizer(selectedOrganizer.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={() => handleDownload(selectedOrganizer)}>
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Sections */}
-                {sections.length > 0 ? (
-                  <div className="space-y-4">
-                    {sections.map((section: KnowledgeSection, index: number) => (
-                      <Collapsible
-                        key={section.title}
-                        open={openSections.includes(section.title)}
-                        onOpenChange={() => toggleSection(section.title)}
-                      >
-                        <CollapsibleTrigger className="w-full">
-                          <div
-                            className={cn(
-                              "flex items-center justify-between p-4 rounded-xl transition-all duration-200",
-                              section.color === "primary" && "bg-primary/10 hover:bg-primary/15",
-                              section.color === "secondary" && "bg-secondary/10 hover:bg-secondary/15",
-                              section.color === "accent" && "bg-accent/20 hover:bg-accent/25"
-                            )}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={cn(
-                                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
-                                  section.color === "primary" && "bg-primary text-primary-foreground",
-                                  section.color === "secondary" && "bg-secondary text-secondary-foreground",
-                                  section.color === "accent" && "bg-accent text-accent-foreground"
-                                )}
-                              >
-                                {index + 1}
-                              </div>
-                              <span className="font-semibold text-foreground">{section.title}</span>
-                            </div>
-                            <ChevronDown
-                              className={cn(
-                                "h-5 w-5 text-muted-foreground transition-transform duration-200",
-                                openSections.includes(section.title) && "rotate-180"
-                              )}
+                      <h2 className="text-xl md:text-2xl font-bold text-foreground">
+                        {selectedOrganizer.title}
+                      </h2>
+                      <div className="flex items-center gap-3 mt-2">
+                        <div className="flex-1 max-w-[200px]">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                            <span>Progress</span>
+                            <span>{progress}%</span>
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary rounded-full transition-all duration-500"
+                              style={{ width: `${progress}%` }}
                             />
                           </div>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <div className="p-4 pt-2 ml-11 space-y-4">
-                            <div className="flex items-start justify-between gap-4">
-                              <p className="text-foreground whitespace-pre-wrap flex-1">{section.content}</p>
-                              {!section.reviewed && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleMarkSectionReviewed(index)}
-                                  disabled={reviewingSection === index}
-                                  className="flex-shrink-0"
-                                >
-                                  {reviewingSection === index ? (
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                  ) : (
-                                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                                  )}
-                                  Mark as Reviewed
-                                </Button>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Last updated {formatTimeAgo(selectedOrganizer.updated_at)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleEditOrganizer(selectedOrganizer)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDeleteOrganizer(selectedOrganizer.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                      <Button variant="outline" size="icon" onClick={() => handleDownload(selectedOrganizer)}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Sections */}
+                  {sections.length > 0 ? (
+                    <div className="space-y-4">
+                      {sections.map((section: KnowledgeSection, index: number) => (
+                        <Collapsible
+                          key={section.title}
+                          open={openSections.includes(section.title)}
+                          onOpenChange={() => toggleSection(section.title)}
+                        >
+                          <CollapsibleTrigger className="w-full">
+                            <div
+                              className={cn(
+                                "flex items-center justify-between p-4 rounded-xl transition-all duration-200",
+                                section.color === "primary" && "bg-primary/10 hover:bg-primary/15",
+                                section.color === "secondary" && "bg-secondary/10 hover:bg-secondary/15",
+                                section.color === "accent" && "bg-accent/20 hover:bg-accent/25"
                               )}
-                              {section.reviewed && (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0">
-                                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                                  <span>Reviewed</span>
-                                  {section.lastReviewedAt && (
-                                    <span className="text-xs">
-                                      {formatTimeAgo(section.lastReviewedAt)}
-                                    </span>
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={cn(
+                                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
+                                    section.color === "primary" && "bg-primary text-primary-foreground",
+                                    section.color === "secondary" && "bg-secondary text-secondary-foreground",
+                                    section.color === "accent" && "bg-accent text-accent-foreground"
                                   )}
+                                >
+                                  {index + 1}
+                                </div>
+                                <span className="font-semibold text-foreground">{section.title}</span>
+                              </div>
+                              <ChevronDown
+                                className={cn(
+                                  "h-5 w-5 text-muted-foreground transition-transform duration-200",
+                                  openSections.includes(section.title) && "rotate-180"
+                                )}
+                              />
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="p-4 pt-2 ml-11 space-y-4">
+                              <div className="flex items-start justify-between gap-4">
+                                <p className="text-foreground whitespace-pre-wrap flex-1">{section.content}</p>
+                                {!section.reviewed && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleMarkSectionReviewed(index)}
+                                    disabled={reviewingSection === index}
+                                    className="flex-shrink-0"
+                                  >
+                                    {reviewingSection === index ? (
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                                    )}
+                                    Mark as Reviewed
+                                  </Button>
+                                )}
+                                {section.reviewed && (
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground flex-shrink-0">
+                                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                                    <span>Reviewed</span>
+                                    {section.lastReviewedAt && (
+                                      <span className="text-xs">
+                                        {formatTimeAgo(section.lastReviewedAt)}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              {section.keyPoints && section.keyPoints.length > 0 && (
+                                <div
+                                  className={cn(
+                                    "p-4 rounded-lg",
+                                    section.color === "primary" && "bg-primary/5 border border-primary/20",
+                                    section.color === "secondary" && "bg-secondary/5 border border-secondary/20",
+                                    section.color === "accent" && "bg-accent/10 border border-accent/20"
+                                  )}
+                                >
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <Lightbulb
+                                      className={cn(
+                                        "h-4 w-4",
+                                        section.color === "primary" && "text-primary",
+                                        section.color === "secondary" && "text-secondary",
+                                        section.color === "accent" && "text-accent-foreground"
+                                      )}
+                                    />
+                                    <span className="text-sm font-semibold text-foreground">Key Points</span>
+                                  </div>
+                                  <ul className="space-y-2">
+                                    {section.keyPoints.map((point: any, i: number) => {
+                                      const pointText = typeof point === "string" ? point : point.text;
+                                      const isMastered = typeof point === "object" ? point.mastered : false;
+                                      return (
+                                        <li key={i} className="flex items-start gap-2 text-sm text-foreground group">
+                                          <button
+                                            onClick={() => handleToggleKeyPointMastery(index, i)}
+                                            className={cn(
+                                              "h-4 w-4 mt-0.5 flex-shrink-0 transition-colors cursor-pointer",
+                                              isMastered
+                                                ? (section.color === "primary" && "text-primary") ||
+                                                (section.color === "secondary" && "text-secondary") ||
+                                                (section.color === "accent" && "text-accent-foreground") ||
+                                                "text-primary"
+                                                : "text-muted-foreground hover:text-foreground"
+                                            )}
+                                            title={isMastered ? "Mark as not mastered" : "Mark as mastered"}
+                                          >
+                                            {isMastered ? (
+                                              <CheckCircle2 className="h-4 w-4" />
+                                            ) : (
+                                              <CheckCircle className="h-4 w-4" />
+                                            )}
+                                          </button>
+                                          <span className={cn("flex-1", isMastered && "line-through opacity-60")}>
+                                            {pointText}
+                                          </span>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
                                 </div>
                               )}
                             </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>No sections yet. Edit this organizer to add sections.</p>
+                    </div>
+                  )}
 
-                            {section.keyPoints && section.keyPoints.length > 0 && (
-                              <div
-                                className={cn(
-                                  "p-4 rounded-lg",
-                                  section.color === "primary" && "bg-primary/5 border border-primary/20",
-                                  section.color === "secondary" && "bg-secondary/5 border border-secondary/20",
-                                  section.color === "accent" && "bg-accent/10 border border-accent/20"
-                                )}
-                              >
-                                <div className="flex items-center gap-2 mb-3">
-                                  <Lightbulb
-                                    className={cn(
-                                      "h-4 w-4",
-                                      section.color === "primary" && "text-primary",
-                                      section.color === "secondary" && "text-secondary",
-                                      section.color === "accent" && "text-accent-foreground"
-                                    )}
-                                  />
-                                  <span className="text-sm font-semibold text-foreground">Key Points</span>
-                                </div>
-                                <ul className="space-y-2">
-                                  {section.keyPoints.map((point: any, i: number) => {
-                                    const pointText = typeof point === "string" ? point : point.text;
-                                    const isMastered = typeof point === "object" ? point.mastered : false;
-                                    return (
-                                      <li key={i} className="flex items-start gap-2 text-sm text-foreground group">
-                                        <button
-                                          onClick={() => handleToggleKeyPointMastery(index, i)}
-                                          className={cn(
-                                            "h-4 w-4 mt-0.5 flex-shrink-0 transition-colors cursor-pointer",
-                                            isMastered
-                                              ? (section.color === "primary" && "text-primary") ||
-                                              (section.color === "secondary" && "text-secondary") ||
-                                              (section.color === "accent" && "text-accent-foreground") ||
-                                              "text-primary"
-                                              : "text-muted-foreground hover:text-foreground"
-                                          )}
-                                          title={isMastered ? "Mark as not mastered" : "Mark as mastered"}
-                                        >
-                                          {isMastered ? (
-                                            <CheckCircle2 className="h-4 w-4" />
-                                          ) : (
-                                            <CheckCircle className="h-4 w-4" />
-                                          )}
-                                        </button>
-                                        <span className={cn("flex-1", isMastered && "line-through opacity-60")}>
-                                          {pointText}
-                                        </span>
-                                      </li>
-                                    );
-                                  })}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    ))}
+                  {/* Action Buttons */}
+                  <div className="flex flex-col md:flex-row gap-3 mt-6 pt-6 border-t border-border">
+                    <Button className="w-full md:flex-1" onClick={handleTestKnowledge}>
+                      <Target className="h-4 w-4 mr-2" />
+                      Test Your Knowledge
+                    </Button>
+                    <Button variant="outline" className="w-full md:flex-1" onClick={handleCreateFlashcards}>
+                      <Layers className="h-4 w-4 mr-2" />
+                      Create Flashcards
+                    </Button>
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No sections yet. Edit this organizer to add sections.</p>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex flex-col md:flex-row gap-3 mt-6 pt-6 border-t border-border">
-                  <Button className="w-full md:flex-1" onClick={handleTestKnowledge}>
-                    <Target className="h-4 w-4 mr-2" />
-                    Test Your Knowledge
-                  </Button>
-                  <Button variant="outline" className="w-full md:flex-1" onClick={handleCreateFlashcards}>
-                    <Layers className="h-4 w-4 mr-2" />
-                    Create Flashcards
-                  </Button>
                 </div>
-              </div>
-            ) : (
-              <div className="glass-card p-12 text-center">
-                <Brain className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">Select an organizer</h3>
-                <p className="text-muted-foreground">
-                  Choose a knowledge organizer to view its contents
-                </p>
-              </div>
-            )}
+              ) : (
+                <div className="glass-card p-12 text-center">
+                  <Brain className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Select an organizer</h3>
+                  <p className="text-muted-foreground">
+                    Choose a knowledge organizer to view its contents
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

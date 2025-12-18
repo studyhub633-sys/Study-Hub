@@ -59,20 +59,19 @@ export function ModuleCard({
           "hover:shadow-lg"
         )}
       >
-        {isPremium && (
-          <div className="absolute top-3 right-3">
-            <span className="premium-badge">PRO</span>
-          </div>
-        )}
-
         <div className="flex items-start gap-4">
           <div className={cn("p-3 rounded-xl transition-transform duration-300 group-hover:scale-110", styles.iconBg)}>
             <Icon className={cn("h-6 w-6", styles.iconColor)} />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
-              {title}
-            </h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                {title}
+              </h3>
+              {isPremium && (
+                <span className="premium-badge shrink-0">PRO</span>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
           </div>
         </div>

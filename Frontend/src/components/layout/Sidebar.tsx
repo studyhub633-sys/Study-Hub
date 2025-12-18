@@ -14,6 +14,7 @@ import {
   FileText,
   Layers,
   LayoutDashboard,
+  Library,
   LogOut,
   Moon,
   Settings,
@@ -28,6 +29,7 @@ const navItems = [
   { icon: Layers, label: "Flashcards", path: "/flashcards" },
   { icon: FileText, label: "Past Papers", path: "/past-papers" },
   { icon: Brain, label: "Knowledge Organizers", path: "/knowledge" },
+  { icon: Library, label: "Global Library", path: "/library" },
   { icon: Award, label: "Extracurriculars", path: "/extracurricular" },
 ];
 

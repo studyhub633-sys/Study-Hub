@@ -1,0 +1,1062 @@
+-- ============================================
+-- 1. Create Global Knowledge Organizers Table
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.global_knowledge_organizers (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title TEXT NOT NULL,
+  subject TEXT,
+  topic TEXT,
+  content JSONB NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+ALTER TABLE public.global_knowledge_organizers ENABLE ROW LEVEL SECURITY;
+
+-- Drop policy if it exists to avoid errors on re-run
+DROP POLICY IF EXISTS "Public read access for global organizers" ON public.global_knowledge_organizers;
+
+CREATE POLICY "Public read access for global organizers"
+  ON public.global_knowledge_organizers FOR SELECT
+  USING (true);
+
+-- ============================================
+-- 2. Update User Seeding Function
+-- ============================================
+-- This version handles both Past Papers and Knowledge Organizers
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Create profile
+  INSERT INTO public.profiles (id, email, full_name)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1))
+  );
+
+  -- Seed Past Papers
+  INSERT INTO public.past_papers (user_id, title, subject, year, exam_board, file_url, file_type)
+  SELECT 
+    NEW.id, 
+    title, 
+    subject, 
+    year, 
+    exam_board, 
+    file_url, 
+    file_type
+  FROM public.global_past_papers;
+
+  -- Seed Knowledge Organizers
+  INSERT INTO public.knowledge_organizers (user_id, title, subject, topic, content)
+  SELECT 
+    NEW.id, 
+    title, 
+    subject, 
+    topic, 
+    content
+  FROM public.global_knowledge_organizers;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================
+-- 3. Essential Knowledge Starter Pack
+-- ============================================
+TRUNCATE TABLE public.global_knowledge_organizers;
+
+-- BIOLOGY: Cell Biology
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Cell Biology & Organelles',
+  'Biology',
+  'Cell Biology',
+  '{
+    "sections": [
+      {
+        "title": "Cell Structure",
+        "content": "All living things are made of cells. Eukaryotic cells (animal and plant) have a nucleus and membrane-bound organelles. Prokaryotic cells (bacteria) are smaller and have no nucleus.",
+        "keyPoints": [
+          "Nucleus: Contains genetic material",
+          "Mitochondria: Site of aerobic respiration",
+          "Ribosomes: Site of protein synthesis",
+          "Cell Membrane: Controls what enters/leaves"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Plant vs Animal Cells",
+        "content": "Plant cells have three extra features that animal cells lack: a vacuole, a cell wall, and chloroplasts.",
+        "keyPoints": [
+          "Chloroplasts: Site of photosynthesis",
+          "Cell Wall: Made of cellulose for support",
+          "Vacuole: Contains cell sap"
+        ],
+        "color": "secondary"
+      },
+      {
+        "title": "Microscopy",
+        "content": "Magnification is how many times bigger an image is than the real object. Resolution is the ability to distinguish between two points.",
+        "keyPoints": [
+          "Magnification = Image Size / Real Size",
+          "Electron microscopes have higher resolution than light microscopes"
+        ],
+        "color": "accent"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- CHEMISTRY: Atomic Structure
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Atomic Structure & Periodic Table',
+  'Chemistry',
+  'Atomic Structure',
+  '{
+    "sections": [
+      {
+        "title": "The Atom",
+        "content": "Atoms consist of a central nucleus (protons and neutrons) surrounded by electrons in shells.",
+        "keyPoints": [
+          "Proton: Mass 1, Charge +1",
+          "Neutron: Mass 1, Charge 0",
+          "Electron: Mass 0 (negligible), Charge -1",
+          "Atomic Number = Number of Protons",
+          "Mass Number = Protons + Neutrons"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Electronic Structure",
+        "content": "Electrons occupy energy levels (shells). The first shell holds 2, subsequent shells hold up to 8.",
+        "keyPoints": [
+          "Group number = Electrons in outer shell",
+          "Period number = Number of shells",
+          "Noble gases (Group 0) have full outer shells"
+        ],
+        "color": "secondary"
+      },
+      {
+        "title": "Isotopes",
+        "content": "Isotopes are atoms of the same element with the same number of protons but different numbers of neutrons.",
+        "keyPoints": [
+          "Same atomic number, different mass number",
+          "Chemically identical because they have the same electron configuration"
+        ],
+        "color": "accent"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- PHYSICS: Energy
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Energy Stores & Transfers',
+  'Physics',
+  'Energy',
+  '{
+    "sections": [
+      {
+        "title": "Energy Stores",
+        "content": "Energy is never created or destroyed, only transferred between stores.",
+        "keyPoints": [
+          "Kinetic: Moving objects",
+          "Thermal: Hot objects",
+          "Chemical: Food, fuel, batteries",
+          "Gravitational Potential: Objects at height",
+          "Elastic Potential: Stretched objects"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Power & Efficiency",
+        "content": "Power is the rate of energy transfer. Efficiency is the proportion of useful energy output.",
+        "keyPoints": [
+          "Power (W) = Energy (J) / Time (s)",
+          "Efficiency = Useful Output / Total Input",
+          "Energy is wasted as heat to surroundings"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- MATHS: Geometry basics
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Trigonometry & Pythagoras',
+  'Mathematics',
+  'Geometry',
+  '{
+    "sections": [
+      {
+        "title": "Pythagoras Theorem",
+        "content": "In a right-angled triangle, the square of the hypotenuse is equal to the sum of the squares of the other two sides.",
+        "keyPoints": [
+          "a² + b² = c²",
+          "c is always the longest side (hypotenuse)"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "SOH CAH TOA",
+        "content": "Trigonometric ratios relate the angles and sides of a right-angled triangle.",
+        "keyPoints": [
+          "Sin(θ) = Opposite / Hypotenuse",
+          "Cos(θ) = Adjacent / Hypotenuse",
+          "Tan(θ) = Opposite / Adjacent"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "OCR"
+  }'::jsonb
+);
+
+-- ENGLISH: Literary Devices
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'GCSE Literary & Rhetorical Devices',
+  'English Language',
+  'Techniques',
+  '{
+    "sections": [
+      {
+        "title": "Imagery & Comparison",
+        "content": "Authors use comparisons to create vivid pictures in the reader''s mind.",
+        "keyPoints": [
+          "Simile: Comparison using like or as",
+          "Metaphor: Saying something IS something else",
+          "Personification: Giving human traits to objects",
+          "Onomatopoeia: Words that sound like their meaning"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Structure & Effect",
+        "content": "How a text is organized influences the reader''s perception.",
+        "keyPoints": [
+          "Juxtaposition: Placing two opposites together for contrast",
+          "Anaphora: Repetition of a word at the start of sentences",
+          "Hyperbole: Deliberate exaggeration for effect"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Eduqas/WJEC"
+  }'::jsonb
+);
+
+-- ============================================
+-- 4. HISTORY: MEDICINE & MODERN TIMES
+-- ============================================
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Medicine Through Time: Progress & Change',
+  'History',
+  'Health and the People',
+  '{
+    "sections": [
+      {
+        "title": "Medieval Medicine",
+        "content": "Dominated by the Theory of the Four Humours (blood, phlegm, yellow/black bile) and religious explanations. Treatments often involved bloodletting or prayer.",
+        "keyPoints": [
+          "Theory of the Four Humours: Galen and Hippocrates",
+          "Church influence protected ancient theories",
+          "Black Death (1348): Plague spread by fleas on rats"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Medical Revolution",
+        "content": "19th-century progress driven by individuals and technology. Pasteur discovered Germ Theory in 1861.",
+        "keyPoints": [
+          "Louis Pasteur: Germ Theory (microbes cause disease)",
+          "Robert Koch: Identified specific bacteria",
+          "Alexander Fleming: Discovered Penicillin (1928)",
+          "Edward Jenner: Developed Smallpox vaccine"
+        ],
+        "color": "secondary"
+      },
+      {
+        "title": "Modern Medicine",
+        "content": "The 20th century saw the creation of the NHS and advanced technology like X-rays and MRI scans.",
+        "keyPoints": [
+          "1948: Launch of the NHS (Aneurin Bevan)",
+          "Crick and Watson: Mapped DNA structure (1953)",
+          "Advancements in surgery: Transplants and keyhole"
+        ],
+        "color": "accent"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Weimar and Nazi Germany (1918-1939)',
+  'History',
+  'Germany',
+  '{
+    "sections": [
+      {
+        "title": "The Weimar Republic",
+        "content": "Established after WWI, the republic faced immense economic and political pressure from the start.",
+        "keyPoints": [
+          "Treaty of Versailles: Article 231 (War Guilt Clause)",
+          "1923 Crisis: Hyperinflation and Munich Putsch",
+          "Golden Age (1924-29): Stresemann''s recovery"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Rise of the Nazis",
+        "content": "The Great Depression (1929) allowed Hitler to gain mass support through propaganda and promises.",
+        "keyPoints": [
+          "Propaganda: Joseph Goebbels masterminded image",
+          "Jan 1933: Hitler appointed Chancellor",
+          "Reichstag Fire: Led to the Enabling Act"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- ============================================
+-- 5. GEOGRAPHY: HAZARDS & ENVIRONMENT
+-- ============================================
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Tectonic Hazards: Causes & Effects',
+  'Geography',
+  'Tectonic Hazards',
+  '{
+    "sections": [
+      {
+        "title": "Plate Margins",
+        "content": "Hazards occur at different margins due to the movement of tectonic plates.",
+        "keyPoints": [
+          "Destructive: Plates move towards each other (subduction)",
+          "Constructive: Plates move apart (new crust)",
+          "Conservative: Plates slide past (powerful earthquakes)"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Case Study Comparison",
+        "content": "Comparing HIC vs LIC responses to earthquakes.",
+        "keyPoints": [
+          "HIC (Chile 2010): High building codes, fast recovery",
+          "LIC (Nepal 2015): High death toll, slow international aid",
+          "Monitoring vs Protection: MPPP strategies"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Ecosystems: Rainforests & Deserts',
+  'Geography',
+  'The Living World',
+  '{
+    "sections": [
+      {
+        "title": "Tropical Rainforests",
+        "content": "Characterized by high biodiversity and a rapid nutrient cycle. Threats include logging and ranching.",
+        "keyPoints": [
+          "Biodiversity: Home to 50% of global species",
+          "Nutrient Cycle: Fast decay due to heat/moisture",
+          "Deforestation: Amazon logging and palm oil"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Sustainable Management",
+        "content": "Reducing damage through selective logging, ecotourism, and international debt reduction.",
+        "keyPoints": [
+          "Debt-for-Nature Swaps: Saving land for debt relief",
+          "Selective Logging: Removing only aged trees"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- ============================================
+-- 6. COMPUTER SCIENCE
+-- ============================================
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'CPU Architecture & Von Neumann',
+  'Computer Science',
+  'System Architecture',
+  '{
+    "sections": [
+      {
+        "title": "The CPU",
+        "content": "The brain of the computer that performs the Fetch-Decode-Execute cycle.",
+        "keyPoints": [
+          "ALU: Performs logical and arithmetic operations",
+          "CU: Controls the flow of data",
+          "Registers: PC, MAR, MDR, and Accumulator",
+          "Clock Speed: Measured in Gigahertz (GHz)"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Von Neumann Model",
+        "content": "Architecture where both program instructions and data are stored in the same memory.",
+        "keyPoints": [
+          "Shared Memory: Fetch instructions via data bus",
+          "Execution: Results stored in Accumulator"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "OCR"
+  }'::jsonb
+);
+
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Network Threats & Defense',
+  'Computer Science',
+  'Network Security',
+  '{
+    "sections": [
+      {
+        "title": "Threats",
+        "content": "Malicious attacks designed to access or destroy data.",
+        "keyPoints": [
+          "Phishing: Deceptive emails to steal info",
+          "Brute Force: Trial and error passwords",
+          "SQL Injection: Malicious code into web forms",
+          "Social Engineering: Manipulating human error"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Prevention",
+        "content": "Strategies to protect systems from intrusion.",
+        "keyPoints": [
+          "Firewalls: Control incoming/outgoing traffic",
+          "Encryption: Scrambling data for privacy",
+          "Penetration Testing: Simulating an attack"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- ============================================
+-- 7. ENGLISH LITERATURE
+-- ============================================
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'An Inspector Calls: Themes & Characters',
+  'English Literature',
+  'Modern Drama',
+  '{
+    "sections": [
+      {
+        "title": "Social Responsibility",
+        "content": "Priestley uses the Birlings to champion collective responsibility over capitalist self-interest.",
+        "keyPoints": [
+          "Inspector Goole: A moral catalyst/socialist voice",
+          "Theme: We are members of one body",
+          "Arthur Birling: Represents unrepentant capitalism"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Class & Gender",
+        "content": "Explores how elite status allows exploitation of the vulnerable, like Eva Smith.",
+        "keyPoints": [
+          "Sheila Birling: The character who changes most",
+          "Gerald Croft: Represents the upper-class double standard"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Macbeth: Ambition & Fate',
+  'English Literature',
+  'Shakespeare',
+  '{
+    "sections": [
+      {
+        "title": "The Tragic Hero",
+        "content": "Macbeth''s vaulting ambition leads him to moral decay and inevitable downfall.",
+        "keyPoints": [
+          "Hamartia: Ambition is his fatal flaw",
+          "Divine Right of Kings: Regicide is a sin against nature",
+          "Lady Macbeth: The catalyst for Duncan''s murder"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Supernatural & Appearance",
+        "content": "The Three Witches and the hallucinations reflect internal psychological guilt.",
+        "keyPoints": [
+          "Fair is foul and foul is fair: Moral ambiguity",
+          "Banquo''s Ghost: Symbol of Macbeth''s paranoia"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- ============================================
+-- 8. BUSINESS
+-- ============================================
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Business Activity & Marketing Basics',
+  'Business',
+  'Business Activity',
+  '{
+    "sections": [
+      {
+        "title": "Ownership & Risk",
+        "content": "Choosing the right legal structure affects liability and growth.",
+        "keyPoints": [
+          "Sole Trader: Unlimited liability, total control",
+          "Ltd: Limited liability, private shares",
+          "Stakeholders: Employees, owners, customers"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Marketing Mix (4Ps)",
+        "content": "Strategy involves balancing Product, Price, Place, and Promotion.",
+        "keyPoints": [
+          "Price: Skimming vs Penetration pricing",
+          "Product: Lifecycle (Introduction to Decline)",
+          "Promotion: Building brand awareness"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- ============================================
+-- 9. ADVANCED SCIENCE (CORE TOPICS)
+-- ============================================
+
+-- BIOLOGY: Infection & Response
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Infection, Response & Immunity',
+  'Biology',
+  'Infection',
+  '{
+    "sections": [
+      {
+        "title": "Pathogens",
+        "content": "Diseases are spread by viruses, bacteria, fungi, and protists.",
+        "keyPoints": [
+          "Viruses: Live inside cells (HIV, TMV)",
+          "Bacteria: Produce toxins (Salmonella, Gonorrhoea)",
+          "Malaria: Protist spread by mosquitoes"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Human Defense",
+        "content": "The immune system uses white blood cells to destroy pathogens.",
+        "keyPoints": [
+          "Phagocytosis: Cells engulfing pathogens",
+          "Antibodies: Target specific proteins",
+          "Vaccinations: Weakened pathogens for immunity"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- CHEMISTRY: Chemical Bonding
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Bonding & Properties of Matter',
+  'Chemistry',
+  'Chemical Bonding',
+  '{
+    "sections": [
+      {
+        "title": "Ionic Bonding",
+        "content": "Metal and non-metal atoms transfer electrons to form ions.",
+        "keyPoints": [
+          "Lattice Structure: Giant ionic lattice",
+          "High Melting Point: Strong electrostatic forces",
+          "Conductivity: Only when molten or dissolved"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Covalent & Metallic",
+        "content": "Non-metals share electrons; metals have a sea of delocalised electrons.",
+        "keyPoints": [
+          "Covalent: Molecules (H2O) or Giant (Diamond)",
+          "Metallic: Malleable and conduct electricity"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- PHYSICS: Electricity
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Electricity: Circuits & Components',
+  'Physics',
+  'Electricity',
+  '{
+    "sections": [
+      {
+        "title": "Circuit Basics",
+        "content": "Current is the flow of charge; Potential Difference drives the flow.",
+        "keyPoints": [
+          "V = I x R (Ohm''s Law)",
+          "Series: Current is the same everywhere",
+          "Parallel: Voltage is the same in all branches"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Mains Electricity",
+        "content": "AC vs DC and the components of a 3-pin plug.",
+        "keyPoints": [
+          "Live Wire (Brown): Carries 230V",
+          "Neutral (Blue): Completes the circuit",
+          "Earth (Green/Yellow): Safety wire"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "OCR"
+  }'::jsonb
+);
+
+-- ============================================
+-- 10. ADVANCED MATHS (ALGEBRA)
+-- ============================================
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Algebra: Equations & Graphs',
+  'Mathematics',
+  'Algebra',
+  '{
+    "sections": [
+      {
+        "title": "Solving Equations",
+        "content": "Balanced operations to find the value of x.",
+        "keyPoints": [
+          "Linear: x + 5 = 10",
+          "Quadratic: ax² + bx + c = 0",
+          "Simultaneous: Solving for two variables"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Sequences & Graphs",
+        "content": "Identifying patterns and linear relationships.",
+        "keyPoints": [
+          "y = mx + c: Gradient and Intercept",
+          "nth Term: Finding the rule for a sequence"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- ============================================
+-- 11. HISTORY: ASIA & COLD WAR
+-- ============================================
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Conflict and Tension in Asia (1950-1975)',
+  'History',
+  'Conflict in Asia',
+  '{
+    "sections": [
+      {
+        "title": "The Vietnam War",
+        "content": "A proxy war where the US attempted to contain communism in South East Asia.",
+        "keyPoints": [
+          "Guerrilla Warfare: Vietcong used tunnels and traps",
+          "US Tactics: Operation Rolling Thunder and Agent Orange",
+          "Public Support: The war lost support due to media coverage",
+          "Tet Offensive (1968): Turning point in public perception"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Korean War",
+        "content": "The first major conflict of the Cold War where the UN intervened to protect South Korea.",
+        "keyPoints": [
+          "38th Parallel: The dividing line between North and South",
+          "Inchon Landings: MacArthur''s strategic success",
+          "End Result: Re-established the border at the 38th Parallel"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- HISTORY: COLD WAR
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'The Cold War: Origins & Crises',
+  'History',
+  'Cold War',
+  '{
+    "sections": [
+      {
+        "title": "Origins of Tensions",
+        "content": "Ideological rift between Capitalism (USA) and Communism (USSR).",
+        "keyPoints": [
+          "Yalta & Potsdam: Disagreements over Poland and Germany",
+          "Iron Curtain: Churchill''s speech in 1946",
+          "Truman Doctrine: Containment of communism"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Key Crises",
+        "content": "Moments where the world came close to nuclear war.",
+        "keyPoints": [
+          "Berlin Blockade (1948): LED to the Berlin Airlift",
+          "Cuban Missile Crisis (1962): Closest the world came to war",
+          "Berlin Wall (1961): Symbol of the Cold War division"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- ============================================
+-- 12. GEOGRAPHY: RESOURCES & URBAN ISSUES
+-- ============================================
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Resource Management: Food, Water, Energy',
+  'Geography',
+  'Resource Management',
+  '{
+    "sections": [
+      {
+        "title": "Resource Inequality",
+        "content": "Global distribution of resources is uneven, leading to nutritional and energy insecurity.",
+        "keyPoints": [
+          "Food Insecurity: LICs struggle with malnutrition",
+          "Water Stress: Physical vs Economic scarcity",
+          "Energy Mix: Fossil fuels vs Renewable transition"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Sustainable Solutions",
+        "content": "Methods to ensure resources are available for future generations.",
+        "keyPoints": [
+          "Hydroponics: Growing crops without soil",
+          "Appropriate Technology: Low-cost tools for LICs"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- ============================================
+-- 13. COMPUTER SCIENCE: DATA & STORAGE
+-- ============================================
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Memory & Secondary Storage',
+  'Computer Science',
+  'System Architecture',
+  '{
+    "sections": [
+      {
+        "title": "Primary Memory",
+        "content": "Fast memory directly accessible by the CPU.",
+        "keyPoints": [
+          "RAM: Volatile storage for data in use",
+          "ROM: Non-volatile storage for boot instructions",
+          "Virtual Memory: Use of secondary storage as RAM"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Secondary Storage",
+        "content": "Non-volatile storage for permanent files and software.",
+        "keyPoints": [
+          "Magnetic (HDD): High capacity, low cost",
+          "Solid State (SSD): Fast, durable, no moving parts",
+          "Optical (Blue-Ray): Portable and cheap"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "OCR"
+  }'::jsonb
+);
+
+-- ============================================
+-- 14. ENGLISH LITERATURE: CLASSICS
+-- ============================================
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'A Christmas Carol: Social Justice',
+  'English Literature',
+  '19th Century Prose',
+  '{
+    "sections": [
+      {
+        "title": "Scrooge''s Transformation",
+        "content": "Scrooge evolves from a miserly recluse to a generous benefactor.",
+        "keyPoints": [
+          "Marley''s Ghost: The chain of greed and regret",
+          "Ghost of Christmas Present: Shows the Cratchits",
+          "Ghost of Christmas Yet to Come: The fear of death"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Social Critique",
+        "content": "Dickens attacks the Victorian indifference towards the poor.",
+        "keyPoints": [
+          "Ignorance and Want: The personified children",
+          "Workhouse System: Are there no prisons?",
+          "Tiny Tim: Symbol of the innocent poor"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- ============================================
+-- 15. FURTHER SCIENCE
+-- ============================================
+
+-- BIOLOGY: Bioenergetics
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Bioenergetics: Photosynthesis & Respiration',
+  'Biology',
+  'Bioenergetics',
+  '{
+    "sections": [
+      {
+        "title": "Photosynthesis",
+        "content": "Process where plants convert light energy into chemical energy.",
+        "keyPoints": [
+          "Equation: 6CO2 + 6H2O -> C6H12O6 + 6O2",
+          "Limiting Factors: Light, CO2, and Temperature",
+          "Uses of Glucose: Storage (Starch) and Cellulose"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Cellular Respiration",
+        "content": "Releasing energy from glucose for movement and growth.",
+        "keyPoints": [
+          "Aerobic: With Oxygen (Mitochondria)",
+          "Anaerobic: Without Oxygen (Lactic Acid)",
+          "Fermentation: In yeast (Ethanol and CO2)"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- CHEMISTRY: Organic Chemistry
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Organic Chemistry: Hydrocarbons',
+  'Chemistry',
+  'Organic Chemistry',
+  '{
+    "sections": [
+      {
+        "title": "Alkanes & Alkenes",
+        "content": "Homologous series of hydrocarbons found in crude oil.",
+        "keyPoints": [
+          "Alkanes: Single bonds (Saturated)",
+          "Alkenes: Double bonds (Unsaturated)",
+          "Cracking: Breaking long chains into short ones"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Crude Oil",
+        "content": "Separated into useful fractions by fractional distillation.",
+        "keyPoints": [
+          "Boiling Point: Increases with chain length",
+          "Viscosity: Increases with chain length",
+          "Flammability: Decreases with chain length"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- PHYSICS: Waves
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Waves: Electromagnetic Spectrum',
+  'Physics',
+  'Waves',
+  '{
+    "sections": [
+      {
+        "title": "Wave Properties",
+        "content": "Waves transfer energy without transferring matter.",
+        "keyPoints": [
+          "Transverse: Oscillate at 90 degrees (Light)",
+          "Longitudinal: Oscillate parallel (Sound)",
+          "Velocity = Frequency x Wavelength"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "The EM Spectrum",
+        "content": "Range of light frequencies from Radio to Gamma.",
+        "keyPoints": [
+          "Radio: Communication",
+          "X-Ray: Medical imaging",
+          "Gamma: Sterilization (Harmful/Ionising)"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- MATHS: Probability
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Probability & Combined Events',
+  'Mathematics',
+  'Probability',
+  '{
+    "sections": [
+      {
+        "title": "Basic Probability",
+        "content": "Probability is measured on a scale from 0 (impossible) to 1 (certain).",
+        "keyPoints": [
+          "P(Event) = Favourable Outcomes / Total Outcomes",
+          "Sum of probabilities of all outcomes is 1",
+          "Mutually Exclusive: Events that cannot happen at the same time"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Combined Events",
+        "content": "Using tree diagrams and Venn diagrams to calculate probabilities.",
+        "keyPoints": [
+          "AND Rule: Multiply probabilities (P(A and B) = P(A) x P(B))",
+          "OR Rule: Add probabilities (P(A or B) = P(A) + P(B))"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- MATHS: Statistics
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Statistics: Averages & Data Analysis',
+  'Mathematics',
+  'Statistics',
+  '{
+    "sections": [
+      {
+        "title": "Averages & Range",
+        "content": "Measures of central tendency and spread.",
+        "keyPoints": [
+          "Mean: Sum of values / Number of values",
+          "Median: Middle value when ordered",
+          "Mode: Most frequent value",
+          "Range: Difference between highest and lowest"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Data Representation",
+        "content": "Ways to visualize data for easier analysis.",
+        "keyPoints": [
+          "Histograms: Frequency density",
+          "Box Plots: Showing quartiles and outliers",
+          "Scatter Graphs: Identifying correlation"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "OCR"
+  }'::jsonb
+);
+
+-- ============================================
+-- 16. FINAL BACKFILL FOR EXISTING USERS
+-- ============================================
+INSERT INTO public.knowledge_organizers (user_id, title, subject, topic, content)
+SELECT 
+  p.id AS user_id,
+  g.title,
+  g.subject,
+  g.topic,
+  g.content
+FROM public.profiles p
+CROSS JOIN public.global_knowledge_organizers g
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.knowledge_organizers ko
+  WHERE ko.user_id = p.id 
+  AND ko.title = g.title
+);

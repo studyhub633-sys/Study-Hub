@@ -216,9 +216,9 @@ VALUES
 -- 2019 PAPERS
 -- =====================
 -- Maths 2019
-('Maths Paper 1H - June 2019', 'Mathematics', 2019, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-1H/QP/June%202019%20QP.pdf', 'link'),
-('Maths Paper 2H - June 2019', 'Mathematics', 2019, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-2H/QP/June%202019%20QP.pdf', 'link'),
-('Maths Paper 3H - June 2019', 'Mathematics', 2019, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-3H/QP/June%202019%20QP.pdf', 'link'),
+('Maths Paper 1H - June 2019', 'Mathematics', 2019, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-1H/QP/June%2019%20QP.pdf', 'link'),
+('Maths Paper 2H - June 2019', 'Mathematics', 2019, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-2H/QP/June%2019%20QP.pdf', 'link'),
+('Maths Paper 3H - June 2019', 'Mathematics', 2019, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-3H/QP/June%2019%20QP.pdf', 'link'),
 -- English 2019
 ('English Language Paper 1 - June 2019', 'English Language', 2019, 'AQA', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/AQA/Paper-1/QP/June%202019%20QP.pdf', 'link'),
 ('English Language Paper 2 - June 2019', 'English Language', 2019, 'AQA', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/AQA/Paper-2/QP/June%202019%20QP.pdf', 'link'),
@@ -290,114 +290,56 @@ VALUES
 ('History Paper 1 - June 2017', 'History', 2017, 'AQA', 'https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/AQA/Paper-1/Section-A/Option-A/QP/June%202017%20QP.pdf', 'link'),
 ('History Paper 2 - June 2017', 'History', 2017, 'AQA', 'https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/AQA/Paper-2/Section-A/Option-A/QP/June%202017%20QP.pdf', 'link'),
 
--- ============================================
--- EDUQAS (WJEC England) PAPERS 2017-2024
--- ============================================
+-- =====================
+-- EDEXCEL
+-- =====================
+('Maths Paper 1H - June 2023', 'Mathematics', 2023, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 2H - June 2023', 'Mathematics', 2023, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-2H/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 3H - June 2023', 'Mathematics', 2023, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-3H/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 1H - June 2024', 'Mathematics', 2024, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202024%20QP.pdf', 'link'),
+('Maths Paper 2H - June 2024', 'Mathematics', 2024, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-2H/QP/June%202024%20QP.pdf', 'link'),
+('Maths Paper 3H - June 2024', 'Mathematics', 2024, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-3H/QP/June%202024%20QP.pdf', 'link'),
+('Maths Paper 1H - June 2022', 'Mathematics', 2022, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202022%20QP.pdf', 'link'),
+('Maths Paper 1H - Nov 2021', 'Mathematics', 2021, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-1H/QP/Nov%202021%20QP.pdf', 'link'),
+('Maths Paper 1H - Nov 2020', 'Mathematics', 2020, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-1H/QP/Nov%202020%20QP.pdf', 'link'),
+('Maths Paper 1H - June 2019', 'Mathematics', 2019, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202019%20QP.pdf', 'link'),
+('Maths Paper 1H - June 2018', 'Mathematics', 2018, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202018%20QP.pdf', 'link'),
+('Maths Paper 1H - June 2017', 'Mathematics', 2017, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202017%20QP.pdf', 'link'),
+('Biology Paper 1H - June 2023', 'Biology', 2023, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/Edexcel/Paper-1H/June%202023%20QP%20-%20Paper%201%20(H)%20Edexcel%20Biology%20GCSE.pdf', 'link'),
+('Biology Paper 2H - June 2023', 'Biology', 2023, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/Edexcel/Paper-2H/June%202023%20QP%20-%20Paper%202%20(H)%20Edexcel%20Biology%20GCSE.pdf', 'link'),
+('Chemistry Paper 1H - June 2023', 'Chemistry', 2023, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/Edexcel/Paper-1H/June%202023%20QP%20-%20Paper%201%20(H)%20Edexcel%20Chemistry%20GCSE.pdf', 'link'),
+('Physics Paper 1H - June 2023', 'Physics', 2023, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/Edexcel/Paper-1H/June%202023%20QP%20-%20Paper%201%20(H)%20Edexcel%20Physics%20GCSE.pdf', 'link'),
 
--- EDUQAS ENGLISH LANGUAGE
-('English Language Component 1 - June 2024', 'English Language', 2024, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-1/June%202024%20QP.pdf', 'link'),
-('English Language Component 2 - June 2024', 'English Language', 2024, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-2/June%202024%20QP.pdf', 'link'),
-('English Language Component 1 - June 2023', 'English Language', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-1/June%202023%20QP.pdf', 'link'),
-('English Language Component 2 - June 2023', 'English Language', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-2/June%202023%20QP.pdf', 'link'),
-('English Language Component 1 - June 2022', 'English Language', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-1/June%202022%20QP.pdf', 'link'),
-('English Language Component 2 - June 2022', 'English Language', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-2/June%202022%20QP.pdf', 'link'),
-('English Language Component 1 - June 2021', 'English Language', 2021, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-1/June%202021%20QP.pdf', 'link'),
-('English Language Component 2 - June 2021', 'English Language', 2021, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-2/June%202021%20QP.pdf', 'link'),
-('English Language Component 1 - June 2020', 'English Language', 2020, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-1/June%202020%20QP.pdf', 'link'),
-('English Language Component 2 - June 2020', 'English Language', 2020, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-2/June%202020%20QP.pdf', 'link'),
-('English Language Component 1 - June 2019', 'English Language', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-1/June%202019%20QP.pdf', 'link'),
-('English Language Component 2 - June 2019', 'English Language', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-2/June%202019%20QP.pdf', 'link'),
-('English Language Component 1 - June 2018', 'English Language', 2018, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-1/June%202018%20QP.pdf', 'link'),
-('English Language Component 2 - June 2018', 'English Language', 2018, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-2/June%202018%20QP.pdf', 'link'),
-('English Language Component 1 - June 2017', 'English Language', 2017, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-1/June%202017%20QP.pdf', 'link'),
-('English Language Component 2 - June 2017', 'English Language', 2017, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-2/June%202017%20QP.pdf', 'link'),
+-- =====================
+-- OCR
+-- =====================
+('Maths Paper 1 - June 2023', 'Mathematics', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-1/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 2 - June 2023', 'Mathematics', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-2/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 3 - June 2023', 'Mathematics', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-3/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 1 - June 2024', 'Mathematics', 2024, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-1/QP/June%202024%20QP.pdf', 'link'),
+('Maths Paper 1 - June 2022', 'Mathematics', 2022, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-1/QP/June%202022%20QP.pdf', 'link'),
+('Maths Paper 1 - Nov 2021', 'Mathematics', 2021, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-1/QP/November%202021%20QP.pdf', 'link'),
+('Maths Paper 1 - Nov 2020', 'Mathematics', 2020, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-1/QP/November%202020%20QP.pdf', 'link'),
+('Maths Paper 1 - June 2019', 'Mathematics', 2019, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-1/QP/June%202019%20QP.pdf', 'link'),
+('Maths Paper 1 - June 2018', 'Mathematics', 2018, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-1/QP/June%202018%20QP.pdf', 'link'),
+('Maths Paper 1 - June 2017', 'Mathematics', 2017, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-1/QP/June%202017%20QP.pdf', 'link'),
+('Biology Paper 1 - June 2023', 'Biology', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/OCR-A/Paper-1/June%202023%20QP%20-%20Paper%201%20(H)%20OCR%20Biology%20A%20GCSE.pdf', 'link'),
+('Chemistry Paper 1 - June 2023', 'Chemistry', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/OCR-A/Paper-1/June%202023%20QP%20-%20Paper%201%20(H)%20OCR%20Chemistry%20A%20GCSE.pdf', 'link'),
 
--- EDUQAS MATHS (2023-2017)
-('Maths Component 1H - June 2024', 'Mathematics', 2024, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-1/Higher/June%202024%20QP.pdf', 'link'),
-('Maths Component 2H - June 2024', 'Mathematics', 2024, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-2/Higher/June%202024%20QP.pdf', 'link'),
-('Maths Component 3H - June 2024', 'Mathematics', 2024, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-3/Higher/June%202024%20QP.pdf', 'link'),
-('Maths Component 1H - June 2023', 'Mathematics', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-1/Higher/June%202023%20QP.pdf', 'link'),
-('Maths Component 2H - June 2023', 'Mathematics', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-2/Higher/June%202023%20QP.pdf', 'link'),
-('Maths Component 3H - June 2023', 'Mathematics', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-3/Higher/June%202023%20QP.pdf', 'link'),
-('Maths Component 1H - June 2022', 'Mathematics', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-1/Higher/June%202022%20QP.pdf', 'link'),
-('Maths Component 2H - June 2022', 'Mathematics', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-2/Higher/June%202022%20QP.pdf', 'link'),
-('Maths Component 3H - June 2022', 'Mathematics', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-3/Higher/June%202022%20QP.pdf', 'link'),
-('Maths Component 1H - June 2021', 'Mathematics', 2021, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-1/Higher/June%202021%20QP.pdf', 'link'),
-('Maths Component 2H - June 2021', 'Mathematics', 2021, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-2/Higher/June%202021%20QP.pdf', 'link'),
-('Maths Component 3H - June 2021', 'Mathematics', 2021, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-3/Higher/June%202021%20QP.pdf', 'link'),
-('Maths Component 1H - June 2020', 'Mathematics', 2020, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-1/Higher/June%202020%20QP.pdf', 'link'),
-('Maths Component 2H - June 2020', 'Mathematics', 2020, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-2/Higher/June%202020%20QP.pdf', 'link'),
-('Maths Component 3H - June 2020', 'Mathematics', 2020, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-3/Higher/June%202020%20QP.pdf', 'link'),
-('Maths Component 1H - June 2019', 'Mathematics', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-1/Higher/June%202019%20QP.pdf', 'link'),
-('Maths Component 2H - June 2019', 'Mathematics', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-2/Higher/June%202019%20QP.pdf', 'link'),
-('Maths Component 3H - June 2019', 'Mathematics', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-3/Higher/June%202019%20QP.pdf', 'link'),
-('Maths Component 1H - June 2018', 'Mathematics', 2018, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-1/Higher/June%202018%20QP.pdf', 'link'),
-('Maths Component 2H - June 2018', 'Mathematics', 2018, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-2/Higher/June%202018%20QP.pdf', 'link'),
-('Maths Component 3H - June 2018', 'Mathematics', 2018, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-3/Higher/June%202018%20QP.pdf', 'link'),
-('Maths Component 1H - June 2017', 'Mathematics', 2017, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-1/Higher/June%202017%20QP.pdf', 'link'),
-('Maths Component 2H - June 2017', 'Mathematics', 2017, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-2/Higher/June%202017%20QP.pdf', 'link'),
-('Maths Component 3H - June 2017', 'Mathematics', 2017, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Eduqas/Component-3/Higher/June%202017%20QP.pdf', 'link'),
-
--- EDUQAS SCIENCES (2023-2019)
-('Biology Component 1H - June 2023', 'Biology', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/WJEC-Eduqas/Component-1/Higher/June%202023%20QP.pdf', 'link'),
-('Biology Component 2H - June 2023', 'Biology', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/WJEC-Eduqas/Component-2/Higher/June%202023%20QP.pdf', 'link'),
-('Biology Component 1H - June 2022', 'Biology', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/WJEC-Eduqas/Component-1/Higher/June%202022%20QP.pdf', 'link'),
-('Biology Component 2H - June 2022', 'Biology', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/WJEC-Eduqas/Component-2/Higher/June%202022%20QP.pdf', 'link'),
-('Biology Component 1H - June 2019', 'Biology', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/WJEC-Eduqas/Component-1/Higher/June%202019%20QP.pdf', 'link'),
-('Biology Component 2H - June 2019', 'Biology', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/WJEC-Eduqas/Component-2/Higher/June%202019%20QP.pdf', 'link'),
-('Chemistry Component 1H - June 2023', 'Chemistry', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/WJEC-Eduqas/Component-1/Higher/June%202023%20QP.pdf', 'link'),
-('Chemistry Component 2H - June 2023', 'Chemistry', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/WJEC-Eduqas/Component-2/Higher/June%202023%20QP.pdf', 'link'),
-('Chemistry Component 1H - June 2022', 'Chemistry', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/WJEC-Eduqas/Component-1/Higher/June%202022%20QP.pdf', 'link'),
-('Chemistry Component 2H - June 2022', 'Chemistry', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/WJEC-Eduqas/Component-2/Higher/June%202022%20QP.pdf', 'link'),
-('Chemistry Component 1H - June 2019', 'Chemistry', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/WJEC-Eduqas/Component-1/Higher/June%202019%20QP.pdf', 'link'),
-('Chemistry Component 2H - June 2019', 'Chemistry', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/WJEC-Eduqas/Component-2/Higher/June%202019%20QP.pdf', 'link'),
-('Physics Component 1H - June 2023', 'Physics', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/WJEC-Eduqas/Component-1/Higher/June%202023%20QP.pdf', 'link'),
-('Physics Component 2H - June 2023', 'Physics', 2023, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/WJEC-Eduqas/Component-2/Higher/June%202023%20QP.pdf', 'link'),
-('Physics Component 1H - June 2022', 'Physics', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/WJEC-Eduqas/Component-1/Higher/June%202022%20QP.pdf', 'link'),
-('Physics Component 2H - June 2022', 'Physics', 2022, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/WJEC-Eduqas/Component-2/Higher/June%202022%20QP.pdf', 'link'),
-('Physics Component 1H - June 2019', 'Physics', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/WJEC-Eduqas/Component-1/Higher/June%202019%20QP.pdf', 'link'),
-('Physics Component 2H - June 2019', 'Physics', 2019, 'Eduqas', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/WJEC-Eduqas/Component-2/Higher/June%202019%20QP.pdf', 'link'),
-
--- ============================================
--- WJEC (Wales) PAPERS 2017-2024
--- ============================================
-
--- WJEC ENGLISH LANGUAGE
-('English Language Unit 1 - June 2024', 'English Language', 2024, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-1/June%202024%20QP.pdf', 'link'),
-('English Language Unit 2 - June 2024', 'English Language', 2024, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-2/June%202024%20QP.pdf', 'link'),
-('English Language Unit 1 - June 2023', 'English Language', 2023, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-1/June%202023%20QP.pdf', 'link'),
-('English Language Unit 2 - June 2023', 'English Language', 2023, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-2/June%202023%20QP.pdf', 'link'),
-('English Language Unit 1 - June 2022', 'English Language', 2022, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-1/June%202022%20QP.pdf', 'link'),
-('English Language Unit 2 - June 2022', 'English Language', 2022, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-2/June%202022%20QP.pdf', 'link'),
-('English Language Unit 1 - June 2021', 'English Language', 2021, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-1/June%202021%20QP.pdf', 'link'),
-('English Language Unit 2 - June 2021', 'English Language', 2021, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-2/June%202021%20QP.pdf', 'link'),
-('English Language Unit 1 - June 2020', 'English Language', 2020, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-1/June%202020%20QP.pdf', 'link'),
-('English Language Unit 2 - June 2020', 'English Language', 2020, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-2/June%202020%20QP.pdf', 'link'),
-('English Language Unit 1 - June 2019', 'English Language', 2019, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-1/June%202019%20QP.pdf', 'link'),
-('English Language Unit 2 - June 2019', 'English Language', 2019, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-2/June%202019%20QP.pdf', 'link'),
-('English Language Unit 1 - June 2018', 'English Language', 2018, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-1/June%202018%20QP.pdf', 'link'),
-('English Language Unit 2 - June 2018', 'English Language', 2018, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-2/June%202018%20QP.pdf', 'link'),
-('English Language Unit 1 - June 2017', 'English Language', 2017, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-1/June%202017%20QP.pdf', 'link'),
-('English Language Unit 2 - June 2017', 'English Language', 2017, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-Wales/Unit-2/June%202017%20QP.pdf', 'link'),
-
--- WJEC MATHS (2023-2017)
-('Maths Unit 1H - June 2024', 'Mathematics', 2024, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-1/Higher/June%202024%20QP.pdf', 'link'),
-('Maths Unit 2H - June 2024', 'Mathematics', 2024, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-2/Higher/June%202024%20QP.pdf', 'link'),
-('Maths Unit 1H - June 2023', 'Mathematics', 2023, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-1/Higher/June%202023%20QP.pdf', 'link'),
-('Maths Unit 2H - June 2023', 'Mathematics', 2023, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-2/Higher/June%202023%20QP.pdf', 'link'),
-('Maths Unit 1H - June 2022', 'Mathematics', 2022, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-1/Higher/June%202022%20QP.pdf', 'link'),
-('Maths Unit 2H - June 2022', 'Mathematics', 2022, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-2/Higher/June%202022%20QP.pdf', 'link'),
-('Maths Unit 1H - June 2021', 'Mathematics', 2021, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-1/Higher/June%202021%20QP.pdf', 'link'),
-('Maths Unit 2H - June 2021', 'Mathematics', 2021, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-2/Higher/June%202021%20QP.pdf', 'link'),
-('Maths Unit 1H - June 2020', 'Mathematics', 2020, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-1/Higher/June%202020%20QP.pdf', 'link'),
-('Maths Unit 2H - June 2020', 'Mathematics', 2020, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-2/Higher/June%202020%20QP.pdf', 'link'),
-('Maths Unit 1H - June 2019', 'Mathematics', 2019, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-1/Higher/June%202019%20QP.pdf', 'link'),
-('Maths Unit 2H - June 2019', 'Mathematics', 2019, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-2/Higher/June%202019%20QP.pdf', 'link'),
-('Maths Unit 1H - June 2018', 'Mathematics', 2018, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-1/Higher/June%202018%20QP.pdf', 'link'),
-('Maths Unit 2H - June 2018', 'Mathematics', 2018, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-2/Higher/June%202018%20QP.pdf', 'link'),
-('Maths Unit 1H - June 2017', 'Mathematics', 2017, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-1/Higher/June%202017%20QP.pdf', 'link'),
-('Maths Unit 2H - June 2017', 'Mathematics', 2017, 'WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC/Unit-2/Higher/June%202017%20QP.pdf', 'link');
-
+-- =====================
+-- EDUQAS / WJEC
+-- =====================
+('Maths Component 1 - June 2023', 'Mathematics', 2023, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-1H/June%202023%20QP%20-%20Component%201%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
+('Maths Component 2 - June 2023', 'Mathematics', 2023, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-2H/June%202023%20QP%20-%20Component%202%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
+('Maths Component 1 - June 2024', 'Mathematics', 2024, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-1H/June%202024%20QP%20-%20Component%201%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
+('Maths Component 1 - June 2022', 'Mathematics', 2022, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-1H/June%202022%20QP%20-%20Component%201%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
+('Maths Component 1 - Nov 2021', 'Mathematics', 2021, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-1H/November%202021%20QP%20-%20Component%201%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
+('Maths Component 1 - Nov 2020', 'Mathematics', 2020, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-1H/November%202020%20QP%20-%20Component%201%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
+('Maths Component 1 - June 2019', 'Mathematics', 2019, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-1H/June%202019%20QP%20-%20Component%201%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
+('Maths Component 1 - June 2018', 'Mathematics', 2018, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-1H/June%202018%20QP%20-%20Component%201%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
+('Maths Component 1 - June 2017', 'Mathematics', 2017, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-1H/June%202017%20QP%20-%20Component%201%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
+('English Language Component 1 - June 2023', 'English Language', 2023, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-1/June%202023%20QP%20-%20Component%201%20Eduqas%20English%20Language%20GCSE.pdf', 'link'),
+('Biology Component 1 - June 2023', 'Biology', 2023, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/WJEC-England/Component-1H/June%202023%20QP%20-%20Component%201%20(H)%20Eduqas%20Biology%20GCSE.pdf', 'link');
 
 
 -- ============================================
