@@ -17,38 +17,43 @@ export default async function handler(req, res) {
     try {
         const user = await verifyAuth(req);
 
-        // Update the profile to set is_premium to true
-        // Since the backend uses the service role key, this will bypass RLS
-        console.log(`Attempting to grant premium to user: ${user.id}`);
+        // Check if user already has an active subscription
+        const { data: existingSubscription } = await supabase
+            .from("subscriptions")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("status", "active")
+            .single();
 
-        const { error: updateError } = await supabase
-            .from("profiles")
-            .update({ is_premium: true })
-            .eq("id", user.id);
-
-        if (updateError) {
-            console.warn("Update failed, attempting upsert:", updateError.message);
-            // Fallback: try upserting in case the profile row doesn't exist yet
-            const { error: upsertError } = await supabase
-                .from("profiles")
-                .upsert({
-                    id: user.id,
-                    is_premium: true,
-                    email: user.email,
-                    updated_at: new Date().toISOString()
-                });
-
-            if (upsertError) {
-                console.error("Failed to grant premium in backend (both update and upsert):", upsertError);
-                return res.status(500).json({
-                    error: "Failed to update profile.",
-                    details: upsertError.message,
-                    code: upsertError.code
-                });
-            }
+        if (existingSubscription) {
+            console.log(`User ${user.id} already has active premium subscription`);
+            return res.status(200).json({ success: true, message: "Lifetime beta access already granted!" });
         }
 
-        console.log(`Successfully granted premium to ${user.id}`);
+        // Grant lifetime beta access by inserting a subscription
+        // Since the backend uses the service role key, this will bypass RLS
+        console.log(`Granting lifetime beta premium to user: ${user.id}`);
+
+        const { error: insertError } = await supabase
+            .from("subscriptions")
+            .insert({
+                user_id: user.id,
+                plan_type: "yearly", // Use yearly for lifetime beta
+                status: "active",
+                current_period_start: new Date().toISOString(),
+                current_period_end: "9999-12-31T23:59:59.999Z" // Far future date for lifetime
+            });
+
+        if (insertError) {
+            console.error("Failed to grant premium subscription:", insertError);
+            return res.status(500).json({
+                error: "Failed to grant premium subscription.",
+                details: insertError.message,
+                code: insertError.code
+            });
+        }
+
+        console.log(`Successfully granted lifetime beta premium to ${user.id}`);
         return res.status(200).json({ success: true, message: "Lifetime beta access granted!" });
 
     } catch (error) {
