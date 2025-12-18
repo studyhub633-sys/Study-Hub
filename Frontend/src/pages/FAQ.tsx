@@ -1,13 +1,16 @@
-import { AppLayout } from "@/components/layout/AppLayout";
+import AnimatedLogoIcon from "@/components/AnimatedLogoIcon";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "@/contexts/ThemeContext";
+import { ArrowLeft, HelpCircle, Moon, Sun } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const faqs = [
+export const faqs = [
   {
     question: "What is Study Spark Hub?",
     answer: "Study Spark Hub is an all-in-one study companion platform that helps students organize notes, create flashcards, practice with past papers, and track their academic progress. It's designed to make studying more efficient and effective.",
@@ -51,9 +54,53 @@ const faqs = [
 ];
 
 export default function FAQ() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
-    <AppLayout>
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      {/* Header */}
+      <header className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AnimatedLogoIcon />
+            <h1 className="font-bold text-xl">Study Spark Hub</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="h-9 w-9"
+              aria-label="Toggle theme"
+            >
+              {theme === "light" ? (
+                <Moon className="h-5 w-5" />
+              ) : (
+                <Sun className="h-5 w-5" />
+              )}
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link to="/login">Sign In</Link>
+            </Button>
+            <Button asChild>
+              <Link to="/signup">Get Started</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Back Button */}
+      <div className="container mx-auto px-4 pt-6">
+        <Link to="/landing">
+          <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Button>
+        </Link>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12 max-w-4xl space-y-8">
         <div className="text-center space-y-4 animate-fade-in">
           <div className="flex items-center justify-center gap-3">
             <HelpCircle className="h-8 w-8 text-primary" />
@@ -86,19 +133,22 @@ export default function FAQ() {
           <p className="text-muted-foreground mb-4">
             Can't find the answer you're looking for? Please contact our support team.
           </p>
-          <a
-            href="/contact"
+          <Link
+            to="/contact"
             className="text-primary hover:underline font-medium"
           >
             Contact Support →
-          </a>
+          </Link>
         </div>
       </div>
-    </AppLayout>
+
+      {/* Simple Footer */}
+      <footer className="border-t border-border bg-background/80 backdrop-blur-xl mt-12">
+        <div className="container mx-auto px-4 py-8 text-center">
+          <p className="text-sm text-muted-foreground">© 2025 Study Hub. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
   );
 }
-
-
-
-
 

@@ -1,13 +1,20 @@
 import AnimatedLogoIcon from "@/components/AnimatedLogoIcon";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Eye, EyeOff, HelpCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { faqs } from "./FAQ";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -54,7 +61,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-muted/20 p-4">
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-background to-muted/20 p-4">
       {/* Go Back Button */}
       <div className="w-full max-w-md mb-4">
         <Link to="/landing">
@@ -193,7 +200,31 @@ export default function Signup() {
           )}
         </CardContent>
       </Card>
+
+      {/* FAQ Section */}
+      <div className="w-full max-w-md mt-8">
+        <div className="flex items-center gap-2 mb-4">
+          <HelpCircle className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Frequently Asked Questions</h2>
+        </div>
+        <Accordion type="single" collapsible className="w-full">
+          {faqs.slice(0, 5).map((faq, index) => (
+            <AccordionItem key={index} value={`item-${index}`} className="glass-card px-4 mb-2">
+              <AccordionTrigger className="text-left text-sm font-medium text-foreground hover:no-underline">
+                {faq.question}
+              </AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground">
+                {faq.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+        <div className="mt-4 text-center">
+          <Link to="/faq" className="text-sm text-primary hover:underline">
+            View all FAQs →
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
-

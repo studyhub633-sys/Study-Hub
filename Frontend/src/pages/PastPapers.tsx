@@ -1,10 +1,6 @@
-import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -20,29 +19,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import {
-  Search,
-  Filter,
-  FileText,
-  Clock,
-  Play,
-  CheckCircle,
-  AlertCircle,
-  Download,
-  Eye,
-  Timer,
-  Star,
-  Plus,
-  Edit,
-  Trash2,
-  Loader2,
-  Upload,
-  Link as LinkIcon,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { EXAM_BOARDS } from "@/lib/constants";
+import { SmartPaperParser } from "@/lib/paper-parser";
+import { cn } from "@/lib/utils";
+import {
+  AlertCircle,
+  CheckCircle,
+  Download,
+  Edit,
+  Eye,
+  FileText,
+  Link as LinkIcon,
+  Loader2,
+  Play,
+  Plus,
+  Search,
+  Sparkles,
+  Star,
+  Timer,
+  Trash2,
+  Upload
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Paper {
   id: string;
@@ -80,6 +80,7 @@ export default function PastPapers() {
     score: "",
     max_score: "",
   });
+  const [reviewPaper, setReviewPaper] = useState<Paper | null>(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -181,6 +182,54 @@ export default function PastPapers() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleAutoFill = () => {
+    if (!formData.file_url) {
+      toast({
+        title: "No Link Found",
+        description: "Please paste a link first to use auto-fill.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const metadata = SmartPaperParser.parse(formData.file_url);
+
+    if (metadata.board === 'Unknown' && metadata.type === 'Other' && !metadata.subjectCode) {
+      toast({
+        title: "Could not parse link",
+        description: "This link format is not recognized for auto-fill.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Generate a title if we have metadata
+    let generatedTitle = formData.title;
+    if (metadata.subjectCode || metadata.board !== 'Unknown') {
+      const parts = [];
+      if (metadata.subjectCode) parts.push(metadata.subjectCode);
+      if (metadata.type !== 'Other') parts.push(metadata.type);
+      if (metadata.year) parts.push(metadata.year);
+      if (metadata.month) parts.push(metadata.month);
+      if (metadata.board !== 'Unknown') parts.push(`(${metadata.board})`);
+
+      generatedTitle = parts.join(' ');
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      title: generatedTitle || prev.title,
+      subject: metadata.subjectCode || prev.subject,
+      exam_board: metadata.board !== 'Unknown' ? metadata.board : prev.exam_board,
+      year: metadata.year || prev.year,
+    }));
+
+    toast({
+      title: "Auto-filled!",
+      description: `Parsed ${metadata.board} paper details.`,
+    });
   };
 
   const handleSavePaper = async () => {
@@ -319,11 +368,7 @@ export default function PastPapers() {
   };
 
   const handleReview = (paper: Paper) => {
-    // Open review dialog or navigate to review page
-    toast({
-      title: "Review Paper",
-      description: `Reviewing ${paper.title}. Feature coming soon!`,
-    });
+    setReviewPaper(paper);
   };
 
   const filteredPapers = papers.filter((paper) => {
@@ -338,11 +383,12 @@ export default function PastPapers() {
   const averageScore =
     completedWithScores.length > 0
       ? completedWithScores.reduce((acc, p) => acc + ((p.score || 0) / (p.max_score || 1)) * 100, 0) /
-        completedWithScores.length
+      completedWithScores.length
       : 0;
 
   const subjects = Array.from(new Set(papers.map((p) => p.subject).filter(Boolean)));
-  const examBoards = Array.from(new Set(papers.map((p) => p.exam_board).filter(Boolean)));
+  // Removed dynamic examBoards generation since we now have fixed constant, but could mix both if needed
+  // For now, let's just use the constant for filtering to guide the user potentially
 
   if (loading) {
     return (
@@ -423,7 +469,7 @@ export default function PastPapers() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All Boards">All Boards</SelectItem>
-              {examBoards.map((board) => (
+              {EXAM_BOARDS.map((board) => (
                 <SelectItem key={board} value={board}>
                   {board}
                 </SelectItem>
@@ -502,8 +548,8 @@ export default function PastPapers() {
                             scorePercentage >= 70
                               ? "text-secondary"
                               : scorePercentage >= 50
-                              ? "text-accent-foreground"
-                              : "text-destructive"
+                                ? "text-accent-foreground"
+                                : "text-destructive"
                           )}
                         >
                           {Math.round(scorePercentage)}%
@@ -544,7 +590,12 @@ export default function PastPapers() {
                             <Download className="h-4 w-4" />
                           </Button>
                         )}
-                        {/* For links, we only show Review button (already shown above) */}
+                        {/* For links, show an external link button */}
+                        {paper.file_url && paper.file_url.startsWith("http") && (
+                          <Button variant="outline" size="icon" onClick={() => window.open(paper.file_url!, "_blank")}>
+                            <LinkIcon className="h-4 w-4" />
+                          </Button>
+                        )}
                       </>
                     )}
                   </div>
@@ -596,12 +647,22 @@ export default function PastPapers() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="exam_board">Exam Board</Label>
-                <Input
-                  id="exam_board"
+                {/* Replaced Input with Select */}
+                <Select
                   value={formData.exam_board}
-                  onChange={(e) => setFormData({ ...formData, exam_board: e.target.value })}
-                  placeholder="e.g., AQA"
-                />
+                  onValueChange={(value) => setFormData({ ...formData, exam_board: value })}
+                >
+                  <SelectTrigger id="exam_board">
+                    <SelectValue placeholder="Select board" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EXAM_BOARDS.map((board) => (
+                      <SelectItem key={board} value={board}>
+                        {board}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-2">
@@ -638,14 +699,26 @@ export default function PastPapers() {
               </div>
               {formData.file_type === "link" ? (
                 <div className="space-y-2">
-                  <Input
-                    id="file_url"
-                    value={formData.file_url}
-                    onChange={(e) => setFormData({ ...formData, file_url: e.target.value })}
-                    placeholder="https://example.com/past-paper.pdf"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="file_url"
+                      value={formData.file_url}
+                      onChange={(e) => setFormData({ ...formData, file_url: e.target.value })}
+                      placeholder="https://example.com/past-paper.pdf"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
+                      onClick={handleAutoFill}
+                      title="Auto-fill from link"
+                    >
+                      <Sparkles className="h-4 w-4 text-primary" />
+                    </Button>
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    Paste a link to the past paper (e.g., Google Drive, Dropbox, etc.)
+                    Paste a link to the past paper and click the sparkles ✨ to auto-fill details.
                   </p>
                 </div>
               ) : (
@@ -724,6 +797,141 @@ export default function PastPapers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Review Dialog */}
+      <Dialog open={!!reviewPaper} onOpenChange={(open) => !open && setReviewPaper(null)}>
+        <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              {reviewPaper?.title}
+            </DialogTitle>
+            <DialogDescription>
+              {reviewPaper?.subject} • {reviewPaper?.exam_board} • {reviewPaper?.year}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 flex flex-col md:flex-row border-t overflow-hidden">
+            {/* Left: PDF Viewer (if link) or Instructions */}
+            <div className="flex-1 bg-muted/30 relative min-h-[300px]">
+              {reviewPaper?.file_url ? (
+                reviewPaper.file_url.startsWith('https://filestore.aqa.org.uk') ||
+                  reviewPaper.file_url.endsWith('.pdf') ? (
+                  <iframe
+                    src={reviewPaper.file_url}
+                    className="w-full h-full border-none"
+                    title="Paper Content"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                    <LinkIcon className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+                    <h4 className="font-semibold mb-2">External Content</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      This paper is hosted on an external site. Open it in a new tab to study.
+                    </p>
+                    <Button onClick={() => window.open(reviewPaper.file_url!, "_blank")}>
+                      Open Paper in New Tab
+                    </Button>
+                  </div>
+                )
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                  No file content available.
+                </div>
+              )}
+            </div>
+
+            {/* Right: Score Entry & Results */}
+            <div className="w-full md:w-80 border-l bg-background p-6 space-y-6 overflow-y-auto">
+              <div>
+                <Label className="text-sm font-medium mb-3 block">Review Results</Label>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="review-score">Your Score</Label>
+                    <Input
+                      id="review-score"
+                      type="number"
+                      placeholder="e.g. 85"
+                      defaultValue={reviewPaper?.score || ""}
+                      onChange={(e) => {
+                        if (reviewPaper) {
+                          setReviewPaper({ ...reviewPaper, score: parseInt(e.target.value) || null });
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="review-max">Max Score</Label>
+                    <Input
+                      id="review-max"
+                      type="number"
+                      placeholder="e.g. 100"
+                      defaultValue={reviewPaper?.max_score || ""}
+                      onChange={(e) => {
+                        if (reviewPaper) {
+                          setReviewPaper({ ...reviewPaper, max_score: parseInt(e.target.value) || null });
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {reviewPaper && reviewPaper.score !== null && reviewPaper.max_score !== null && (
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-muted-foreground">Percentage</span>
+                    <span className="font-bold text-primary">
+                      {Math.round((reviewPaper.score / reviewPaper.max_score) * 100)}%
+                    </span>
+                  </div>
+                  <Progress value={(reviewPaper.score / reviewPaper.max_score) * 100} className="h-2" />
+                </div>
+              )}
+
+              <div className="pt-4 border-t space-y-2">
+                <Button
+                  className="w-full"
+                  onClick={async () => {
+                    if (!reviewPaper || !user) return;
+                    try {
+                      const { error } = await supabase
+                        .from("past_papers")
+                        .update({
+                          score: reviewPaper.score,
+                          max_score: reviewPaper.max_score,
+                          completed_at: reviewPaper.score !== null ? new Date().toISOString() : null,
+                        })
+                        .eq("id", reviewPaper.id);
+
+                      if (error) throw error;
+
+                      toast({
+                        title: "Review Saved",
+                        description: "Your scores have been updated.",
+                      });
+                      setReviewPaper(null);
+                      fetchPapers();
+                    } catch (e: any) {
+                      toast({
+                        title: "Error",
+                        description: e.message,
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                >
+                  Save Results
+                </Button>
+                <Button variant="outline" className="w-full" onClick={() => setReviewPaper(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
+
   );
 }

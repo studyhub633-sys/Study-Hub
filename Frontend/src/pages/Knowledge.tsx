@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { generateKnowledgeOrganizer } from "@/lib/ai-client";
+import { EXAM_BOARDS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import {
   Brain,
@@ -80,6 +81,7 @@ export default function Knowledge() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
+  const [selectedBoard, setSelectedBoard] = useState("All Boards");
   const [selectedOrganizer, setSelectedOrganizer] = useState<KnowledgeOrganizer | null>(null);
   const [openSections, setOpenSections] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -88,6 +90,7 @@ export default function Knowledge() {
     title: "",
     subject: "",
     topic: "",
+    exam_board: "",
     sections: [] as KnowledgeSection[],
   });
   const [reviewingSection, setReviewingSection] = useState<number | null>(null);
@@ -182,6 +185,7 @@ export default function Knowledge() {
       title: "",
       subject: "",
       topic: "",
+      exam_board: "",
       sections: [],
     });
     setIsDialogOpen(true);
@@ -239,6 +243,7 @@ export default function Knowledge() {
           title: aiTopic || aiSubject || "AI Generated Organizer",
           subject: aiSubject || "",
           topic: aiTopic || "",
+          exam_board: "",
           sections: result.data.sections,
         });
         setIsAiDialogOpen(false);
@@ -283,6 +288,7 @@ export default function Knowledge() {
       title: org.title,
       subject: org.subject || "",
       topic: org.topic || "",
+      exam_board: org.content?.exam_board || "",
       sections: normalizedSections,
     });
     setIsDialogOpen(true);
@@ -382,6 +388,7 @@ export default function Knowledge() {
       // Progress is now auto-calculated, don't store it manually
       const contentData = {
         sections: validSections,
+        exam_board: formData.exam_board,
       };
 
       const updateData: any = {
@@ -652,7 +659,9 @@ export default function Knowledge() {
   const filteredOrganizers = organizers.filter((org) => {
     const matchesSearch = org.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = selectedSubject === "All Subjects" || org.subject === selectedSubject;
-    return matchesSearch && matchesSubject;
+    const orgBoard = org.content?.exam_board;
+    const matchesBoard = selectedBoard === "All Boards" || orgBoard === selectedBoard;
+    return matchesSearch && matchesSubject && matchesBoard;
   });
 
   const toggleSection = (title: string) => {
@@ -733,6 +742,19 @@ export default function Knowledge() {
               {subjects.map((subject) => (
                 <SelectItem key={subject} value={subject}>
                   {subject}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedBoard} onValueChange={setSelectedBoard}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Boards">All Boards</SelectItem>
+              {EXAM_BOARDS.map((board) => (
+                <SelectItem key={board} value={board}>
+                  {board}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -1061,6 +1083,24 @@ export default function Knowledge() {
                 onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
                 placeholder="e.g., Cell Biology"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="exam_board">Exam Board</Label>
+              <Select
+                value={formData.exam_board}
+                onValueChange={(value) => setFormData({ ...formData, exam_board: value })}
+              >
+                <SelectTrigger id="exam_board">
+                  <SelectValue placeholder="Select board" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EXAM_BOARDS.map((board) => (
+                    <SelectItem key={board} value={board}>
+                      {board}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Sections */}
