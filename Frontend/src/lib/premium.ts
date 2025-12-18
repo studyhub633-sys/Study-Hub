@@ -18,10 +18,6 @@ export interface Subscription {
  * Check if user has active premium subscription
  */
 export async function hasPremium(supabase: SupabaseClient, userId: string): Promise<boolean> {
-  // BETA OVERRIDE: Everyone gets premium access
-  return true;
-
-  /* Original Logic - Disabled for Beta
   try {
     // Check profile first (faster)
     const { data: profile } = await supabase
@@ -59,7 +55,6 @@ export async function hasPremium(supabase: SupabaseClient, userId: string): Prom
     console.error("Error checking premium status:", error);
     return false;
   }
-  */
 }
 
 /**

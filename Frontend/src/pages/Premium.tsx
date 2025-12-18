@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { validateDiscountCode } from "@/lib/discount";
 import { getSubscription as getPaymentSubscription } from "@/lib/payment-client";
-import { hasPremium } from "@/lib/premium";
+import { checkAndGrantBetaPremium, hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
   Brain,
@@ -149,6 +149,21 @@ export default function Premium() {
   };
 
   const handleSubscribe = async (planType: "monthly" | "yearly") => {
+    // BETA MODE: Allow clicking to grant premium directly
+    if (user && supabase) {
+      setLoading(true);
+      try {
+        await checkAndGrantBetaPremium(supabase, user.id);
+        await checkPremiumStatus(); // Refresh status
+        toast.success("Lifetime beta access granted!");
+      } catch (error) {
+        toast.error("Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (appliedDiscount && appliedDiscount.type === "free_lifetime") {
       await handleApplyLifetime();
       return;
@@ -359,7 +374,7 @@ export default function Premium() {
                 ) : (
                   <>
                     {plan.popular && <Rocket className="h-4 w-4 mr-2" />}
-                    {appliedDiscount?.type === "free_lifetime" ? "Get Lifetime" : `Get ${plan.name}`}
+                    Get Lifetime Access (Beta)
                   </>
                 )}
               </Button>

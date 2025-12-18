@@ -1,4 +1,4 @@
-import { checkAndGrantBetaPremium } from "@/lib/premium";
+// Beta premium grant logic moved to manual button click in Premium.tsx
 import { createClient, Session, SupabaseClient, User } from "@supabase/supabase-js";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
@@ -62,12 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Dedicated effect for beta premium grant
-  useEffect(() => {
-    if (user) {
-      checkAndGrantBetaPremium(supabase, user.id);
-    }
-  }, [user]);
+
 
   const signUp = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({
