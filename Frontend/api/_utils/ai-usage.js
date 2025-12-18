@@ -1,6 +1,6 @@
 import { supabase } from './auth.js';
 
-export async function checkAndRecordUsage(user, featureType) {
+export async function checkAndRecordUsage(user, featureType, prompt = null, subject = null, topic = null) {
     if (!supabase) {
         throw new Error("Supabase client not initialized");
     }
@@ -41,12 +41,17 @@ export async function checkAndRecordUsage(user, featureType) {
     }
 
     // Record new usage
-    const { error: insertError } = await supabase
+    const { data: insertedData, error: insertError } = await supabase
         .from("ai_usage_tracking")
         .insert({
             user_id: user.id,
-            feature_type: featureType
-        });
+            feature_type: featureType,
+            prompt: prompt,
+            subject: subject,
+            topic: topic
+        })
+        .select('id')
+        .single();
 
     if (insertError) {
         console.error("Failed to record usage:", insertError);
@@ -57,6 +62,20 @@ export async function checkAndRecordUsage(user, featureType) {
     return {
         usageCount: count + 1,
         limit: MAX_DAILY_USAGE,
-        isPremium
+        isPremium,
+        usageId: insertedData?.id
     };
+}
+
+export async function updateAiResponse(usageId, response) {
+    if (!supabase || !usageId) return;
+
+    const { error } = await supabase
+        .from("ai_usage_tracking")
+        .update({ response })
+        .eq("id", usageId);
+
+    if (error) {
+        console.error("Failed to update AI response:", error);
+    }
 }

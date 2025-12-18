@@ -1,4 +1,4 @@
-import { checkAndRecordUsage } from '../_utils/ai-usage.js';
+import { checkAndRecordUsage, updateAiResponse } from '../_utils/ai-usage.js';
 import { verifyAuth } from '../_utils/auth.js';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -31,8 +31,9 @@ export default async function handler(req, res) {
         }
 
         // Check global usage limits
+        let usageData;
         try {
-            await checkAndRecordUsage(user, "simple_question");
+            usageData = await checkAndRecordUsage(user, "simple_question", context, subject);
         } catch (error) {
             if (error.status === 429) {
                 return res.status(429).json({
@@ -115,12 +116,19 @@ export default async function handler(req, res) {
             });
         }
 
-        return res.status(200).json({
+        const result = {
             question,
             subject: subject || "General",
             difficulty,
             context: context.substring(0, 50) + "..."
-        });
+        };
+
+        // Record the response in history
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, result);
+        }
+
+        return res.status(200).json(result);
 
     } catch (error) {
         console.error("Simple question generation error:", error);

@@ -1,7 +1,4 @@
-import { checkAndRecordUsage } from '../_utils/ai-usage.js';
-import { verifyAuth } from '../_utils/auth.js';
-
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
+import { checkAndRecordUsage, updateAiResponse } from './_utils/ai-usage.js';
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export default async function handler(req, res) {
@@ -31,8 +28,9 @@ export default async function handler(req, res) {
         }
 
         // Check global usage limits
+        let usageData;
         try {
-            await checkAndRecordUsage(user, "evaluate_answer");
+            usageData = await checkAndRecordUsage(user, "answer_evaluation", studentAnswer);
         } catch (error) {
             if (error.status === 429) {
                 return res.status(429).json({
@@ -75,15 +73,25 @@ export default async function handler(req, res) {
             // Fallback to simple text comparison
             const similarity = simpleTextSimilarity(correctAnswer, studentAnswer);
             const isCorrect = similarity >= threshold;
+            const feedback = isCorrect
+                ? "Your answer appears correct!"
+                : `Your answer is partially correct. Similarity: ${Math.round(similarity * 100)}%`;
 
-            return res.status(200).json({
+            const result = {
                 similarity: Math.round(similarity * 100) / 100,
                 isCorrect,
                 threshold,
-                feedback: isCorrect
-                    ? "Your answer appears correct!"
-                    : `Your answer is partially correct. Similarity: ${Math.round(similarity * 100)}%`,
-            });
+                feedback,
+                correctAnswer,
+                studentAnswer
+            };
+
+            // Record the response in history
+            if (usageData?.usageId) {
+                await updateAiResponse(usageData.usageId, result);
+            }
+
+            return res.status(200).json(result);
         }
 
         const data = await response.json();
@@ -103,26 +111,45 @@ export default async function handler(req, res) {
         }
 
         if (result && typeof result.similarity === 'number') {
-            return res.status(200).json({
+            const finalResult = {
                 similarity: Math.round(result.similarity * 100) / 100,
                 isCorrect: result.isCorrect ?? (result.similarity >= threshold),
                 threshold,
                 feedback: result.feedback || (result.isCorrect ? "Correct!" : "Try again."),
-            });
+                correctAnswer,
+                studentAnswer
+            };
+
+            // Record the response in history
+            if (usageData?.usageId) {
+                await updateAiResponse(usageData.usageId, finalResult);
+            }
+
+            return res.status(200).json(finalResult);
         }
 
         // Fallback to simple text comparison
         const similarity = simpleTextSimilarity(correctAnswer, studentAnswer);
         const isCorrect = similarity >= threshold;
+        const feedback = isCorrect
+            ? "Your answer is correct!"
+            : `Your answer is partially correct. Similarity: ${Math.round(similarity * 100)}%`;
 
-        return res.status(200).json({
+        const finalResult = {
             similarity: Math.round(similarity * 100) / 100,
             isCorrect,
             threshold,
-            feedback: isCorrect
-                ? "Your answer is correct!"
-                : `Your answer is partially correct. Similarity: ${Math.round(similarity * 100)}%`,
-        });
+            feedback,
+            correctAnswer,
+            studentAnswer
+        };
+
+        // Record the response in history
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, finalResult);
+        }
+
+        return res.status(200).json(finalResult);
 
     } catch (error) {
         console.error("Answer evaluation error:", error);

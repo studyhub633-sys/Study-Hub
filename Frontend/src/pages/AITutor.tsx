@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { chatWithAI, evaluateAnswer, generateQuestion, generateSimpleQuestion } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Bot, Loader2, Send, Sparkles, User } from "lucide-react";
+import { ArrowLeft, Bot, Brain, Loader2, Send, Sparkles, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -40,6 +40,7 @@ export default function AITutor() {
     const [context, setContext] = useState("");
     const [loading, setLoading] = useState(false);
     const [mode, setMode] = useState<"chat" | "question" | "evaluate">("chat");
+    const [aiUsage, setAiUsage] = useState<{ count: number; limit: number } | null>(null);
 
     // Track the pending question waiting for an answer
     const [pendingQuestion, setPendingQuestion] = useState<PendingQuestion | null>(null);
@@ -64,6 +65,35 @@ export default function AITutor() {
             }
         }
     }, [location.state]);
+
+    // Fetch AI usage
+    const fetchAiUsage = async () => {
+        if (!user || !supabase) return;
+        try {
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const { count } = await supabase
+                .from("ai_usage_tracking")
+                .select("*", { count: "exact", head: true })
+                .eq("user_id", user.id)
+                .gt("created_at", oneDayAgo);
+
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("is_premium, email")
+                .eq("id", user.id)
+                .single();
+
+            const TESTER_EMAILS = ['admin@studyhub.com', 'tester@studyhub.com', 'andre@studyhub.com'];
+            const isPremium = profile?.is_premium || TESTER_EMAILS.includes(profile?.email || '');
+            setAiUsage({ count: count || 0, limit: isPremium ? 500 : 10 });
+        } catch (error) {
+            console.error("Error fetching AI usage:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchAiUsage();
+    }, [user, supabase]);
 
     // Auto-scroll to bottom when messages change
     useEffect(() => {
@@ -254,6 +284,12 @@ export default function AITutor() {
                         <p className="text-muted-foreground">
                             Get personalized help with your studies
                         </p>
+                        {aiUsage && (
+                            <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
+                                <Brain className="h-3 w-3 mr-1" />
+                                {aiUsage.limit - aiUsage.count} AI generations remaining today
+                            </div>
+                        )}
                     </div>
                 </div>
 

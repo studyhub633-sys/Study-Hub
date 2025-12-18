@@ -31,8 +31,9 @@ export default async function handler(req, res) {
         }
 
         // Check global usage limits
+        let usageData;
         try {
-            await checkAndRecordUsage(user, "chat");
+            usageData = await checkAndRecordUsage(user, "chat", message, context);
         } catch (error) {
             if (error.status === 429) {
                 return res.status(429).json({
@@ -86,7 +87,14 @@ export default async function handler(req, res) {
             reply = data.trim();
         }
 
-        return res.status(200).json({ reply });
+        const result = { reply };
+
+        // Record the response in history
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, result);
+        }
+
+        return res.status(200).json(result);
 
     } catch (error) {
         console.error("Chat error:", error);

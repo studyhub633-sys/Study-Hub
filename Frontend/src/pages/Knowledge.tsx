@@ -100,6 +100,7 @@ export default function Knowledge() {
   const [aiTopic, setAiTopic] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiUsageCount, setAiUsageCount] = useState<number | null>(null);
+  const [aiLimit, setAiLimit] = useState<number>(10);
 
   useEffect(() => {
     if (user) {
@@ -112,11 +113,12 @@ export default function Knowledge() {
     if (!user || !supabase) return;
 
     try {
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { count, error } = await supabase
         .from("ai_usage_tracking")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id)
-        .eq("feature_type", "knowledge_organizer");
+        .gt("created_at", oneDayAgo);
 
       if (error) {
         console.error("Error fetching AI usage count:", error);
@@ -124,7 +126,19 @@ export default function Knowledge() {
         return;
       }
 
+      // Fetch limit from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_premium, email")
+        .eq("id", user.id)
+        .single();
+
+      const TESTER_EMAILS = ['admin@studyhub.com', 'tester@studyhub.com', 'andre@studyhub.com'];
+      const isPremium = profile?.is_premium || TESTER_EMAILS.includes(profile?.email || '');
+      const limit = isPremium ? 500 : 10;
+
       setAiUsageCount(count || 0);
+      setAiLimit(limit);
     } catch (error) {
       console.error("Error fetching AI usage count:", error);
     }
@@ -202,7 +216,7 @@ export default function Knowledge() {
     }
 
     // Check usage limit
-    if (aiUsageCount !== null && aiUsageCount >= 10) {
+    if (aiUsageCount !== null && aiUsageCount >= aiLimit) {
       toast({
         title: "Limit Reached",
         description: `You have reached the daily limit of AI generation attempts. Please upgrade to premium for higher limits (500/day).`,
@@ -711,7 +725,7 @@ export default function Knowledge() {
               Generate with AI
               {aiUsageCount !== null && (
                 <span className="ml-2 text-xs">
-                  ({10 - aiUsageCount} left)
+                  ({aiLimit - aiUsageCount} left)
                 </span>
               )}
             </Button>
@@ -1248,10 +1262,10 @@ export default function Knowledge() {
               Describe what you want to learn, and AI will create a structured knowledge organizer with sections and key points.
               {aiUsageCount !== null && (
                 <span className="block mt-2 text-sm font-medium">
-                  {aiUsageCount >= 10 ? (
-                    <span className="text-destructive">You've reached the limit of 10 attempts.</span>
+                  {aiUsageCount !== null && aiUsageCount >= aiLimit ? (
+                    <span className="text-destructive">You've reached the daily limit.</span>
                   ) : (
-                    <span>You have {10 - aiUsageCount} generation attempts remaining.</span>
+                    <span>You have {aiUsageCount !== null ? aiLimit - aiUsageCount : '...'} generation attempts remaining today.</span>
                   )}
                 </span>
               )}
@@ -1291,10 +1305,10 @@ export default function Knowledge() {
                 />
               </div>
             </div>
-            {aiUsageCount !== null && aiUsageCount >= 10 && (
+            {aiUsageCount !== null && aiUsageCount >= aiLimit && (
               <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
                 <p className="text-sm text-destructive font-medium">
-                  You've reached the limit of 10 AI generation attempts. Please upgrade to premium for unlimited access.
+                  You've reached the daily limit of {aiLimit} AI generation attempts. {aiLimit === 10 ? 'Please upgrade to premium for higher limits.' : 'Please try again tomorrow.'}
                 </p>
               </div>
             )}

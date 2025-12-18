@@ -1,4 +1,4 @@
-import { checkAndRecordUsage } from '../_utils/ai-usage.js';
+import { checkAndRecordUsage, updateAiResponse } from '../_utils/ai-usage.js';
 import { verifyAuth } from '../_utils/auth.js';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
         // Check global usage limits
         let usageData;
         try {
-            usageData = await checkAndRecordUsage(user, "knowledge_organizer");
+            usageData = await checkAndRecordUsage(user, "knowledge_organizer", prompt, subject, topic);
         } catch (error) {
             if (error.status === 429) {
                 return res.status(429).json({
@@ -165,6 +165,11 @@ export default async function handler(req, res) {
             color: index % 3 === 0 ? "primary" : index % 3 === 1 ? "secondary" : "accent",
             reviewed: false
         }));
+
+        // Record the response in history
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, { sections, subject, topic });
+        }
 
 
 
