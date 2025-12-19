@@ -163,13 +163,14 @@ export default function Premium() {
 
     setLoading(true);
     try {
-      const success = await grantBetaAccessWithBackend(supabase);
-      if (success) {
+      const result = await grantBetaAccessWithBackend(supabase);
+      if (result.success) {
         setIsPremium(true); // Immediate UI update
         await checkPremiumStatus(); // Refresh status
         toast.success("Lifetime beta access granted!");
       } else {
-        toast.error("Failed to grant premium access. Please try again.");
+        toast.error(`Failed: ${result.error || "Please try again."}`);
+        console.error("Grant failure details:", result.error);
       }
     } catch (error: any) {
       toast.error(error.message || "Something went wrong. Please try again.");

@@ -65,10 +65,10 @@ export async function isAdmin(supabase: SupabaseClient, userId: string): Promise
 /**
  * Automatically grant premium to users during beta (Backend Version)
  */
-export async function grantBetaAccessWithBackend(supabase: SupabaseClient): Promise<boolean> {
+export async function grantBetaAccessWithBackend(supabase: SupabaseClient): Promise<{ success: boolean; error?: string }> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) return false;
+    if (!session?.access_token) return { success: false, error: "No active session" };
 
     const response = await fetch('/api/auth/grant-beta-premium', {
       method: 'POST',
@@ -79,10 +79,15 @@ export async function grantBetaAccessWithBackend(supabase: SupabaseClient): Prom
     });
 
     const result = await response.json();
-    return result.success || false;
-  } catch (error) {
+    if (result.success) return { success: true };
+
+    return {
+      success: false,
+      error: result.details || result.error || "Unknown error"
+    };
+  } catch (error: any) {
     console.error("Error granting beta access:", error);
-    return false;
+    return { success: false, error: error.message || "Network error" };
   }
 }
 
