@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { TermsDialog } from "@/components/premium/TermsDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -99,6 +100,8 @@ export default function Premium() {
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
   const [applyingCode, setApplyingCode] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | null>(null);
 
   // Check for Stripe redirect
   useEffect(() => {
@@ -149,31 +152,30 @@ export default function Premium() {
   };
 
   const handleSubscribe = async (planType: "monthly" | "yearly") => {
-    // BETA MODE: Allow clicking to grant premium directly
-    if (user && supabase) {
-      setLoading(true);
-      try {
-        const success = await grantBetaAccessWithBackend(supabase);
-        if (success) {
-          setIsPremium(true); // Immediate UI update
-          await checkPremiumStatus(); // Refresh status
-          toast.success("Lifetime beta access granted!");
-        } else {
-          toast.error("Failed to grant premium access. Please try again.");
-        }
-      } catch (error: any) {
-        toast.error(error.message || "Something went wrong. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
+    // BETA MODE: Prompt for terms first
+    setSelectedPlan(planType);
+    setShowTerms(true);
+  };
 
-    if (appliedDiscount && appliedDiscount.type === "free_lifetime") {
-      await handleApplyLifetime();
-      return;
+  const handleConfirmTerms = async () => {
+    setShowTerms(false);
+    if (!user || !supabase) return;
+
+    setLoading(true);
+    try {
+      const success = await grantBetaAccessWithBackend(supabase);
+      if (success) {
+        setIsPremium(true); // Immediate UI update
+        await checkPremiumStatus(); // Refresh status
+        toast.success("Lifetime beta access granted!");
+      } else {
+        toast.error("Failed to grant premium access. Please try again.");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    toast.info("Subscriptions are currently disabled during beta testing. Tester accounts have automatic premium access.");
   };
 
   const handleApplyCode = () => {
@@ -462,6 +464,12 @@ export default function Premium() {
           )}
         </div>
       </div>
+
+      <TermsDialog
+        open={showTerms}
+        onOpenChange={setShowTerms}
+        onAccept={handleConfirmTerms}
+      />
     </AppLayout>
   );
 }

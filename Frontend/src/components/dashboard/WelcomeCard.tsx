@@ -106,6 +106,16 @@ export function WelcomeCard() {
                     {aiUsage.isPremium ? "(Lifetime Access)" : `(${aiUsage.limit - aiUsage.count} left)`}
                   </span>
                 </button>
+
+                {!aiUsage.isPremium && (
+                  <button
+                    onClick={() => window.location.href = '/premium'}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-premium hover:bg-premium/90 text-premium-foreground transition-all shadow-lg shadow-premium/20 text-sm font-bold border border-premium-foreground/20 animate-pulse-subtle"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Unlock Lifetime Access (Beta)
+                  </button>
+                )}
               </div>
             )}
           </div>

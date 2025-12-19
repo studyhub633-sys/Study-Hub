@@ -59,8 +59,24 @@ export async function isAdmin(supabase: SupabaseClient, userId: string): Promise
  * Automatically grant premium to users during beta (Backend Version)
  */
 export async function grantBetaAccessWithBackend(supabase: SupabaseClient): Promise<boolean> {
-  // Always return true to keep the UI flow happy, even though usage is now open to all
-  return true;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return false;
+
+    const response = await fetch('/api/auth/grant-beta-premium', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      }
+    });
+
+    const result = await response.json();
+    return result.success || false;
+  } catch (error) {
+    console.error("Error granting beta access:", error);
+    return false;
+  }
 }
 
 /**

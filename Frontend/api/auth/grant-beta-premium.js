@@ -23,7 +23,8 @@ export default async function handler(req, res) {
             .from("profiles")
             .upsert({
                 id: user.id,
-                is_premium: true
+                is_premium: true,
+                beta_terms_accepted: true
             }, { onConflict: 'id' });
 
         if (error) {
