@@ -21,8 +21,15 @@ export interface Subscription {
 export async function hasPremium(supabase: SupabaseClient): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    // During beta, any logged-in user is treated as premium to bypass DB cache issues.
-    return !!user;
+    if (!user) return false;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_premium")
+      .eq("id", user.id)
+      .single();
+
+    return profile?.is_premium || false;
   } catch (error) {
     return false;
   }
