@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
-import { LogOut, Menu, Moon, Settings, Sun, User } from "lucide-react";
+import { LogOut, Menu, Moon, Settings, Sparkles, Sun, User } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileNav } from "./MobileNav";
@@ -155,6 +155,19 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Mobile Bottom Nav */}
       <MobileNav />
+
+      {/* Floating AI Status Indicator */}
+      <div className="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-50 pointer-events-none select-none animate-fade-in">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-premium/10 backdrop-blur-md border border-premium/20 shadow-lg shadow-premium/10 group">
+          <div className="relative">
+            <Sparkles className="h-4 w-4 text-premium animate-pulse-subtle" />
+            <div className="absolute inset-0 bg-premium/20 blur-md rounded-full animate-pulse-glow" />
+          </div>
+          <span className="text-sm font-bold bg-gradient-to-r from-premium to-purple-400 bg-clip-text text-transparent italic tracking-tight">
+            Generate with AI
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
