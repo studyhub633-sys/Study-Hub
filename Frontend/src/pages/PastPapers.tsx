@@ -31,6 +31,7 @@ import {
   Edit,
   Eye,
   FileText,
+  Layers,
   Link as LinkIcon,
   Loader2,
   Play,
@@ -43,6 +44,7 @@ import {
   Upload
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Paper {
   id: string;
@@ -62,6 +64,7 @@ interface Paper {
 export default function PastPapers() {
   const { supabase, user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -371,6 +374,31 @@ export default function PastPapers() {
     setReviewPaper(paper);
   };
 
+  const handleGenerateFlashcards = (paper: Paper) => {
+    if (!paper.subject) {
+      toast({
+        title: "No subject available",
+        description: "This paper needs a subject to generate flashcards.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Navigate to flashcards page with paper info to generate cards
+    navigate("/flashcards", {
+      state: {
+        organizerContent: `Generate flashcards for ${paper.subject} based on the ${paper.exam_board || "GCSE"} syllabus. Year: ${paper.year || "recent"}. Paper title: ${paper.title}. Focus on key concepts, definitions, and exam-style questions that would appear in this type of paper.`,
+        subject: paper.subject,
+        topic: paper.title,
+      },
+    });
+
+    toast({
+      title: "Generating flashcards...",
+      description: `Creating flashcards for ${paper.subject}`,
+    });
+  };
+
   const filteredPapers = papers.filter((paper) => {
     const matchesSearch = paper.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = selectedSubject === "All Subjects" || paper.subject === selectedSubject;
@@ -581,6 +609,14 @@ export default function PastPapers() {
                           Start Quiz
                         </>
                       )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleGenerateFlashcards(paper)}
+                      title="Generate Flashcards"
+                    >
+                      <Layers className="h-4 w-4" />
                     </Button>
                     {paper.file_url && (
                       <>
