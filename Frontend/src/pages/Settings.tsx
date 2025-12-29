@@ -1,11 +1,8 @@
-import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -13,23 +10,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  User,
-  Bell,
-  Palette,
-  Shield,
-  CreditCard,
-  Crown,
-  Camera,
-  Mail,
-  GraduationCap,
-  Loader2,
-  Trash2,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import {
+  Bell,
+  Camera,
+  CreditCard,
+  Crown,
+  GraduationCap,
+  Loader2,
+  Mail,
+  Palette,
+  Shield,
+  Trash2,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 const settingsSections = [
   { icon: User, label: "Profile", id: "profile" },
@@ -46,7 +45,7 @@ export default function Settings() {
   const [activeSection, setActiveSection] = useState("profile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   // Profile form state
   const [profileData, setProfileData] = useState({
     full_name: "",
@@ -150,7 +149,7 @@ export default function Settings() {
     reader.onloadend = async () => {
       const base64String = reader.result as string;
       setProfileData({ ...profileData, avatar_url: base64String });
-      
+
       // Auto-save the avatar
       if (user) {
         try {
@@ -164,6 +163,12 @@ export default function Settings() {
             });
 
           if (error) throw error;
+
+          // Update localStorage cache and notify other components
+          localStorage.setItem(`avatar_url_${user.id}`, base64String);
+          window.dispatchEvent(new CustomEvent('avatarUpdated', {
+            detail: { avatarUrl: base64String }
+          }));
 
           toast({
             title: "Avatar updated",
@@ -230,7 +235,7 @@ export default function Settings() {
 
       toast({
         title: "Profile updated",
-        description: profileData.email !== user.email 
+        description: profileData.email !== user.email
           ? "Your profile has been updated. Please check your email to verify the new address."
           : "Your profile information has been saved successfully.",
       });
@@ -297,12 +302,12 @@ export default function Settings() {
                 {activeSection === "profile" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
                     <h2 className="text-lg font-semibold text-foreground mb-6">Profile Information</h2>
-                    
+
                     <div className="flex items-center gap-6 mb-6">
                       <div className="relative">
                         <Avatar className="h-20 w-20 border-4 border-primary/20">
-                          <AvatarImage 
-                            src={profileData.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`} 
+                          <AvatarImage
+                            src={profileData.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`}
                           />
                           <AvatarFallback>{initials}</AvatarFallback>
                         </Avatar>
@@ -417,28 +422,28 @@ export default function Settings() {
                 {activeSection === "notifications" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
                     <h2 className="text-lg font-semibold text-foreground mb-6">Notifications</h2>
-                    
+
                     <div className="space-y-4">
                       {[
-                        { 
+                        {
                           key: "studyReminders",
-                          label: "Study reminders", 
-                          description: "Get daily reminders to study" 
+                          label: "Study reminders",
+                          description: "Get daily reminders to study"
                         },
-                        { 
+                        {
                           key: "progressUpdates",
-                          label: "Progress updates", 
-                          description: "Weekly summary of your progress" 
+                          label: "Progress updates",
+                          description: "Weekly summary of your progress"
                         },
-                        { 
+                        {
                           key: "newContentAlerts",
-                          label: "New content alerts", 
-                          description: "When new papers or notes are added" 
+                          label: "New content alerts",
+                          description: "When new papers or notes are added"
                         },
-                        { 
+                        {
                           key: "achievementNotifications",
-                          label: "Achievement notifications", 
-                          description: "Celebrate your milestones" 
+                          label: "Achievement notifications",
+                          description: "Celebrate your milestones"
                         },
                       ].map((notification) => (
                         <div key={notification.key} className="flex items-center justify-between">
@@ -462,7 +467,7 @@ export default function Settings() {
                 {activeSection === "appearance" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
                     <h2 className="text-lg font-semibold text-foreground mb-6">Appearance</h2>
-                    
+
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
                         <div>
@@ -521,7 +526,7 @@ export default function Settings() {
                 {activeSection === "privacy" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
                     <h2 className="text-lg font-semibold text-foreground mb-6">Privacy & Account</h2>
-                    
+
                     <div className="space-y-6">
                       <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
                         <h3 className="font-semibold text-foreground mb-2">Danger Zone</h3>
@@ -534,7 +539,7 @@ export default function Settings() {
                             if (!confirm("Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.")) {
                               return;
                             }
-                            
+
                             if (!confirm("This is your last chance. Are you absolutely sure?")) {
                               return;
                             }
@@ -543,7 +548,7 @@ export default function Settings() {
                             try {
                               // Delete all user data first (cascade should handle this, but let's be explicit)
                               const tables = ["notes", "flashcards", "past_papers", "knowledge_organizers", "extracurriculars"];
-                              
+
                               for (const table of tables) {
                                 await supabase.from(table).delete().eq("user_id", user?.id);
                               }
@@ -597,7 +602,7 @@ export default function Settings() {
                 {activeSection === "subscription" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.4s", opacity: 0 }}>
                     <h2 className="text-lg font-semibold text-foreground mb-6">Subscription</h2>
-                    
+
                     <div className="p-4 rounded-xl bg-muted/50 border border-border mb-4">
                       <div className="flex items-center justify-between">
                         <div>

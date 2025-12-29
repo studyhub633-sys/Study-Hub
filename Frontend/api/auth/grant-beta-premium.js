@@ -16,9 +16,6 @@ export default async function handler(req, res) {
 
     try {
         const user = await verifyAuth(req);
-
-        // ULTRA-SIMPLE: Just set is_premium to true
-        // If upsert still fails, we'll get the exact error message
         const { error } = await supabase
             .from("profiles")
             .upsert({

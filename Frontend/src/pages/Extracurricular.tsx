@@ -1,18 +1,15 @@
-import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -20,26 +17,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Plus,
-  Award,
-  Clock,
-  Calendar,
-  Trophy,
-  Upload,
-  Briefcase,
-  Heart,
-  Users,
-  Music,
-  Code,
-  ChevronRight,
-  Edit,
-  Trash2,
-  Loader2,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import {
+  Award,
+  Briefcase,
+  Calendar,
+  ChevronRight,
+  Clock,
+  Code,
+  Edit,
+  ExternalLink,
+  Globe,
+  Heart,
+  Loader2,
+  Music,
+  Plus,
+  Trash2,
+  Trophy,
+  Users
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Activity {
   id: string;
@@ -350,6 +350,94 @@ export default function Extracurricular() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* External Opportunities Section */}
+        <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.15s", opacity: 0 }}>
+          <div className="flex items-center gap-2 mb-4">
+            <Globe className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold text-foreground">Find Opportunities</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Explore work experience, volunteering, and skill-building opportunities
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              {
+                name: "Do-it",
+                url: "https://doit.life/volunteer",
+                desc: "Find volunteering opportunities near you",
+                category: "Volunteering"
+              },
+              {
+                name: "vInspired",
+                url: "https://vinspired.com",
+                desc: "Youth volunteering and social action",
+                category: "Volunteering"
+              },
+              {
+                name: "Springpod",
+                url: "https://www.springpod.com",
+                desc: "Virtual work experience programmes",
+                category: "Work Experience"
+              },
+              {
+                name: "RateMyPlacement",
+                url: "https://www.ratemyplacement.co.uk",
+                desc: "Student placements and internships",
+                category: "Work Experience"
+              },
+              {
+                name: "Investin",
+                url: "https://investin.org",
+                desc: "Career experience programmes",
+                category: "Work Experience"
+              },
+              {
+                name: "NCS",
+                url: "https://wearencs.com",
+                desc: "National Citizen Service programmes",
+                category: "Leadership"
+              },
+              {
+                name: "DofE",
+                url: "https://www.dofe.org",
+                desc: "Duke of Edinburgh Award",
+                category: "Skills"
+              },
+              {
+                name: "Young Enterprise",
+                url: "https://www.young-enterprise.org.uk",
+                desc: "Business and entrepreneurship skills",
+                category: "Skills"
+              },
+            ].map((link) => (
+              <a
+                key={link.name}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group p-3 rounded-lg bg-muted/50 hover:bg-muted border border-transparent hover:border-primary/20 transition-all duration-200"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
+                        {link.name}
+                      </span>
+                      <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all" />
+                    </div>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary mt-1 inline-block">
+                      {link.category}
+                    </span>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {link.desc}
+                    </p>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* Timeline and Activities */}

@@ -48,6 +48,14 @@ export function Sidebar() {
   useEffect(() => {
     if (!user) return;
 
+    // Try to load from cache first for instant display
+    const cacheKey = `avatar_url_${user.id}`;
+    const cachedAvatar = localStorage.getItem(cacheKey);
+    if (cachedAvatar) {
+      setAvatarUrl(cachedAvatar);
+    }
+
+    // Fetch from database and update cache
     const fetchAvatar = async () => {
       try {
         const { data: profile } = await supabase
@@ -58,6 +66,7 @@ export function Sidebar() {
 
         if (profile?.avatar_url) {
           setAvatarUrl(profile.avatar_url);
+          localStorage.setItem(cacheKey, profile.avatar_url);
         }
       } catch (error) {
         console.error("Error fetching avatar:", error);
@@ -65,6 +74,19 @@ export function Sidebar() {
     };
 
     fetchAvatar();
+
+    // Listen for avatar update events from Settings page
+    const handleAvatarUpdate = (event: CustomEvent) => {
+      if (event.detail?.avatarUrl) {
+        setAvatarUrl(event.detail.avatarUrl);
+        localStorage.setItem(cacheKey, event.detail.avatarUrl);
+      }
+    };
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate as EventListener);
+    return () => {
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate as EventListener);
+    };
   }, [user, supabase]);
 
   const handleSignOut = async () => {

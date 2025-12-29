@@ -28,7 +28,6 @@ import {
   AlertCircle,
   CheckCircle,
   Download,
-  Edit,
   Eye,
   FileText,
   Layers,
@@ -40,7 +39,6 @@ import {
   Sparkles,
   Star,
   Timer,
-  Trash2,
   Upload
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -540,24 +538,6 @@ export default function PastPapers() {
                       {paper.exam_board && (
                         <Badge variant="outline">{paper.exam_board}</Badge>
                       )}
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleEditPaper(paper)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleDeletePaper(paper.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
                     </div>
                   </div>
 

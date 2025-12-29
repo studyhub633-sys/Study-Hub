@@ -715,12 +715,12 @@ export default function Knowledge() {
             <p className="text-muted-foreground mt-1">Visual summaries to consolidate your learning</p>
           </div>
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
-            <Button variant="outline" onClick={() => setIsAiDialogOpen(true)}>
-              <Brain className="h-4 w-4 mr-2" />
-              Generate with AI
+            <Button variant="outline" onClick={() => setIsAiDialogOpen(true)} className="whitespace-nowrap">
+              <Brain className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span>Generate with AI</span>
               {aiUsageCount !== null && (
-                <span className="ml-2 text-xs">
-                  {isPremiumUser ? "(Lifetime Access)" : `(${aiLimit - aiUsageCount} left)`}
+                <span className="ml-2 text-xs opacity-70">
+                  {isPremiumUser ? "(∞)" : `(${aiLimit - aiUsageCount})`}
                 </span>
               )}
             </Button>
