@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { EXAM_BOARDS } from "@/lib/constants";
+import { EXAM_BOARDS, GCSE_TIERS } from "@/lib/constants";
 import { SmartPaperParser } from "@/lib/paper-parser";
 import { cn } from "@/lib/utils";
 import {
@@ -75,6 +75,7 @@ export default function PastPapers() {
     subject: "",
     year: "",
     exam_board: "",
+    tier: "",
     file_url: "",
     file_type: "link" as "link" | "upload",
     file: null as File | null,
@@ -122,6 +123,7 @@ export default function PastPapers() {
       subject: "",
       year: "",
       exam_board: "",
+      tier: "",
       file_url: "",
       file_type: "link",
       file: null,
@@ -140,6 +142,7 @@ export default function PastPapers() {
       subject: paper.subject || "",
       year: paper.year?.toString() || "",
       exam_board: paper.exam_board || "",
+      tier: "",
       file_url: paper.file_url || "",
       file_type: (paper.file_type || (isLink ? "link" : "upload")) as "link" | "upload",
       file: null,
@@ -690,6 +693,24 @@ export default function PastPapers() {
                 onChange={(e) => setFormData({ ...formData, year: e.target.value })}
                 placeholder="2024"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tier">Tier</Label>
+              <Select
+                value={formData.tier}
+                onValueChange={(value) => setFormData({ ...formData, tier: value })}
+              >
+                <SelectTrigger id="tier">
+                  <SelectValue placeholder="Select tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GCSE_TIERS.map((tier) => (
+                    <SelectItem key={tier} value={tier}>
+                      {tier}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>File Attachment</Label>
