@@ -23,7 +23,6 @@ import Premium from "./pages/Premium";
 import FocusMode from "./pages/premium/FocusMode";
 import HomeworkSolver from "./pages/premium/HomeworkSolver";
 import Leaderboard from "./pages/premium/Leaderboard";
-import ModelAnswers from "./pages/premium/ModelAnswers";
 import NoteCondenser from "./pages/premium/NoteCondenser";
 import PredictedGrades from "./pages/premium/PredictedGrades";
 import VirtualSessions from "./pages/premium/VirtualSessions";
@@ -151,14 +150,6 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <PredictedGrades />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/premium/model-answers"
-                  element={
-                    <ProtectedRoute>
-                      <ModelAnswers />
                     </ProtectedRoute>
                   }
                 />

@@ -1,5 +1,4 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,9 +7,7 @@ import { hasPremium } from "@/lib/premium";
 import {
     Brain,
     Calculator,
-    Crown,
     FileText,
-    GraduationCap,
     Lock,
     Sparkles,
     Timer,
@@ -71,14 +68,6 @@ export default function PremiumDashboard() {
             bg: "bg-green-500/10",
         },
         {
-            title: "Model Answer Bank",
-            description: "Access a library of A* model answers for your exam board.",
-            icon: GraduationCap,
-            path: "/premium/model-answers",
-            color: "text-yellow-500",
-            bg: "bg-yellow-500/10",
-        },
-        {
             title: "Focus Mode",
             description: "Distraction-free study timer with Pomodoro technique.",
             icon: Timer,
@@ -123,8 +112,8 @@ export default function PremiumDashboard() {
                         </div>
 
                         {!isPremium && (
-                            <Button 
-                                size="lg" 
+                            <Button
+                                size="lg"
                                 className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white shadow-lg border-0 text-lg px-8 py-6 h-auto"
                                 onClick={() => navigate("/premium")}
                             >
