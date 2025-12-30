@@ -66,6 +66,7 @@ export default function VirtualSessions() {
     const [selectedResources, setSelectedResources] = useState<string[]>([]);
     const [loadingResources, setLoadingResources] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
+    const [showHostGuide, setShowHostGuide] = useState(false);
     const [isStartNow, setIsStartNow] = useState(false);
     const [formData, setFormData] = useState({
         title: "",
@@ -285,13 +286,11 @@ export default function VirtualSessions() {
             // If "Start Now" was selected, automatically open the meeting
             if (isStartNow) {
                 const displayName = user.email?.split('@')[0] || "Host";
-                const openUrl = `${meetingUrl}#userInfo.displayName="${encodeURIComponent(displayName)}"`;
+                const openUrl = `${meetingUrl}#userInfo.displayName="${encodeURIComponent(displayName)}"&config.prejoinPageEnabled=false`;
                 window.open(openUrl, "_blank", "width=1200,height=800");
 
-                toast({
-                    title: "Launching Session",
-                    description: "Please log in as the host in the Jitsi window to start the meeting for others.",
-                });
+                // Show host guide
+                setShowHostGuide(true);
             }
 
             setIsCreateDialogOpen(false);
@@ -368,8 +367,16 @@ export default function VirtualSessions() {
     const handleJoinSession = (session: VirtualSession) => {
         // Open Jitsi Meet in a new window with user's name
         const displayName = user?.email?.split('@')[0] || "Guest";
-        const meetingUrl = `${session.meeting_url}#userInfo.displayName="${encodeURIComponent(displayName)}"`;
+        const meetingUrl = `${session.meeting_url}#userInfo.displayName="${encodeURIComponent(displayName)}"&config.prejoinPageEnabled=false`;
         window.open(meetingUrl, "_blank", "width=1200,height=800");
+
+        // Use a simpler check: if I created it, I might need to host it
+        if (user && session.created_by === user.id) {
+            toast({
+                title: "Starting Session",
+                description: "Remember to log in as default moderator if prompted.",
+            });
+        }
     };
 
     const formatDate = (dateString: string) => {
