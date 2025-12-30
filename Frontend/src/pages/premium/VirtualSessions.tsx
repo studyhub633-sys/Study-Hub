@@ -68,6 +68,7 @@ export default function VirtualSessions() {
     const [isVerifying, setIsVerifying] = useState(false);
     const [showHostGuide, setShowHostGuide] = useState(false);
     const [isStartNow, setIsStartNow] = useState(false);
+    const [editingSession, setEditingSession] = useState<VirtualSession | null>(null);
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -226,7 +227,7 @@ export default function VirtualSessions() {
             return;
         }
 
-        if (!formData.title.trim() || !formData.tutor_name.trim() || (!formData.scheduled_time && !isStartNow)) {
+        if (!formData.title.trim() || !formData.tutor_name.trim() || (!formData.scheduled_time && !isStartNow && !editingSession)) {
             toast({
                 title: "Error",
                 description: "Please fill in all required fields.",
@@ -237,54 +238,82 @@ export default function VirtualSessions() {
 
         setIsVerifying(true);
         try {
-            const meetingRoomId = generateMeetingRoomId();
+            const meetingRoomId = editingSession ? editingSession.meeting_room_id : generateMeetingRoomId();
             const meetingUrl = `https://meet.jit.si/${meetingRoomId}`;
-            const scheduledTime = isStartNow ? new Date().toISOString() : formData.scheduled_time;
+
+            // If editing, use existing scheduled time if not changed, else use form data
+            // If start now, use current time
+            let scheduledTime = formData.scheduled_time;
+            if (isStartNow) {
+                scheduledTime = new Date().toISOString();
+            }
 
             // Separate selected resources by type
             const pastPapers = selectedResources.filter(id => resources.find(r => r.id === id)?.type === "past_paper");
             const knowledgeOrganizers = selectedResources.filter(id => resources.find(r => r.id === id)?.type === "knowledge_organizer");
             const flashcards = selectedResources.filter(id => resources.find(r => r.id === id)?.type === "flashcard");
 
-            // Generate verification token
-            const verificationToken = crypto.randomUUID();
+            // Generate verification token only for new sessions
+            const verificationToken = editingSession ? editingSession.verification_token : crypto.randomUUID();
 
-            const { data, error } = await supabase
-                .from("virtual_sessions")
-                .insert({
-                    created_by: user.id,
-                    title: formData.title,
-                    description: formData.description || null,
-                    subject: formData.subject || null,
-                    tutor_name: formData.tutor_name,
-                    scheduled_time: scheduledTime,
-                    duration_minutes: parseInt(formData.duration_minutes) || 60,
-                    max_attendees: parseInt(formData.max_attendees) || 50,
-                    meeting_room_id: meetingRoomId,
-                    meeting_url: meetingUrl,
-                    linked_past_papers: null,
-                    linked_knowledge_organizers: null,
-                    linked_flashcards: null,
-                    // AUTO-VERIFY for global visibility as requested
-                    email_verified: true,
-                    verification_token: verificationToken,
-                    status: "upcoming",
-                })
-                .select()
-                .single();
+            if (editingSession) {
+                const { error } = await supabase
+                    .from("virtual_sessions")
+                    .update({
+                        title: formData.title,
+                        description: formData.description || null,
+                        subject: formData.subject || null,
+                        tutor_name: formData.tutor_name,
+                        scheduled_time: scheduledTime,
+                        duration_minutes: parseInt(formData.duration_minutes) || 60,
+                        max_attendees: parseInt(formData.max_attendees) || 50,
+                        // Don't update meeting room info or creation details
+                    })
+                    .eq('id', editingSession.id)
+                    .select();
 
-            if (error) throw error;
+                if (error) throw error;
 
-            // Email verification no longer blocking visibility, but we can still send the confirmation if needed.
-            // For now, removing the "Check your email" toast message since it's live immediately.
+                toast({
+                    title: "Session Updated!",
+                    description: "Your session details have been updated.",
+                });
 
-            toast({
-                title: "Session Created!",
-                description: "Your session is now live and visible to everyone.",
-            });
+            } else {
+                const { error } = await supabase
+                    .from("virtual_sessions")
+                    .insert({
+                        created_by: user.id,
+                        title: formData.title,
+                        description: formData.description || null,
+                        subject: formData.subject || null,
+                        tutor_name: formData.tutor_name,
+                        scheduled_time: scheduledTime,
+                        duration_minutes: parseInt(formData.duration_minutes) || 60,
+                        max_attendees: parseInt(formData.max_attendees) || 50,
+                        meeting_room_id: meetingRoomId,
+                        meeting_url: meetingUrl,
+                        linked_past_papers: null,
+                        linked_knowledge_organizers: null,
+                        linked_flashcards: null,
+                        // AUTO-VERIFY for global visibility as requested
+                        email_verified: true,
+                        verification_token: verificationToken, // Use unknown type fix or cast if needed, but it's string in db
+                        status: "upcoming",
+                    });
+
+                if (error) throw error;
+
+                toast({
+                    title: "Session Created!",
+                    description: "Your session is now live and visible to everyone.",
+                });
+            }
 
             // If "Start Now" was selected, automatically open the meeting
             if (isStartNow) {
+                // For edits, we don't necessarily restart meeting unless they specifically checked Start Now again
+                // But typically Start Now is for creation. Let's allow it for edits too if they want to jump in.
                 const displayName = user.email?.split('@')[0] || "Host";
                 const openUrl = `${meetingUrl}#userInfo.displayName="${encodeURIComponent(displayName)}"&config.prejoinPageEnabled=false`;
                 window.open(openUrl, "_blank", "width=1200,height=800");
@@ -294,6 +323,7 @@ export default function VirtualSessions() {
             }
 
             setIsCreateDialogOpen(false);
+            setEditingSession(null); // Reset editing state
             setFormData({
                 title: "",
                 description: "",
@@ -306,15 +336,58 @@ export default function VirtualSessions() {
             setSelectedResources([]);
             fetchSessions();
         } catch (error: any) {
-            console.error("Error creating session:", error);
+            console.error("Error creating/updating session:", error);
             toast({
                 title: "Error",
-                description: error.message || "Failed to create session. Please try again.",
+                description: error.message || "Failed to save session. Please try again.",
                 variant: "destructive",
             });
         } finally {
             setIsVerifying(false);
         }
+    };
+
+    const handleDeleteSession = async (sessionId: string) => {
+        if (!confirm("Are you sure you want to delete this session? This action cannot be undone.")) {
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from("virtual_sessions")
+                .delete()
+                .eq('id', sessionId);
+
+            if (error) throw error;
+
+            toast({
+                title: "Session Deleted",
+                description: "The session has been successfully removed.",
+            });
+            fetchSessions();
+        } catch (error: any) {
+            console.error("Error deleting session:", error);
+            toast({
+                title: "Error",
+                description: "Failed to delete session.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleEditClick = (session: VirtualSession) => {
+        setEditingSession(session);
+        setFormData({
+            title: session.title,
+            description: session.description || "",
+            subject: session.subject || "",
+            tutor_name: session.tutor_name,
+            scheduled_time: session.scheduled_time, // Keep original ISO string
+            duration_minutes: session.duration_minutes.toString(),
+            max_attendees: session.max_attendees.toString(),
+        });
+        setIsStartNow(false);
+        setIsCreateDialogOpen(true);
     };
 
     const handleRegister = async (sessionId: string) => {
@@ -414,7 +487,19 @@ export default function VirtualSessions() {
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold">Upcoming Sessions</h2>
                     {isPremium && (
-                        <Button onClick={() => setIsCreateDialogOpen(true)}>
+                        <Button onClick={() => {
+                            setEditingSession(null);
+                            setFormData({
+                                title: "",
+                                description: "",
+                                subject: "",
+                                tutor_name: "",
+                                scheduled_time: "",
+                                duration_minutes: "60",
+                                max_attendees: "50",
+                            });
+                            setIsCreateDialogOpen(true);
+                        }}>
                             <Plus className="w-4 h-4 mr-2" />
                             Create Session
                         </Button>
@@ -521,7 +606,30 @@ export default function VirtualSessions() {
                                                     )}
                                                 </div>
 
-                                                <div className="flex gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    {isCreator && (
+                                                        <>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                onClick={() => handleEditClick(session)}
+                                                                title="Edit Session"
+                                                            >
+                                                                <Pencil className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                                onClick={() => handleDeleteSession(session.id)}
+                                                                title="Delete Session"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        </>
+                                                    )}
+
+
                                                     {canJoin ? (
                                                         <Button
                                                             className={isCreator ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"}
@@ -561,9 +669,9 @@ export default function VirtualSessions() {
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Create Virtual Session</DialogTitle>
+                        <DialogTitle>{editingSession ? "Edit Virtual Session" : "Create Virtual Session"}</DialogTitle>
                         <DialogDescription>
-                            Create a new virtual group revision session using Jitsi Meet.
+                            {editingSession ? "Update your session details." : "Create a new virtual group revision session using Jitsi Meet."}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
@@ -674,10 +782,10 @@ export default function VirtualSessions() {
                             {isVerifying ? (
                                 <>
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Creating...
+                                    {editingSession ? "Update Session" : "Create Session"}
                                 </>
                             ) : (
-                                "Create Session"
+                                editingSession ? "Update Session" : "Create Session"
                             )}
                         </Button>
                     </DialogFooter>
