@@ -65,6 +65,7 @@ export default function Flashcards() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
+  const [selectedTopic, setSelectedTopic] = useState("All Topics");
   const [selectedTier, setSelectedTier] = useState("All Tiers");
   const [searchQuery, setSearchQuery] = useState("");
   const [quizMode, setQuizMode] = useState(false);
@@ -420,13 +421,34 @@ export default function Flashcards() {
   const filteredCards = cards.filter((card) => {
     const matchesSubject =
       selectedSubject === "All Subjects" || card.subject === selectedSubject;
+    const matchesTopic =
+      selectedTopic === "All Topics" || card.topic === selectedTopic;
     const matchesTier =
       selectedTier === "All Tiers" || card.tier === selectedTier;
     const matchesSearch =
       card.front.toLowerCase().includes(searchQuery.toLowerCase()) ||
       card.back.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSubject && matchesTier && matchesSearch;
+    return matchesSubject && matchesTopic && matchesTier && matchesSearch;
   });
+
+  // Group cards by subject and topic for organization
+  const groupedCards = filteredCards.reduce((acc, card) => {
+    const subject = card.subject || "Uncategorized";
+    const topic = card.topic || "General";
+    if (!acc[subject]) {
+      acc[subject] = {};
+    }
+    if (!acc[subject][topic]) {
+      acc[subject][topic] = [];
+    }
+    acc[subject][topic].push(card);
+    return acc;
+  }, {} as Record<string, Record<string, Flashcard[]>>);
+
+  const subjects = Array.from(new Set(cards.map((c) => c.subject).filter(Boolean)));
+  const topics = selectedSubject !== "All Subjects"
+    ? Array.from(new Set(cards.filter(c => c.subject === selectedSubject).map((c) => c.topic).filter(Boolean)))
+    : Array.from(new Set(cards.map((c) => c.topic).filter(Boolean)));
 
   const currentCard = filteredCards[currentIndex];
   const progress =
@@ -436,16 +458,14 @@ export default function Flashcards() {
 
   const handleNext = () => {
     setIsFlipped(false);
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % filteredCards.length);
-    }, 200);
+    // Remove delay for faster quiz mode
+    setCurrentIndex((prev) => (prev + 1) % filteredCards.length);
   };
 
   const handlePrev = () => {
     setIsFlipped(false);
-    setTimeout(() => {
-      setCurrentIndex((prev) => (prev - 1 + filteredCards.length) % filteredCards.length);
-    }, 200);
+    // Remove delay for faster quiz mode
+    setCurrentIndex((prev) => (prev - 1 + filteredCards.length) % filteredCards.length);
   };
 
   const handleFlip = () => {
@@ -453,16 +473,20 @@ export default function Flashcards() {
   };
 
   const handleAnswer = async (correct: boolean) => {
-    if (currentCard) {
-      await handleMarkReview(currentCard.id, correct);
-    }
-
+    // Update score immediately for instant feedback
     if (correct) {
       setScore((prev) => ({ ...prev, correct: prev.correct + 1 }));
     } else {
       setScore((prev) => ({ ...prev, incorrect: prev.incorrect + 1 }));
     }
+    
+    // Move to next card immediately
     handleNext();
+    
+    // Mark review in background (non-blocking)
+    if (currentCard) {
+      handleMarkReview(currentCard.id, correct).catch(console.error);
+    }
   };
 
   const resetQuiz = () => {
@@ -551,7 +575,10 @@ export default function Flashcards() {
               className="pl-9"
             />
           </div>
-          <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+          <Select value={selectedSubject} onValueChange={(value) => {
+            setSelectedSubject(value);
+            setSelectedTopic("All Topics"); // Reset topic when subject changes
+          }}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue />
@@ -561,6 +588,19 @@ export default function Flashcards() {
               {subjects.map((subject) => (
                 <SelectItem key={subject} value={subject}>
                   {subject}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Topics">All Topics</SelectItem>
+              {topics.map((topic) => (
+                <SelectItem key={topic} value={topic}>
+                  {topic}
                 </SelectItem>
               ))}
             </SelectContent>

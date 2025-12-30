@@ -163,7 +163,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <Sparkles className="h-4 w-4 text-premium animate-pulse-subtle" />
             <div className="absolute inset-0 bg-premium/20 blur-md rounded-full animate-pulse-glow" />
           </div>
-          <span className="text-sm font-bold bg-gradient-to-r from-premium to-purple-400 bg-clip-text text-transparent italic tracking-tight">
+          <span className="text-sm font-bold bg-gradient-to-r from-premium to-purple-400 bg-clip-text text-transparent italic tracking-tight whitespace-nowrap">
             Generate with AI
           </span>
         </div>

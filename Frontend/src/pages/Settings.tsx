@@ -165,9 +165,17 @@ export default function Settings() {
           if (error) throw error;
 
           // Update localStorage cache and notify other components
-          localStorage.setItem(`avatar_url_${user.id}`, base64String);
+          const cacheKey = `avatar_url_${user.id}`;
+          localStorage.setItem(cacheKey, base64String);
+          // Dispatch custom event for same-tab updates
           window.dispatchEvent(new CustomEvent('avatarUpdated', {
             detail: { avatarUrl: base64String }
+          }));
+          // Also trigger storage event for cross-tab updates
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: cacheKey,
+            newValue: base64String,
+            storageArea: localStorage
           }));
 
           toast({

@@ -50,6 +50,7 @@ interface Activity {
   start_date: string | null;
   end_date: string | null;
   achievements: string[] | null;
+  external_link: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -81,6 +82,7 @@ export default function Extracurricular() {
     start_date: "",
     end_date: "",
     achievements: "",
+    external_link: "",
   });
 
   useEffect(() => {
@@ -125,6 +127,7 @@ export default function Extracurricular() {
       start_date: "",
       end_date: "",
       achievements: "",
+      external_link: "",
     });
     setIsAddDialogOpen(true);
   };
@@ -140,6 +143,7 @@ export default function Extracurricular() {
       start_date: activity.start_date || "",
       end_date: activity.end_date || "",
       achievements: activity.achievements?.join(", ") || "",
+      external_link: activity.external_link || "",
     });
     setIsAddDialogOpen(true);
   };
@@ -168,6 +172,7 @@ export default function Extracurricular() {
         start_date: formData.start_date || null,
         end_date: formData.end_date || null,
         achievements: achievementsArray.length > 0 ? achievementsArray : null,
+        external_link: formData.external_link?.trim() || null,
       };
 
       if (editingActivity) {
@@ -526,6 +531,18 @@ export default function Extracurricular() {
                                     {activity.description}
                                   </p>
                                 )}
+                                {activity.external_link && (
+                                  <a
+                                    href={activity.external_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                    View Link
+                                  </a>
+                                )}
                               </div>
                               <div className="flex gap-1">
                                 <Button
@@ -623,6 +640,20 @@ export default function Extracurricular() {
                     <div>
                       <p className="text-sm text-muted-foreground">Description</p>
                       <p className="text-foreground">{selectedActivity.description}</p>
+                    </div>
+                  )}
+                  {selectedActivity.external_link && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">External Link</p>
+                      <a
+                        href={selectedActivity.external_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        {selectedActivity.external_link}
+                      </a>
                     </div>
                   )}
                   {selectedActivity.category && (

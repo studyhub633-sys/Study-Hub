@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { hasPremium } from "@/lib/premium";
 import {
     Brain,
     Calculator,
@@ -16,15 +17,33 @@ import {
     Trophy,
     Users
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function PremiumDashboard() {
-    const { user } = useAuth();
+    const { user, supabase } = useAuth();
     const navigate = useNavigate();
     const { theme } = useTheme();
+    const [isPremium, setIsPremium] = useState(false);
+    const [checking, setChecking] = useState(true);
 
-    // TODO: Replace with actual premium check from profile
-    const isPremium = false; // Mock for now, will connect to profile later
+    useEffect(() => {
+        const checkPremium = async () => {
+            if (user && supabase) {
+                try {
+                    const premium = await hasPremium(supabase);
+                    setIsPremium(premium);
+                } catch (error) {
+                    console.error("Error checking premium status:", error);
+                } finally {
+                    setChecking(false);
+                }
+            } else {
+                setChecking(false);
+            }
+        };
+        checkPremium();
+    }, [user, supabase]);
 
     const features = [
         {
@@ -109,7 +128,11 @@ export default function PremiumDashboard() {
                         </div>
 
                         {!isPremium && (
-                            <Button size="lg" className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white shadow-lg border-0 text-lg px-8 py-6 h-auto">
+                            <Button 
+                                size="lg" 
+                                className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white shadow-lg border-0 text-lg px-8 py-6 h-auto"
+                                onClick={() => navigate("/premium")}
+                            >
                                 <Sparkles className="w-5 h-5 mr-2" />
                                 Upgrade to Premium
                             </Button>
@@ -144,7 +167,9 @@ export default function PremiumDashboard() {
                             </CardContent>
 
                             <CardFooter className="pt-0 flex justify-between items-center text-sm text-muted-foreground">
-                                <span className="group-hover:text-primary transition-colors">Launch Tool</span>
+                                <span className="group-hover:text-primary transition-colors">
+                                    {!isPremium ? "Premium Only" : "Launch Tool"}
+                                </span>
                                 {!isPremium ? (
                                     <Lock className="w-4 h-4 text-muted-foreground" />
                                 ) : (

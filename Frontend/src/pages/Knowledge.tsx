@@ -735,9 +735,9 @@ export default function Knowledge() {
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
             <Button variant="outline" onClick={() => setIsAiDialogOpen(true)} className="whitespace-nowrap">
               <Brain className="h-4 w-4 mr-2 flex-shrink-0" />
-              <span>Generate with AI</span>
+              <span className="whitespace-nowrap">Generate with AI</span>
               {aiUsageCount !== null && (
-                <span className="ml-2 text-xs opacity-70">
+                <span className="ml-2 text-xs opacity-70 whitespace-nowrap">
                   {isPremiumUser ? "(∞)" : `(${aiLimit - aiUsageCount})`}
                 </span>
               )}

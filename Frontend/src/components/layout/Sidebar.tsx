@@ -31,7 +31,7 @@ const navItems = [
   { icon: Brain, label: "Knowledge Organizers", path: "/knowledge" },
   { icon: Library, label: "Global Library", path: "/library" },
   { icon: Award, label: "Extracurriculars", path: "/extracurricular" },
-  { icon: Crown, label: "Premium Hub", path: "/premium" },
+  { icon: Crown, label: "Premium Hub", path: "/premium-dashboard" },
 ];
 
 const bottomNavItems = [
@@ -68,9 +68,16 @@ export function Sidebar() {
         if (profile?.avatar_url) {
           setAvatarUrl(profile.avatar_url);
           localStorage.setItem(cacheKey, profile.avatar_url);
+        } else if (cachedAvatar) {
+          // Keep cached version if DB doesn't have one
+          setAvatarUrl(cachedAvatar);
         }
       } catch (error) {
         console.error("Error fetching avatar:", error);
+        // Keep cached version on error
+        if (cachedAvatar) {
+          setAvatarUrl(cachedAvatar);
+        }
       }
     };
 
@@ -84,9 +91,18 @@ export function Sidebar() {
       }
     };
 
+    // Also listen for storage events (cross-tab updates)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === cacheKey && e.newValue) {
+        setAvatarUrl(e.newValue);
+      }
+    };
+
     window.addEventListener('avatarUpdated', handleAvatarUpdate as EventListener);
+    window.addEventListener('storage', handleStorageChange);
     return () => {
       window.removeEventListener('avatarUpdated', handleAvatarUpdate as EventListener);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, [user, supabase]);
 

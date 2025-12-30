@@ -86,12 +86,68 @@ export default function PastPapers() {
   });
   const [reviewPaper, setReviewPaper] = useState<Paper | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [studyTime, setStudyTime] = useState<number>(0); // Total study time in seconds
+  const [currentSessionStart, setCurrentSessionStart] = useState<Date | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchPapers();
+      fetchStudyTime();
     }
   }, [user]);
+
+  // Real-time study time tracking
+  useEffect(() => {
+    if (!reviewPaper || !user) {
+      setCurrentSessionStart(null);
+      return;
+    }
+
+    // Start tracking when review dialog opens
+    const startTime = new Date();
+    setCurrentSessionStart(startTime);
+    let sessionStartRef = startTime;
+
+    // Update study time every second
+    const interval = setInterval(() => {
+      setStudyTime(prev => prev + 1);
+    }, 1000);
+
+    // Save study time when dialog closes
+    return () => {
+      clearInterval(interval);
+      const elapsed = Math.floor((new Date().getTime() - sessionStartRef.getTime()) / 1000);
+      if (elapsed > 0 && reviewPaper) {
+        saveStudyTime(reviewPaper.id, elapsed);
+      }
+    };
+  }, [reviewPaper, user]);
+
+  const fetchStudyTime = async () => {
+    if (!user) return;
+    try {
+      // Calculate total study time from review sessions
+      // For now, we'll estimate based on completed papers and time spent
+      // In a full implementation, you'd track this in a study_sessions table
+      const completedPapers = papers.filter(p => p.completed_at);
+      // Estimate: average 1 hour per completed paper
+      const estimatedHours = completedPapers.length * 1;
+      setStudyTime(estimatedHours * 3600);
+    } catch (error) {
+      console.error("Error fetching study time:", error);
+    }
+  };
+
+  const saveStudyTime = async (paperId: string, seconds: number) => {
+    if (!user || seconds <= 0) return;
+    try {
+      // In a full implementation, save to study_sessions table
+      // For now, we'll just update the local state
+      setStudyTime(prev => prev + seconds);
+    } catch (error) {
+      console.error("Error saving study time:", error);
+    }
+  };
 
   const fetchPapers = async () => {
     if (!user) return;
@@ -385,6 +441,16 @@ export default function PastPapers() {
 
   const handleReview = (paper: Paper) => {
     setReviewPaper(paper);
+    setCurrentSessionStart(new Date());
+  };
+
+  const formatStudyTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
 
   const handleGenerateFlashcards = (paper: Paper) => {
@@ -433,16 +499,27 @@ export default function PastPapers() {
   // Removed dynamic examBoards generation since we now have fixed constant, but could mix both if needed
   // For now, let's just use the constant for filtering to guide the user potentially
 
-  // Concise title logic
+  // Concise title logic - auto-generate concise titles
   useEffect(() => {
     if (!editingPaper && formData.year && formData.subject && formData.tier) {
       const tierShort = formData.tier === "Higher" ? "H" : "F";
-      const suggestedTitle = `${formData.year}${tierShort} Paper 1 ${formData.subject}`;
-      if (!formData.title || formData.title.includes("Paper")) {
+      const examBoardShort = formData.exam_board ? ` ${formData.exam_board}` : "";
+      const suggestedTitle = `${formData.year}${tierShort} ${formData.subject}${examBoardShort}`;
+      if (!formData.title || formData.title.trim() === "") {
         setFormData(prev => ({ ...prev, title: suggestedTitle }));
       }
     }
-  }, [formData.year, formData.subject, formData.tier, editingPaper]);
+  }, [formData.year, formData.subject, formData.tier, formData.exam_board, editingPaper]);
+
+  // Make existing paper titles more concise
+  const getConciseTitle = (paper: Paper) => {
+    if (paper.year && paper.subject && paper.tier) {
+      const tierShort = paper.tier === "Higher" ? "H" : "F";
+      const examBoardShort = paper.exam_board ? ` ${paper.exam_board}` : "";
+      return `${paper.year}${tierShort} ${paper.subject}${examBoardShort}`;
+    }
+    return paper.title;
+  };
 
   if (loading) {
     return (
@@ -477,7 +554,7 @@ export default function PastPapers() {
             { label: "Total Papers", value: papers.length, icon: FileText },
             { label: "Completed", value: completedCount, icon: CheckCircle },
             { label: "Average Score", value: `${Math.round(averageScore)}%`, icon: Star },
-            { label: "Study Time", value: "12.5h", icon: Timer },
+            { label: "Study Time", value: formatStudyTime(studyTime), icon: Timer },
           ].map((stat) => (
             <div key={stat.label} className="glass-card p-4">
               <div className="flex items-center gap-3">
@@ -584,7 +661,7 @@ export default function PastPapers() {
                     </div>
                   </div>
 
-                  <h3 className="font-semibold text-foreground mb-1">{paper.title}</h3>
+                  <h3 className="font-semibold text-foreground mb-1">{getConciseTitle(paper)}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {paper.subject} • {paper.year}
                   </p>
