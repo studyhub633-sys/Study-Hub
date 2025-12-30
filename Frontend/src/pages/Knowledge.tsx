@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -389,6 +390,15 @@ export default function Knowledge() {
       toast({
         title: "Error",
         description: "Title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.tier) {
+      toast({
+        title: "Error",
+        description: "Please select a Tier (Foundation or Higher)",
         variant: "destructive",
       });
       return;
@@ -830,6 +840,11 @@ export default function Knowledge() {
                         <h3 className="font-semibold text-foreground truncate">{org.title}</h3>
                         <p className="text-sm text-muted-foreground">
                           {org.subject || "General"} • {org.topic || "General"}
+                          {org.tier && (
+                            <Badge variant="secondary" className={cn("text-[10px] h-4 px-1 ml-1", org.tier === "Higher" ? "text-red-500 bg-red-500/10" : "text-green-500 bg-green-500/10")}>
+                              {org.tier}
+                            </Badge>
+                          )}
                         </p>
                         <div className="flex items-center gap-2 mt-2">
                           <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">

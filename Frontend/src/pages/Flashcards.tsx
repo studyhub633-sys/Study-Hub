@@ -237,6 +237,15 @@ export default function Flashcards() {
       return;
     }
 
+    if (!formData.tier) {
+      toast({
+        title: "Error",
+        description: "Please select a Tier (Foundation or Higher)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       if (editingCard) {
         // Update existing card
@@ -647,10 +656,15 @@ export default function Flashcards() {
                 <div className="flip-card-inner">
                   {/* Front */}
                   <div className="flip-card-front glass-card p-8 flex flex-col items-center justify-center text-center">
-                    <div className="absolute top-4 left-4">
+                    <div className="absolute top-4 left-4 flex gap-2">
                       {currentCard.subject && (
                         <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
                           {currentCard.subject}
+                        </span>
+                      )}
+                      {currentCard.tier && (
+                        <span className={cn("text-xs font-medium px-2 py-1 rounded-full", currentCard.tier === "Higher" ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500")}>
+                          {currentCard.tier}
                         </span>
                       )}
                     </div>

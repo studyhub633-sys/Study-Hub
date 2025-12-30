@@ -248,6 +248,15 @@ export default function PastPapers() {
       return;
     }
 
+    if (!formData.tier) {
+      toast({
+        title: "Error",
+        description: "Please select a Tier (Foundation or Higher)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       let fileUrl = formData.file_url;
 
@@ -404,6 +413,7 @@ export default function PastPapers() {
   };
 
   const filteredPapers = papers.filter((paper) => {
+
     const matchesSearch = paper.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = selectedSubject === "All Subjects" || paper.subject === selectedSubject;
     const matchesBoard = selectedBoard === "All Boards" || paper.exam_board === selectedBoard;
@@ -565,6 +575,11 @@ export default function PastPapers() {
                       )}
                       {paper.exam_board && (
                         <Badge variant="outline">{paper.exam_board}</Badge>
+                      )}
+                      {paper.tier && (
+                        <Badge variant="secondary" className={paper.tier === "Higher" ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-green-500/10 text-green-500 border-green-500/20"}>
+                          {paper.tier}
+                        </Badge>
                       )}
                     </div>
                   </div>
