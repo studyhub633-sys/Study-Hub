@@ -5,9 +5,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
-import { LogOut, Menu, Moon, Settings, Sparkles, Sun, User } from "lucide-react";
+import { Crown, LogOut, Menu, Moon, Settings, Sparkles, Sun, User } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { MobileNav } from "./MobileNav";
 import { Sidebar } from "./Sidebar";
 
@@ -19,6 +19,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { signOut, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
@@ -70,6 +71,31 @@ export function AppLayout({ children }: AppLayoutProps) {
                   </SheetHeader>
 
                   <div className="space-y-2 mt-4">
+                    {/* Premium Link - Mobile Exclusive Position */}
+                    <Button
+                      className={cn(
+                        "w-full justify-between gap-3 h-12 relative overflow-hidden group mb-4",
+                        location.pathname === "/premium-dashboard"
+                          ? "bg-premium text-premium-foreground hover:bg-premium/90 shadow-lg shadow-premium/20"
+                          : "bg-premium/5 text-foreground hover:bg-premium/10 border border-premium/20"
+                      )}
+                      onClick={() => handleNavigate("/premium-dashboard")}
+                    >
+                      <div className="flex items-center gap-3 z-10">
+                        <Crown className={cn("h-5 w-5 text-premium", location.pathname === "/premium-dashboard" && "text-premium-foreground")} />
+                        <span className="font-bold tracking-tight">Go Premium</span>
+                      </div>
+                      <div className="flex items-center gap-2 z-10">
+                        <span className="text-[10px] bg-background/20 backdrop-blur-sm px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                          LIFETIME
+                        </span>
+                      </div>
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                    </Button>
+
+                    <Separator className="my-2" />
+
                     {/* Account */}
                     <Button
                       variant="ghost"
