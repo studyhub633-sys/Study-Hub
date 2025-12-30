@@ -104,10 +104,12 @@ export default function PremiumDashboard() {
                     <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div>
                             <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-600 to-amber-600 dark:from-yellow-400 dark:to-amber-400">
-                                Unlock Your Potential
+                                {isPremium ? "Welcome, Premium Member!" : "Unlock Your Potential"}
                             </h1>
                             <p className="text-muted-foreground mt-3 max-w-xl text-lg">
-                                Access advanced AI tools, exclusive content, and powerful study features designed to boost your grades.
+                                {isPremium
+                                    ? "Thank you for upgrading! Enjoy unlimited access to all our advanced AI tools and study features."
+                                    : "Access advanced AI tools, exclusive content, and powerful study features designed to boost your grades."}
                             </p>
                         </div>
 
