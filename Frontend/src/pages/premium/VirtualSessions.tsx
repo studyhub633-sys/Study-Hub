@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
-import { AlertTriangle, Clock, FileText, Layers, Loader2, Plus, Users, Video } from "lucide-react";
+import { AlertTriangle, Clock, FileText, Layers, Loader2, Pencil, Plus, Trash2, Users, Video } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface VirtualSession {
@@ -43,6 +43,7 @@ interface VirtualSession {
     linked_knowledge_organizers?: string[];
     linked_flashcards?: string[];
     email_verified?: boolean;
+    verification_token?: string;
     status: "upcoming" | "live" | "completed" | "cancelled";
     created_by: string;
     created_at: string;
