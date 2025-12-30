@@ -50,7 +50,13 @@ export default function VirtualSessions() {
                                 </div>
 
                                 <div>
-                                    <Button className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700">
+                                    <Button 
+                                        className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700"
+                                        onClick={() => {
+                                            // In a real implementation, this would register the user for the session
+                                            alert(`Registration for "${session.title}" would be processed here. This feature requires backend integration.`);
+                                        }}
+                                    >
                                         Register Now
                                     </Button>
                                 </div>

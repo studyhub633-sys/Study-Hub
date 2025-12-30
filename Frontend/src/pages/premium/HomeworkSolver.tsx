@@ -2,21 +2,69 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { chatWithAI } from "@/lib/ai-client";
 import { Brain, Sparkles, Upload } from "lucide-react";
 import { useState } from "react";
 
 export default function HomeworkSolver() {
+    const { supabase } = useAuth();
+    const { toast } = useToast();
     const [question, setQuestion] = useState("");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [solution, setSolution] = useState<string | null>(null);
 
-    const handleSolve = () => {
+    const handleSolve = async () => {
+        if (!question.trim()) {
+            toast({
+                title: "Error",
+                description: "Please enter a question to solve.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         setIsAnalyzing(true);
-        // Mock API call
-        setTimeout(() => {
+        setSolution(null);
+
+        try {
+            const prompt = `Please solve this homework question step-by-step. Provide a clear explanation of each step, show your work, and explain the reasoning behind each step. If applicable, identify the key concepts being tested.
+
+Question: ${question}`;
+
+            const result = await chatWithAI(
+                {
+                    message: prompt,
+                    context: "You are an expert tutor who provides clear, step-by-step solutions to homework problems. Always show your work and explain your reasoning.",
+                },
+                supabase
+            );
+
+            if (result.error) {
+                throw new Error(result.error);
+            }
+
+            const reply = (result.data as any)?.reply;
+            if (reply) {
+                setSolution(reply);
+                toast({
+                    title: "Success",
+                    description: "Solution generated successfully!",
+                });
+            } else {
+                throw new Error("No response from AI");
+            }
+        } catch (error: any) {
+            console.error("Error solving homework:", error);
+            toast({
+                title: "Error",
+                description: error.message || "Failed to solve question. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
             setIsAnalyzing(false);
-            setSolution("Here is a step-by-step solution to your problem...\n\n1. First, identify the key variables...\n2. Apply the relevant formula...\n3. Calculate the result...");
-        }, 2000);
+        }
     };
 
     return (

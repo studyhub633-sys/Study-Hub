@@ -2,21 +2,82 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { chatWithAI } from "@/lib/ai-client";
 import { ArrowRight, Copy, FileText, Minimize2 } from "lucide-react";
 import { useState } from "react";
 
 export default function NoteCondenser() {
+    const { supabase } = useAuth();
+    const { toast } = useToast();
     const [notes, setNotes] = useState("");
     const [isCondensing, setIsCondensing] = useState(false);
     const [summary, setSummary] = useState<string | null>(null);
 
-    const handleCondense = () => {
+    const handleCondense = async () => {
+        if (!notes.trim()) {
+            toast({
+                title: "Error",
+                description: "Please enter some notes to condense.",
+                variant: "destructive",
+            });
+            return;
+        }
+
         setIsCondensing(true);
-        // Mock API call
-        setTimeout(() => {
+        setSummary(null);
+
+        try {
+            const prompt = `Please condense the following notes into a clear, concise summary. Format your response as follows:
+
+# Summary
+
+- Key point 1: [main point]
+- Key point 2: [main point]
+- Key point 3: [main point]
+[Add more key points as needed]
+
+## Review Questions
+1. What is [key concept]?
+2. How does [key process] work?
+3. [Add 1-2 more review questions]
+
+Notes to condense:
+${notes}`;
+
+            const result = await chatWithAI(
+                {
+                    message: prompt,
+                    context: "You are an expert at condensing educational content into clear summaries and review questions.",
+                },
+                supabase
+            );
+
+            if (result.error) {
+                throw new Error(result.error);
+            }
+
+            const reply = (result.data as any)?.reply;
+            if (reply) {
+                setSummary(reply);
+                toast({
+                    title: "Success",
+                    description: "Notes condensed successfully!",
+                });
+            } else {
+                throw new Error("No response from AI");
+            }
+        } catch (error: any) {
+            console.error("Error condensing notes:", error);
+            toast({
+                title: "Error",
+                description: error.message || "Failed to condense notes. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
             setIsCondensing(false);
-            setSummary("# Summary\n\n- Key point 1: ...\n- Key point 2: ...\n\n## Review Questions\n1. What is...?\n2. How does...?");
-        }, 2000);
+        }
     };
 
     return (
