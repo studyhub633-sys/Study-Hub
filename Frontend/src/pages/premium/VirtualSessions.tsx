@@ -83,32 +83,84 @@ export default function VirtualSessions() {
                 .in("status", ["upcoming", "live"])
                 .order("scheduled_time", { ascending: true });
 
-            if (error) throw error;
-            setSessions(data || []);
+            if (error) {
+                // Table doesn't exist (PGRST error) or permission error
+                // Show sample data for demo purposes
+                console.log("Virtual sessions table not found or error:", error.message);
+                console.log("Showing sample sessions for demonstration");
+                setSessions(getSampleSessions());
+                return;
+            }
+
+            // If table exists but is empty, show empty state
+            // Otherwise show real data from database
+            if (data && data.length > 0) {
+                setSessions(data);
+            } else {
+                // Table exists but empty - show empty state
+                setSessions([]);
+            }
         } catch (error: any) {
             console.error("Error fetching sessions:", error);
-            // Fallback to sample data if table doesn't exist
-            setSessions([
-                {
-                    id: "sample-1",
-                    title: "GCSE Maths: Algebra Revision",
-                    description: "Comprehensive algebra revision session",
-                    subject: "Mathematics",
-                    tutor_name: "Dr. Smith",
-                    scheduled_time: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-                    duration_minutes: 60,
-                    meeting_room_id: "maths-algebra-2024",
-                    meeting_url: "https://meet.jit.si/maths-algebra-2024",
-                    max_attendees: 50,
-                    registered_users: [],
-                    status: "upcoming",
-                    created_by: "admin",
-                    created_at: new Date().toISOString(),
-                },
-            ]);
+            // Fallback to sample data if any error occurs (for demo purposes)
+            setSessions(getSampleSessions());
         } finally {
             setLoading(false);
         }
+    };
+
+    const getSampleSessions = (): VirtualSession[] => {
+        const now = Date.now();
+        return [
+            {
+                id: "sample-1",
+                title: "GCSE Maths: Algebra Revision",
+                description: "Comprehensive algebra revision session covering key topics for GCSE exams",
+                subject: "Mathematics",
+                tutor_name: "Dr. Smith",
+                scheduled_time: new Date(now + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
+                duration_minutes: 60,
+                meeting_room_id: "maths-algebra-2024",
+                meeting_url: "https://meet.jit.si/maths-algebra-2024",
+                max_attendees: 50,
+                registered_users: [],
+                status: "upcoming",
+                created_by: "admin",
+                created_at: new Date().toISOString(),
+            },
+            {
+                id: "sample-2",
+                title: "English Lit: Macbeth Quotes Analysis",
+                description: "Deep dive into key quotes and themes in Macbeth",
+                subject: "English Literature",
+                tutor_name: "Ms. Jones",
+                scheduled_time: new Date(now + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+                duration_minutes: 45,
+                meeting_room_id: "english-macbeth-2024",
+                meeting_url: "https://meet.jit.si/english-macbeth-2024",
+                max_attendees: 40,
+                registered_users: [],
+                status: "upcoming",
+                created_by: "admin",
+                created_at: new Date().toISOString(),
+            },
+            {
+                id: "sample-3",
+                title: "Physics: Forces & Motion",
+                description: "Understanding Newton's laws and motion equations",
+                subject: "Physics",
+                tutor_name: "Mr. Brown",
+                scheduled_time: new Date(now + 48 * 60 * 60 * 1000).toISOString(), // 2 days from now
+                duration_minutes: 60,
+                meeting_room_id: "physics-forces-2024",
+                meeting_url: "https://meet.jit.si/physics-forces-2024",
+                max_attendees: 50,
+                registered_users: [],
+                status: "upcoming",
+                created_by: "admin",
+                created_at: new Date().toISOString(),
+            },
+        ];
     };
 
     const generateMeetingRoomId = () => {
@@ -299,6 +351,14 @@ export default function VirtualSessions() {
                                     Create Session
                                 </Button>
                             )}
+                            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-left max-w-md mx-auto">
+                                <p className="text-sm text-blue-700 dark:text-blue-400 mb-2">
+                                    <strong>Note:</strong> To enable virtual sessions, run the SQL migration:
+                                </p>
+                                <code className="text-xs bg-background p-2 rounded block">
+                                    Frontend/supabase/create_virtual_sessions_table.sql
+                                </code>
+                            </div>
                         </CardContent>
                     </Card>
                 ) : (
