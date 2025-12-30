@@ -683,6 +683,42 @@ export default function VirtualSessions() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Host Guide Dialog */}
+            <Dialog open={showHostGuide} onOpenChange={setShowHostGuide}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                             <div className="p-2 rounded-full bg-amber-100 text-amber-600">
+                                <AlertTriangle className="w-5 h-5" />
+                             </div>
+                             Important: Start Your Meeting
+                        </DialogTitle>
+                        <DialogDescription>
+                            Jitsi Meet requires the Creator (You) to officially start the meeting.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div className="p-4 bg-muted rounded-lg space-y-3">
+                            <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">1</div>
+                                <p className="text-sm">In the Jitsi window that just opened, look for the <strong>"Log In"</strong> or "I am the host" button.</p>
+                            </div>
+                             <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">2</div>
+                                <p className="text-sm">Log in with your Google or GitHub account to claim the room.</p>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">3</div>
+                                <p className="text-sm">Once you are in, other participants will automatically join.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={() => setShowHostGuide(false)}>I Understand</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }
