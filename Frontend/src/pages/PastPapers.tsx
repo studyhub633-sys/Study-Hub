@@ -423,16 +423,6 @@ export default function PastPapers() {
   // Removed dynamic examBoards generation since we now have fixed constant, but could mix both if needed
   // For now, let's just use the constant for filtering to guide the user potentially
 
-  if (loading) {
-    return (
-      <AppLayout>
-        <div className="max-w-6xl mx-auto flex items-center justify-center h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      </AppLayout>
-    );
-  }
-
   // Concise title logic
   useEffect(() => {
     if (!editingPaper && formData.year && formData.subject && formData.tier) {
@@ -443,6 +433,16 @@ export default function PastPapers() {
       }
     }
   }, [formData.year, formData.subject, formData.tier, editingPaper]);
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="max-w-6xl mx-auto flex items-center justify-center h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
