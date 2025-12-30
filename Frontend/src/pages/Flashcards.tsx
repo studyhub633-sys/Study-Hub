@@ -502,8 +502,6 @@ export default function Flashcards() {
     setIsFlipped(false);
   };
 
-  const subjects = Array.from(new Set(cards.map((c) => c.subject).filter(Boolean)));
-
   if (loading) {
     return (
       <AppLayout>
