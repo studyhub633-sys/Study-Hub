@@ -19,7 +19,14 @@ import Login from "./pages/Login";
 import Notes from "./pages/Notes";
 import NotFound from "./pages/NotFound";
 import PastPapers from "./pages/PastPapers";
-import Premium from "./pages/Premium";
+import FocusMode from "./pages/premium/FocusMode";
+import HomeworkSolver from "./pages/premium/HomeworkSolver";
+import Leaderboard from "./pages/premium/Leaderboard";
+import ModelAnswers from "./pages/premium/ModelAnswers";
+import NoteCondenser from "./pages/premium/NoteCondenser";
+import PredictedGrades from "./pages/premium/PredictedGrades";
+import VirtualSessions from "./pages/premium/VirtualSessions";
+import PremiumDashboard from "./pages/PremiumDashboard";
 import Returns from "./pages/Returns";
 import Settings from "./pages/Settings";
 import Signup from "./pages/Signup";
@@ -108,7 +115,63 @@ const App = () => {
                   path="/premium"
                   element={
                     <ProtectedRoute>
-                      <Premium />
+                      <PremiumDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/premium/homework-solver"
+                  element={
+                    <ProtectedRoute>
+                      <HomeworkSolver />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/premium/note-condenser"
+                  element={
+                    <ProtectedRoute>
+                      <NoteCondenser />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/premium/predicted-grades"
+                  element={
+                    <ProtectedRoute>
+                      <PredictedGrades />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/premium/model-answers"
+                  element={
+                    <ProtectedRoute>
+                      <ModelAnswers />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/premium/focus-mode"
+                  element={
+                    <ProtectedRoute>
+                      <FocusMode />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/premium/leaderboard"
+                  element={
+                    <ProtectedRoute>
+                      <Leaderboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/premium/virtual-sessions"
+                  element={
+                    <ProtectedRoute>
+                      <VirtualSessions />
                     </ProtectedRoute>
                   }
                 />

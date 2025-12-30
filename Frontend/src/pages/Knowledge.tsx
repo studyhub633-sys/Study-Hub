@@ -132,7 +132,7 @@ export default function Knowledge() {
       }
 
       const isPremium = await hasPremium(supabase);
-      const limit = isPremium ? 500 : 10;
+      const limit = isPremium ? 1000000 : 10;
 
       setAiUsageCount(count || 0);
       setAiLimit(limit);
@@ -1295,7 +1295,11 @@ export default function Knowledge() {
                   {aiUsageCount !== null && aiUsageCount >= aiLimit ? (
                     <span className="text-destructive">You've reached the daily limit.</span>
                   ) : (
-                    <span>You have {aiUsageCount !== null ? aiLimit - aiUsageCount : '...'} generation attempts remaining today.</span>
+                    <span>
+                      {aiLimit > 1000
+                        ? "You have Unlimited generation attempts."
+                        : `You have ${aiUsageCount !== null ? aiLimit - aiUsageCount : '...'} generation attempts remaining today.`}
+                    </span>
                   )}
                 </span>
               )}
@@ -1310,7 +1314,7 @@ export default function Knowledge() {
                 onChange={(e) => setAiPrompt(e.target.value)}
                 placeholder="e.g., Cell biology including organelles, their functions, and how they work together"
                 className="min-h-[100px]"
-                disabled={isGenerating || (aiUsageCount !== null && aiUsageCount >= 10)}
+                disabled={isGenerating || (aiUsageCount !== null && aiUsageCount >= aiLimit)}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -1321,7 +1325,7 @@ export default function Knowledge() {
                   value={aiSubject}
                   onChange={(e) => setAiSubject(e.target.value)}
                   placeholder="e.g., Biology"
-                  disabled={isGenerating || (aiUsageCount !== null && aiUsageCount >= 10)}
+                  disabled={isGenerating || (aiUsageCount !== null && aiUsageCount >= aiLimit)}
                 />
               </div>
               <div className="space-y-2">
@@ -1331,14 +1335,14 @@ export default function Knowledge() {
                   value={aiTopic}
                   onChange={(e) => setAiTopic(e.target.value)}
                   placeholder="e.g., Cell Biology"
-                  disabled={isGenerating || (aiUsageCount !== null && aiUsageCount >= 10)}
+                  disabled={isGenerating || (aiUsageCount !== null && aiUsageCount >= aiLimit)}
                 />
               </div>
             </div>
             {aiUsageCount !== null && aiUsageCount >= aiLimit && (
               <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
                 <p className="text-sm text-destructive font-medium">
-                  You've reached the daily limit of {aiLimit} AI generation attempts. {aiLimit === 10 ? 'Please upgrade to premium for higher limits.' : 'Please try again tomorrow.'}
+                  You've reached the daily limit of {aiLimit} AI generation attempts. {aiLimit <= 10 ? 'Please upgrade to premium for higher limits.' : 'Please try again tomorrow.'}
                 </p>
               </div>
             )}
@@ -1349,7 +1353,7 @@ export default function Knowledge() {
             </Button>
             <Button
               onClick={handleGenerateWithAI}
-              disabled={isGenerating || !aiPrompt.trim() || (aiUsageCount !== null && aiUsageCount >= 10)}
+              disabled={isGenerating || !aiPrompt.trim() || (aiUsageCount !== null && aiUsageCount >= aiLimit)}
             >
               {isGenerating ? (
                 <>

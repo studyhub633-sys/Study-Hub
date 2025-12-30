@@ -31,6 +31,7 @@ const navItems = [
   { icon: Brain, label: "Knowledge Organizers", path: "/knowledge" },
   { icon: Library, label: "Global Library", path: "/library" },
   { icon: Award, label: "Extracurriculars", path: "/extracurricular" },
+  { icon: Crown, label: "Premium Hub", path: "/premium" },
 ];
 
 const bottomNavItems = [
