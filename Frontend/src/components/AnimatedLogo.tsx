@@ -30,8 +30,8 @@ const AnimatedLogo = () => {
         </div>
 
         <div className="brand-name">
-          <span className="study">Study</span>
-          <span className="hub">Hub</span>
+          <span className="study">Learnly</span>
+          <span className="hub">.AI</span>
         </div>
         <div className="tagline">Learn smarter. Shine brighter.</div>
       </div>
