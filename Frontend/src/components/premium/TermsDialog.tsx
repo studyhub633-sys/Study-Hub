@@ -39,7 +39,7 @@ export function TermsDialog({ open, onOpenChange, onAccept }: TermsDialogProps) 
                                 1. Beta Access Agreement
                             </h3>
                             <p>
-                                By participating in the Study Spark Hub Beta, you agree to help us improve the platform by providing feedback and reporting any issues you encounter. In exchange, you will receive lifetime access to all current premium features.
+                                By participating in the Learnly.AI Beta, you agree to help us improve the platform by providing feedback and reporting any issues you encounter. In exchange, you will receive lifetime access to all current premium features.
                             </p>
                         </section>
 
@@ -76,7 +76,7 @@ export function TermsDialog({ open, onOpenChange, onAccept }: TermsDialogProps) 
                         <div className="p-4 bg-muted/50 rounded-lg border border-dashed border-border">
                             <p className="font-medium text-foreground mb-1">Confirmation</p>
                             <p className="text-xs">
-                                By clicking "Accept and Unlock", you confirm that you have read and understood these terms and agree to participate in the Study Spark Hub Beta Testing Program.
+                                By clicking "Accept and Unlock", you confirm that you have read and understood these terms and agree to participate in the Learnly.AI Beta Testing Program.
                             </p>
                         </div>
                     </div>

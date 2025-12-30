@@ -25,12 +25,12 @@ export default function Returns() {
               <CardHeader>
                 <CardTitle>Digital Services Refund Policy</CardTitle>
                 <CardDescription>
-                  Study Spark Hub provides digital subscription services
+                  Learnly.AI provides digital subscription services
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-muted-foreground">
                 <p>
-                  Since Study Spark Hub is a digital service providing access to online study tools and features, 
+                  Since Learnly.AI is a digital service providing access to online study tools and features,
                   we operate under specific refund policies designed for digital products.
                 </p>
               </CardContent>
@@ -44,15 +44,15 @@ export default function Returns() {
                 <div className="space-y-2 text-muted-foreground">
                   <h3 className="font-semibold text-foreground">14-Day Money-Back Guarantee</h3>
                   <p>
-                    If you're not satisfied with your Premium subscription, you may request a full refund within 
+                    If you're not satisfied with your Premium subscription, you may request a full refund within
                     14 days of your initial purchase. This guarantee applies to your first subscription only.
                   </p>
                 </div>
                 <div className="space-y-2 text-muted-foreground">
                   <h3 className="font-semibold text-foreground">How to Request a Refund</h3>
                   <p>
-                    To request a refund, please contact our support team through the Settings page or email us directly. 
-                    Include your account email and the reason for your refund request. Refunds will be processed within 
+                    To request a refund, please contact our support team through the Settings page or email us directly.
+                    Include your account email and the reason for your refund request. Refunds will be processed within
                     5-10 business days to your original payment method.
                   </p>
                 </div>
@@ -65,13 +65,13 @@ export default function Returns() {
               </CardHeader>
               <CardContent className="space-y-4 text-muted-foreground">
                 <p>
-                  You may cancel your Premium subscription at any time from your account settings. Cancellation will 
-                  take effect at the end of your current billing period. You will continue to have access to Premium 
+                  You may cancel your Premium subscription at any time from your account settings. Cancellation will
+                  take effect at the end of your current billing period. You will continue to have access to Premium
                   features until the end of your paid period.
                 </p>
                 <p>
-                  <strong className="text-foreground">Important:</strong> Cancelling your subscription does not automatically 
-                  entitle you to a refund for the current billing period. Refunds are only available within the 14-day 
+                  <strong className="text-foreground">Important:</strong> Cancelling your subscription does not automatically
+                  entitle you to a refund for the current billing period. Refunds are only available within the 14-day
                   money-back guarantee period for new subscriptions.
                 </p>
               </CardContent>
@@ -97,7 +97,7 @@ export default function Returns() {
               </CardHeader>
               <CardContent className="space-y-2 text-muted-foreground">
                 <p>
-                  Once your refund request is approved, we will process the refund to your original payment method. 
+                  Once your refund request is approved, we will process the refund to your original payment method.
                   Processing times may vary:
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
@@ -116,7 +116,7 @@ export default function Returns() {
               </CardHeader>
               <CardContent className="text-muted-foreground">
                 <p>
-                  If you have questions about our refund policy or need assistance with a refund request, please 
+                  If you have questions about our refund policy or need assistance with a refund request, please
                   contact our support team through the Settings page or visit our FAQ section.
                 </p>
               </CardContent>

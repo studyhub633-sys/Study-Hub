@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 
 export const faqs = [
   {
-    question: "What is Study Spark Hub?",
+    question: "What is Learnly.AI?",
     answer: "Study Spark Hub is an all-in-one study companion platform that helps students organize notes, create flashcards, practice with past papers, and track their academic progress. It's designed to make studying more efficient and effective.",
   },
   {

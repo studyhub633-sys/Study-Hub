@@ -1,5 +1,5 @@
 /**
- * Payment Client for Study Spark Hub
+ * Payment Client for Learnly.AI
  * Handles PayPal payment integration
  */
 

@@ -2,7 +2,7 @@ import "./AnimatedLogoIcon.css";
 
 const AnimatedLogoIcon = () => {
   return (
-    <div className="logo-icon-shell" aria-label="Study Spark Hub animated logo">
+    <div className="logo-icon-shell" aria-label="Learnly.AI animated logo">
       <div className="logo-icon-scale">
         <div className="logo-book-icon">
           <div className="logo-book-spine" />
