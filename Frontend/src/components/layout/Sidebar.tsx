@@ -175,17 +175,17 @@ export function Sidebar() {
             </p>
           )}
           <NavLink
-            to="/premium"
+            to="/premium-dashboard"
             className={cn(
               "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-300 group relative overflow-hidden",
-              location.pathname === "/premium"
+              location.pathname === "/premium-dashboard"
                 ? "bg-premium text-premium-foreground shadow-lg shadow-premium/20"
                 : "text-muted-foreground hover:text-premium hover:bg-premium/10 border border-transparent hover:border-premium/20",
               collapsed && "justify-center px-2"
             )}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-premium/0 via-white/5 to-premium/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-            <Crown className={cn("h-5 w-5 flex-shrink-0 z-10", location.pathname === "/premium" && "animate-pulse")} />
+            <Crown className={cn("h-5 w-5 flex-shrink-0 z-10", location.pathname === "/premium-dashboard" && "animate-pulse")} />
             {!collapsed && (
               <div className="flex items-center justify-between w-full z-10">
                 <span className="font-bold text-sm tracking-tight text-sidebar-foreground group-hover:text-premium transition-colors">Go Premium</span>

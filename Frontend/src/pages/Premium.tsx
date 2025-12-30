@@ -114,10 +114,10 @@ export default function Premium() {
       // Refresh subscription status
       checkPremiumStatus();
       // Clean URL
-      navigate("/premium", { replace: true });
+      navigate("/premium-dashboard", { replace: true });
     } else if (canceled) {
       toast.info("Payment canceled. You can try again anytime.");
-      navigate("/premium", { replace: true });
+      navigate("/premium-dashboard", { replace: true });
     }
   }, [searchParams, navigate]);
 

@@ -19,6 +19,7 @@ import Login from "./pages/Login";
 import Notes from "./pages/Notes";
 import NotFound from "./pages/NotFound";
 import PastPapers from "./pages/PastPapers";
+import Premium from "./pages/Premium";
 import FocusMode from "./pages/premium/FocusMode";
 import HomeworkSolver from "./pages/premium/HomeworkSolver";
 import Leaderboard from "./pages/premium/Leaderboard";
@@ -27,6 +28,8 @@ import NoteCondenser from "./pages/premium/NoteCondenser";
 import PredictedGrades from "./pages/premium/PredictedGrades";
 import VirtualSessions from "./pages/premium/VirtualSessions";
 import PremiumDashboard from "./pages/PremiumDashboard";
+
+
 import Returns from "./pages/Returns";
 import Settings from "./pages/Settings";
 import Signup from "./pages/Signup";
@@ -113,6 +116,14 @@ const App = () => {
                 />
                 <Route
                   path="/premium"
+                  element={
+                    <ProtectedRoute>
+                      <Premium />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/premium-dashboard"
                   element={
                     <ProtectedRoute>
                       <PremiumDashboard />
