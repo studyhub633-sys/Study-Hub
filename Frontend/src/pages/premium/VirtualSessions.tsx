@@ -66,6 +66,7 @@ export default function VirtualSessions() {
     const [selectedResources, setSelectedResources] = useState<string[]>([]);
     const [loadingResources, setLoadingResources] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
+    const [isStartNow, setIsStartNow] = useState(false);
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -223,7 +224,7 @@ export default function VirtualSessions() {
             return;
         }
 
-        if (!formData.title.trim() || !formData.tutor_name.trim() || !formData.scheduled_time) {
+        if (!formData.title.trim() || !formData.tutor_name.trim() || (!formData.scheduled_time && !isStartNow)) {
             toast({
                 title: "Error",
                 description: "Please fill in all required fields.",
@@ -236,6 +237,7 @@ export default function VirtualSessions() {
         try {
             const meetingRoomId = generateMeetingRoomId();
             const meetingUrl = `https://meet.jit.si/${meetingRoomId}`;
+            const scheduledTime = isStartNow ? new Date().toISOString() : formData.scheduled_time;
 
             // Separate selected resources by type
             const pastPapers = selectedResources.filter(id => resources.find(r => r.id === id)?.type === "past_paper");
@@ -253,7 +255,7 @@ export default function VirtualSessions() {
                     description: formData.description || null,
                     subject: formData.subject || null,
                     tutor_name: formData.tutor_name,
-                    scheduled_time: formData.scheduled_time,
+                    scheduled_time: scheduledTime,
                     duration_minutes: parseInt(formData.duration_minutes) || 60,
                     max_attendees: parseInt(formData.max_attendees) || 50,
                     meeting_room_id: meetingRoomId,
@@ -282,7 +284,7 @@ export default function VirtualSessions() {
                     body: JSON.stringify({
                         sessionId: data.id,
                         sessionTitle: formData.title,
-                        scheduledTime: formData.scheduled_time,
+                        scheduledTime: scheduledTime,
                         meetingUrl: meetingUrl,
                     }),
                 });
@@ -443,8 +445,21 @@ export default function VirtualSessions() {
                                 sessions.map((session) => {
                                     const dateDisplay = getDateDisplay(session.scheduled_time);
                                     const isRegistered = user && session.registered_users.includes(user.id);
-                                    const isPast = new Date(session.scheduled_time) < new Date();
-                                    const canJoin = !isPast && (isRegistered || session.status === "live");
+
+                                    const startDate = new Date(session.scheduled_time);
+                                    const enduranceMs = (session.duration_minutes || 60) * 60 * 1000;
+                                    const endDate = new Date(startDate.getTime() + enduranceMs);
+                                    const now = new Date();
+
+                                    const isLive = now >= startDate && now <= endDate;
+                                    const isPast = now > endDate;
+                                    const isCreator = user && session.created_by === user.id;
+
+                                    // Allow join if:
+                                    // 1. It is currently live (within time window) AND (registered OR creator)
+                                    // 2. It is upcoming but creator wants to start it early (optional, but good for testing)
+                                    // 3. Status is explicitly set to 'live' in DB
+                                    const canJoin = (isLive || session.status === "live" || isCreator) && !isPast;
 
                                     return (
                                         <Card key={session.id} className="group hover:border-indigo-500/50 transition-colors">
@@ -459,11 +474,17 @@ export default function VirtualSessions() {
                                                         {session.subject && (
                                                             <Badge variant="outline" className="text-xs">{session.subject}</Badge>
                                                         )}
-                                                        <Badge variant={session.status === "live" ? "default" : "secondary"} className="text-xs">
-                                                            {session.status === "live" ? "LIVE" : "Upcoming"}
-                                                        </Badge>
+                                                        {isLive ? (
+                                                            <Badge variant="default" className="text-xs animate-pulse bg-red-500 hover:bg-red-600">LIVE NOW</Badge>
+                                                        ) : isPast ? (
+                                                            <Badge variant="secondary" className="text-xs">Completed</Badge>
+                                                        ) : (
+                                                            <Badge variant="secondary" className="text-xs">Upcoming</Badge>
+                                                        )}
                                                         <span className="text-xs text-muted-foreground flex items-center">
-                                                            <Clock className="w-3 h-3 mr-1" /> {formatDate(session.scheduled_time)}
+                                                            <Clock className="w-3 h-3 mr-1" />
+                                                            {formatDate(session.scheduled_time)}
+                                                            <span className="ml-1">({session.duration_minutes} mins)</span>
                                                         </span>
                                                     </div>
                                                     <h3 className="text-xl font-bold group-hover:text-indigo-500 transition-colors">
@@ -502,15 +523,19 @@ export default function VirtualSessions() {
                                                 <div className="flex gap-2">
                                                     {canJoin ? (
                                                         <Button
-                                                            className="bg-green-600 hover:bg-green-700"
+                                                            className={isCreator ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"}
                                                             onClick={() => handleJoinSession(session)}
                                                         >
                                                             <Video className="w-4 h-4 mr-2" />
-                                                            Join Session
+                                                            {isCreator ? "Start Session" : "Join Session"}
                                                         </Button>
                                                     ) : isRegistered ? (
                                                         <Button variant="outline" disabled>
                                                             Registered
+                                                        </Button>
+                                                    ) : isPast ? (
+                                                        <Button variant="ghost" disabled>
+                                                            Ended
                                                         </Button>
                                                     ) : (
                                                         <Button
@@ -537,7 +562,7 @@ export default function VirtualSessions() {
                     <DialogHeader>
                         <DialogTitle>Create Virtual Session</DialogTitle>
                         <DialogDescription>
-                            Create a new virtual group revision session using Jitsi Meet (free video conferencing).
+                            Create a new virtual group revision session using Jitsi Meet.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
@@ -588,14 +613,31 @@ export default function VirtualSessions() {
                                 />
                             </div>
                         </div>
+
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="scheduled_time">Scheduled Time *</Label>
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="scheduled_time">Scheduled Time *</Label>
+                                    <div className="flex items-center space-x-2">
+                                        <UICheckbox
+                                            id="start-now"
+                                            checked={isStartNow}
+                                            onCheckedChange={(checked) => setIsStartNow(checked === true)}
+                                        />
+                                        <label
+                                            htmlFor="start-now"
+                                            className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-indigo-600"
+                                        >
+                                            Start Now
+                                        </label>
+                                    </div>
+                                </div>
                                 <Input
                                     id="scheduled_time"
                                     type="datetime-local"
                                     value={formData.scheduled_time}
                                     onChange={(e) => setFormData({ ...formData, scheduled_time: e.target.value })}
+                                    disabled={isStartNow}
                                 />
                             </div>
                             <div className="space-y-2">
