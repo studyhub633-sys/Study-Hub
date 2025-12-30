@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
-import { Clock, FileText, Layers, Loader2, Plus, Users, Video } from "lucide-react";
+import { AlertTriangle, Clock, FileText, Layers, Loader2, Plus, Users, Video } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface VirtualSession {
@@ -689,10 +689,10 @@ export default function VirtualSessions() {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                             <div className="p-2 rounded-full bg-amber-100 text-amber-600">
+                            <div className="p-2 rounded-full bg-amber-100 text-amber-600">
                                 <AlertTriangle className="w-5 h-5" />
-                             </div>
-                             Important: Start Your Meeting
+                            </div>
+                            Important: Start Your Meeting
                         </DialogTitle>
                         <DialogDescription>
                             Jitsi Meet requires the Creator (You) to officially start the meeting.
@@ -704,7 +704,7 @@ export default function VirtualSessions() {
                                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">1</div>
                                 <p className="text-sm">In the Jitsi window that just opened, look for the <strong>"Log In"</strong> or "I am the host" button.</p>
                             </div>
-                             <div className="flex items-start gap-3">
+                            <div className="flex items-start gap-3">
                                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">2</div>
                                 <p className="text-sm">Log in with your Google or GitHub account to claim the room.</p>
                             </div>
