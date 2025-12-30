@@ -92,13 +92,14 @@ export default function VirtualSessions() {
                 return;
             }
 
-            // If table exists but is empty, show empty state
+            // If table exists but is empty, show sample data for demo
             // Otherwise show real data from database
             if (data && data.length > 0) {
                 setSessions(data);
             } else {
-                // Table exists but empty - show empty state
-                setSessions([]);
+                // Table exists but empty - show sample data so users can see how it works
+                console.log("Table exists but is empty, showing sample sessions for demonstration");
+                setSessions(getSampleSessions());
             }
         } catch (error: any) {
             console.error("Error fetching sessions:", error);
@@ -337,30 +338,6 @@ export default function VirtualSessions() {
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
-                ) : sessions.length === 0 ? (
-                    <Card>
-                        <CardContent className="p-12 text-center">
-                            <Video className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold text-foreground mb-2">No sessions scheduled</h3>
-                            <p className="text-muted-foreground mb-4">
-                                {isPremium ? "Create your first virtual session to get started." : "Check back soon for upcoming revision sessions."}
-                            </p>
-                            {isPremium && (
-                                <Button onClick={() => setIsCreateDialogOpen(true)}>
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Create Session
-                                </Button>
-                            )}
-                            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-left max-w-md mx-auto">
-                                <p className="text-sm text-blue-700 dark:text-blue-400 mb-2">
-                                    <strong>Note:</strong> To enable virtual sessions, run the SQL migration:
-                                </p>
-                                <code className="text-xs bg-background p-2 rounded block">
-                                    Frontend/supabase/create_virtual_sessions_table.sql
-                                </code>
-                            </div>
-                        </CardContent>
-                    </Card>
                 ) : (
                     <div className="space-y-4">
                         {sessions.map((session) => {
