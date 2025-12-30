@@ -282,6 +282,18 @@ export default function VirtualSessions() {
                 description: "Your session is now live and visible to everyone.",
             });
 
+            // If "Start Now" was selected, automatically open the meeting
+            if (isStartNow) {
+                const displayName = user.email?.split('@')[0] || "Host";
+                const openUrl = `${meetingUrl}#userInfo.displayName="${encodeURIComponent(displayName)}"`;
+                window.open(openUrl, "_blank", "width=1200,height=800");
+
+                toast({
+                    title: "Launching Session",
+                    description: "Please log in as the host in the Jitsi window to start the meeting for others.",
+                });
+            }
+
             setIsCreateDialogOpen(false);
             setFormData({
                 title: "",
@@ -354,8 +366,10 @@ export default function VirtualSessions() {
     };
 
     const handleJoinSession = (session: VirtualSession) => {
-        // Open Jitsi Meet in a new window
-        window.open(session.meeting_url, "_blank", "width=1200,height=800");
+        // Open Jitsi Meet in a new window with user's name
+        const displayName = user?.email?.split('@')[0] || "Guest";
+        const meetingUrl = `${session.meeting_url}#userInfo.displayName="${encodeURIComponent(displayName)}"`;
+        window.open(meetingUrl, "_blank", "width=1200,height=800");
     };
 
     const formatDate = (dateString: string) => {
