@@ -184,10 +184,14 @@ export default function Notes() {
   };
 
   const handleSaveNote = async () => {
-    if (!user || !formData.title.trim()) {
+    console.log("Saving note. Form Data:", formData);
+
+    const trimmedTitle = formData.title?.trim();
+    if (!user || !trimmedTitle) {
+      console.warn("Save blocked: Title is missing or empty.");
       toast({
         title: "Error",
-        description: "Title is required",
+        description: "A valid title is required to save your note.",
         variant: "destructive",
       });
       return;

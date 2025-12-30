@@ -48,6 +48,7 @@ interface Flashcard {
   back: string;
   subject: string;
   topic: string;
+  tier: "Foundation" | "Higher" | null;
   difficulty: number;
   last_reviewed: string | null;
   review_count: number;
@@ -64,6 +65,7 @@ export default function Flashcards() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
+  const [selectedTier, setSelectedTier] = useState("All Tiers");
   const [searchQuery, setSearchQuery] = useState("");
   const [quizMode, setQuizMode] = useState(false);
   const [score, setScore] = useState({ correct: 0, incorrect: 0 });
@@ -74,6 +76,7 @@ export default function Flashcards() {
     back: "",
     subject: "",
     topic: "",
+    tier: "" as "Foundation" | "Higher" | "",
   });
 
   // Bulk Selection State
@@ -207,6 +210,7 @@ export default function Flashcards() {
       back: "",
       subject: "",
       topic: "",
+      tier: "",
     });
     setIsDialogOpen(true);
   };
@@ -218,6 +222,7 @@ export default function Flashcards() {
       back: card.back,
       subject: card.subject || "",
       topic: card.topic || "",
+      tier: card.tier || "",
     });
     setIsDialogOpen(true);
   };
@@ -242,6 +247,7 @@ export default function Flashcards() {
             back: formData.back,
             subject: formData.subject || null,
             topic: formData.topic || null,
+            tier: formData.tier || null,
           })
           .eq("id", editingCard.id)
           .eq("user_id", user.id);
@@ -260,6 +266,7 @@ export default function Flashcards() {
           back: formData.back,
           subject: formData.subject || null,
           topic: formData.topic || null,
+          tier: formData.tier || null,
           difficulty: 1,
           review_count: 0,
         });
@@ -404,10 +411,12 @@ export default function Flashcards() {
   const filteredCards = cards.filter((card) => {
     const matchesSubject =
       selectedSubject === "All Subjects" || card.subject === selectedSubject;
+    const matchesTier =
+      selectedTier === "All Tiers" || card.tier === selectedTier;
     const matchesSearch =
       card.front.toLowerCase().includes(searchQuery.toLowerCase()) ||
       card.back.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSubject && matchesSearch;
+    return matchesSubject && matchesTier && matchesSearch;
   });
 
   const currentCard = filteredCards[currentIndex];
@@ -545,6 +554,16 @@ export default function Flashcards() {
                   {subject}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedTier} onValueChange={setSelectedTier}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Tiers">All Tiers</SelectItem>
+              <SelectItem value="Higher">Higher Tier</SelectItem>
+              <SelectItem value="Foundation">Foundation Tier</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon" onClick={shuffleCards}>
@@ -760,7 +779,7 @@ export default function Flashcards() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="subject">Subject</Label>
                 <Input
@@ -778,6 +797,21 @@ export default function Flashcards() {
                   onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
                   placeholder="e.g., Cell Biology"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tier">Tier</Label>
+                <Select
+                  value={formData.tier}
+                  onValueChange={(val: "Foundation" | "Higher") => setFormData({ ...formData, tier: val })}
+                >
+                  <SelectTrigger id="tier">
+                    <SelectValue placeholder="Tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Higher">Higher</SelectItem>
+                    <SelectItem value="Foundation">Foundation</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-2">

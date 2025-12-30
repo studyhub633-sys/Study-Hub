@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { EXAM_BOARDS, GCSE_TIERS } from "@/lib/constants";
+import { EXAM_BOARDS } from "@/lib/constants";
 import { SmartPaperParser } from "@/lib/paper-parser";
 import { cn } from "@/lib/utils";
 import {
@@ -50,6 +50,7 @@ interface Paper {
   subject: string | null;
   year: number | null;
   exam_board: string | null;
+  tier: "Foundation" | "Higher" | null;
   file_url: string | null;
   file_type: "link" | "upload" | null; // New field to distinguish
   score: number | null;
@@ -68,6 +69,7 @@ export default function PastPapers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const [selectedBoard, setSelectedBoard] = useState("All Boards");
+  const [selectedTier, setSelectedTier] = useState("All Tiers");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPaper, setEditingPaper] = useState<Paper | null>(null);
   const [formData, setFormData] = useState({
@@ -75,7 +77,7 @@ export default function PastPapers() {
     subject: "",
     year: "",
     exam_board: "",
-    tier: "",
+    tier: "" as "Foundation" | "Higher" | "",
     file_url: "",
     file_type: "link" as "link" | "upload",
     file: null as File | null,
@@ -142,7 +144,7 @@ export default function PastPapers() {
       subject: paper.subject || "",
       year: paper.year?.toString() || "",
       exam_board: paper.exam_board || "",
-      tier: "",
+      tier: paper.tier || "",
       file_url: paper.file_url || "",
       file_type: (paper.file_type || (isLink ? "link" : "upload")) as "link" | "upload",
       file: null,
@@ -266,6 +268,7 @@ export default function PastPapers() {
         subject: formData.subject || null,
         year: formData.year ? parseInt(formData.year) : null,
         exam_board: formData.exam_board || null,
+        tier: formData.tier || null,
         file_url: fileUrl,
         file_type: formData.file_type,
         score: formData.score ? parseInt(formData.score) : null,
@@ -404,7 +407,8 @@ export default function PastPapers() {
     const matchesSearch = paper.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = selectedSubject === "All Subjects" || paper.subject === selectedSubject;
     const matchesBoard = selectedBoard === "All Boards" || paper.exam_board === selectedBoard;
-    return matchesSearch && matchesSubject && matchesBoard;
+    const matchesTier = selectedTier === "All Tiers" || paper.tier === selectedTier;
+    return matchesSearch && matchesSubject && matchesBoard && matchesTier;
   });
 
   const completedCount = papers.filter((p) => p.completed_at).length;
@@ -428,6 +432,17 @@ export default function PastPapers() {
       </AppLayout>
     );
   }
+
+  // Concise title logic
+  useEffect(() => {
+    if (!editingPaper && formData.year && formData.subject && formData.tier) {
+      const tierShort = formData.tier === "Higher" ? "H" : "F";
+      const suggestedTitle = `${formData.year}${tierShort} Paper 1 ${formData.subject}`;
+      if (!formData.title || formData.title.includes("Paper")) {
+        setFormData(prev => ({ ...prev, title: suggestedTitle }));
+      }
+    }
+  }, [formData.year, formData.subject, formData.tier, editingPaper]);
 
   return (
     <AppLayout>
@@ -503,6 +518,16 @@ export default function PastPapers() {
                   {board}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedTier} onValueChange={setSelectedTier}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Tiers">All Tiers</SelectItem>
+              <SelectItem value="Higher">Higher Tier</SelectItem>
+              <SelectItem value="Foundation">Foundation Tier</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -684,33 +709,32 @@ export default function PastPapers() {
                 </Select>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="year">Year</Label>
-              <Input
-                id="year"
-                type="number"
-                value={formData.year}
-                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                placeholder="2024"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tier">Tier</Label>
-              <Select
-                value={formData.tier}
-                onValueChange={(value) => setFormData({ ...formData, tier: value })}
-              >
-                <SelectTrigger id="tier">
-                  <SelectValue placeholder="Select tier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {GCSE_TIERS.map((tier) => (
-                    <SelectItem key={tier} value={tier}>
-                      {tier}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="year">Year</Label>
+                <Input
+                  id="year"
+                  type="number"
+                  value={formData.year}
+                  onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                  placeholder="2024"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tier">Tier</Label>
+                <Select
+                  value={formData.tier}
+                  onValueChange={(val: "Foundation" | "Higher") => setFormData({ ...formData, tier: val })}
+                >
+                  <SelectTrigger id="tier">
+                    <SelectValue placeholder="Select Tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Higher">Higher Tier</SelectItem>
+                    <SelectItem value="Foundation">Foundation Tier</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>File Attachment</Label>

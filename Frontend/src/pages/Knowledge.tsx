@@ -68,6 +68,7 @@ interface KnowledgeOrganizer {
   title: string;
   subject: string | null;
   topic: string | null;
+  tier: "Foundation" | "Higher" | null;
   content: any; // JSONB from database
   created_at: string;
   updated_at: string;
@@ -83,6 +84,7 @@ export default function Knowledge() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const [selectedBoard, setSelectedBoard] = useState("All Boards");
+  const [selectedTier, setSelectedTier] = useState("All Tiers");
   const [selectedOrganizer, setSelectedOrganizer] = useState<KnowledgeOrganizer | null>(null);
   const [openSections, setOpenSections] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -92,6 +94,7 @@ export default function Knowledge() {
     subject: "",
     topic: "",
     exam_board: "",
+    tier: "" as "Foundation" | "Higher" | "",
     sections: [] as KnowledgeSection[],
   });
   const [reviewingSection, setReviewingSection] = useState<number | null>(null);
@@ -195,6 +198,7 @@ export default function Knowledge() {
       subject: "",
       topic: "",
       exam_board: "",
+      tier: "",
       sections: [],
     });
     setIsDialogOpen(true);
@@ -253,6 +257,7 @@ export default function Knowledge() {
           subject: aiSubject || "",
           topic: aiTopic || "",
           exam_board: "",
+          tier: "",
           sections: result.data.sections,
         });
         setIsAiDialogOpen(false);
@@ -298,6 +303,7 @@ export default function Knowledge() {
       subject: org.subject || "",
       topic: org.topic || "",
       exam_board: org.content?.exam_board || "",
+      tier: org.tier || "",
       sections: normalizedSections,
     });
     setIsDialogOpen(true);
@@ -405,6 +411,7 @@ export default function Knowledge() {
         title: formData.title,
         subject: formData.subject || null,
         topic: formData.topic || null,
+        tier: formData.tier || null,
         content: contentData,
       };
 
@@ -670,7 +677,8 @@ export default function Knowledge() {
     const matchesSubject = selectedSubject === "All Subjects" || org.subject === selectedSubject;
     const orgBoard = org.content?.exam_board;
     const matchesBoard = selectedBoard === "All Boards" || orgBoard === selectedBoard;
-    return matchesSearch && matchesSubject && matchesBoard;
+    const matchesTier = selectedTier === "All Tiers" || org.tier === selectedTier;
+    return matchesSearch && matchesSubject && matchesBoard && matchesTier;
   });
 
   const toggleSection = (title: string) => {
@@ -766,6 +774,16 @@ export default function Knowledge() {
                   {board}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedTier} onValueChange={setSelectedTier}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Tiers">All Tiers</SelectItem>
+              <SelectItem value="Higher">Higher Tier</SelectItem>
+              <SelectItem value="Foundation">Foundation Tier</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -1095,23 +1113,40 @@ export default function Knowledge() {
                 placeholder="e.g., Cell Biology"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="exam_board">Exam Board</Label>
-              <Select
-                value={formData.exam_board}
-                onValueChange={(value) => setFormData({ ...formData, exam_board: value })}
-              >
-                <SelectTrigger id="exam_board">
-                  <SelectValue placeholder="Select board" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EXAM_BOARDS.map((board) => (
-                    <SelectItem key={board} value={board}>
-                      {board}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="exam_board">Exam Board</Label>
+                <Select
+                  value={formData.exam_board}
+                  onValueChange={(value) => setFormData({ ...formData, exam_board: value })}
+                >
+                  <SelectTrigger id="exam_board">
+                    <SelectValue placeholder="Select board" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EXAM_BOARDS.map((board) => (
+                      <SelectItem key={board} value={board}>
+                        {board}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tier">Tier</Label>
+                <Select
+                  value={formData.tier}
+                  onValueChange={(val: "Foundation" | "Higher") => setFormData({ ...formData, tier: val })}
+                >
+                  <SelectTrigger id="tier">
+                    <SelectValue placeholder="Select Tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Higher">Higher Tier</SelectItem>
+                    <SelectItem value="Foundation">Foundation Tier</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Sections */}
