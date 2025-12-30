@@ -114,11 +114,6 @@ export default function PremiumDashboard() {
 
                     <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <Badge variant="outline" className="border-yellow-500/50 text-yellow-600 dark:text-yellow-400 px-3 py-1 bg-yellow-500/10">
-                                    <Crown className="w-3 h-3 mr-1" /> Premium Hub
-                                </Badge>
-                            </div>
                             <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-600 to-amber-600 dark:from-yellow-400 dark:to-amber-400">
                                 Unlock Your Potential
                             </h1>
