@@ -260,10 +260,11 @@ export default function VirtualSessions() {
                     max_attendees: parseInt(formData.max_attendees) || 50,
                     meeting_room_id: meetingRoomId,
                     meeting_url: meetingUrl,
-                    linked_past_papers: pastPapers.length > 0 ? pastPapers : null,
-                    linked_knowledge_organizers: knowledgeOrganizers.length > 0 ? knowledgeOrganizers : null,
-                    linked_flashcards: flashcards.length > 0 ? flashcards : null,
-                    email_verified: false,
+                    linked_past_papers: null,
+                    linked_knowledge_organizers: null,
+                    linked_flashcards: null,
+                    // AUTO-VERIFY for global visibility as requested
+                    email_verified: true,
                     verification_token: verificationToken,
                     status: "upcoming",
                 })
@@ -272,34 +273,12 @@ export default function VirtualSessions() {
 
             if (error) throw error;
 
-            // Send verification email
-            try {
-                const authToken = await supabase.auth.getSession();
-                const response = await fetch("/api/email/send-verification", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${authToken.data.session?.access_token || ""}`,
-                    },
-                    body: JSON.stringify({
-                        sessionId: data.id,
-                        sessionTitle: formData.title,
-                        scheduledTime: scheduledTime,
-                        meetingUrl: meetingUrl,
-                    }),
-                });
-
-                if (!response.ok) {
-                    console.warn("Failed to send verification email, but session was created");
-                }
-            } catch (emailError) {
-                console.error("Error sending verification email:", emailError);
-                // Don't fail the whole operation if email fails
-            }
+            // Email verification no longer blocking visibility, but we can still send the confirmation if needed.
+            // For now, removing the "Check your email" toast message since it's live immediately.
 
             toast({
                 title: "Session Created!",
-                description: "Check your email to verify the session. The session will be visible after verification.",
+                description: "Your session is now live and visible to everyone.",
             });
 
             setIsCreateDialogOpen(false);
@@ -558,7 +537,7 @@ export default function VirtualSessions() {
 
             {/* Create Session Dialog */}
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Create Virtual Session</DialogTitle>
                         <DialogDescription>
@@ -660,65 +639,6 @@ export default function VirtualSessions() {
                                 onChange={(e) => setFormData({ ...formData, max_attendees: e.target.value })}
                                 placeholder="50"
                             />
-                        </div>
-
-                        <div className="space-y-3 pt-2 border-t">
-                            <Label>Link Resources (Optional)</Label>
-                            <p className="text-sm text-muted-foreground">
-                                Select past papers, knowledge organizers, or flashcard sets to link to this session.
-                            </p>
-                            {loadingResources ? (
-                                <div className="flex items-center justify-center py-4">
-                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                </div>
-                            ) : resources.length === 0 ? (
-                                <p className="text-sm text-muted-foreground py-4 text-center">
-                                    No resources available. Create past papers, knowledge organizers, or flashcards first.
-                                </p>
-                            ) : (
-                                <div className="max-h-60 overflow-y-auto space-y-2 border rounded-lg p-3">
-                                    {resources.map((resource) => (
-                                        <div key={resource.id} className="flex items-center space-x-2">
-                                            <UICheckbox
-                                                id={`resource-${resource.id}`}
-                                                checked={selectedResources.includes(resource.id)}
-                                                onCheckedChange={(checked) => {
-                                                    if (checked) {
-                                                        setSelectedResources([...selectedResources, resource.id]);
-                                                    } else {
-                                                        setSelectedResources(selectedResources.filter(id => id !== resource.id));
-                                                    }
-                                                }}
-                                            />
-                                            <Label
-                                                htmlFor={`resource-${resource.id}`}
-                                                className="flex-1 cursor-pointer flex items-center gap-2"
-                                            >
-                                                {resource.type === "past_paper" && <FileText className="w-4 h-4 text-blue-500" />}
-                                                {resource.type === "knowledge_organizer" && <Layers className="w-4 h-4 text-green-500" />}
-                                                {resource.type === "flashcard" && <Layers className="w-4 h-4 text-purple-500" />}
-                                                <span className="text-sm">{resource.title}</span>
-                                                {resource.subject && (
-                                                    <Badge variant="outline" className="text-xs ml-auto">
-                                                        {resource.subject}
-                                                    </Badge>
-                                                )}
-                                            </Label>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                            {selectedResources.length > 0 && (
-                                <p className="text-sm text-muted-foreground">
-                                    {selectedResources.length} resource{selectedResources.length > 1 ? 's' : ''} selected
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                            <p className="text-sm text-blue-700 dark:text-blue-400">
-                                <strong>Note:</strong> After creating the session, you'll receive an email to verify it. The session will be visible to others after verification.
-                            </p>
                         </div>
                     </div>
                     <DialogFooter>
