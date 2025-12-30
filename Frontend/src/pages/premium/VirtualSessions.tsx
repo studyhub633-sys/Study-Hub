@@ -181,17 +181,18 @@ export default function VirtualSessions() {
     const fetchSessions = async () => {
         try {
             setLoading(true);
-            // Fetch verified sessions, or unverified sessions created by current user
-            const { data, error } = await supabase
+            // Relaxed query: Let RLS handle the security (see fix_sessions_rls.sql)
+            // We just ask for *everything* and Supabase filters for us.
+            const query = supabase
                 .from("virtual_sessions")
                 .select("*")
                 .in("status", ["upcoming", "live"])
-                .or(`email_verified.eq.true${user ? `,and(email_verified.eq.false,created_by.eq.${user.id})` : ''}`)
                 .order("scheduled_time", { ascending: true });
+
+            const { data, error } = await query;
 
             if (error) {
                 console.error("Error fetching sessions:", error);
-                // Don't show samples on error, just empty list
                 setSessions([]);
                 return;
             }
@@ -327,12 +328,12 @@ export default function VirtualSessions() {
                 return;
             }
 
-            const { error } = await supabase
-                .from("virtual_sessions")
-                .update({
-                    registered_users: [...session.registered_users, user.id],
-                })
-                .eq("id", sessionId);
+            // Use RPC to call secure registration function
+            const { error } = await supabase.rpc('register_for_session', {
+                session_id_param: sessionId,
+                user_id_param: user.id
+            });
+
 
             if (error) throw error;
 
