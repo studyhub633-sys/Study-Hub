@@ -18,6 +18,11 @@ CREATE TABLE IF NOT EXISTS public.virtual_sessions (
   meeting_url TEXT NOT NULL, -- Full Jitsi Meet URL
   max_attendees INTEGER DEFAULT 50,
   registered_users UUID[] DEFAULT ARRAY[]::UUID[], -- Array of registered user IDs
+  linked_past_papers UUID[] DEFAULT ARRAY[]::UUID[], -- Array of past paper IDs
+  linked_knowledge_organizers UUID[] DEFAULT ARRAY[]::UUID[], -- Array of knowledge organizer IDs
+  linked_flashcards UUID[] DEFAULT ARRAY[]::UUID[], -- Array of flashcard IDs (or deck IDs)
+  email_verified BOOLEAN DEFAULT FALSE, -- Email verification status
+  verification_token TEXT, -- Token for email verification
   status TEXT DEFAULT 'upcoming' CHECK (status IN ('upcoming', 'live', 'completed', 'cancelled')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
@@ -33,10 +38,13 @@ CREATE INDEX IF NOT EXISTS virtual_sessions_meeting_room_id_idx ON public.virtua
 ALTER TABLE public.virtual_sessions ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
--- Anyone can view upcoming/live sessions
-CREATE POLICY "Anyone can view upcoming and live sessions"
+-- Anyone can view verified upcoming/live sessions, or their own unverified sessions
+CREATE POLICY "Anyone can view verified upcoming and live sessions"
   ON public.virtual_sessions FOR SELECT
-  USING (status IN ('upcoming', 'live'));
+  USING (
+    status IN ('upcoming', 'live') AND 
+    (email_verified = true OR created_by = auth.uid())
+  );
 
 -- Only creators can insert sessions
 CREATE POLICY "Users can create sessions"

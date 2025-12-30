@@ -23,8 +23,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
-import { Clock, Loader2, Plus, Users, Video } from "lucide-react";
+import { Clock, FileText, Layers, Loader2, Plus, Users, Video } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Checkbox as UICheckbox } from "@/components/ui/checkbox";
 
 interface VirtualSession {
     id: string;
@@ -38,9 +39,20 @@ interface VirtualSession {
     meeting_url: string;
     max_attendees: number;
     registered_users: string[];
+    linked_past_papers?: string[];
+    linked_knowledge_organizers?: string[];
+    linked_flashcards?: string[];
+    email_verified?: boolean;
     status: "upcoming" | "live" | "completed" | "cancelled";
     created_by: string;
     created_at: string;
+}
+
+interface Resource {
+    id: string;
+    title: string;
+    subject?: string;
+    type: "past_paper" | "knowledge_organizer" | "flashcard";
 }
 
 export default function VirtualSessions() {
@@ -50,6 +62,10 @@ export default function VirtualSessions() {
     const [sessions, setSessions] = useState<VirtualSession[]>([]);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
+    const [resources, setResources] = useState<Resource[]>([]);
+    const [selectedResources, setSelectedResources] = useState<string[]>([]);
+    const [loadingResources, setLoadingResources] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -67,6 +83,93 @@ export default function VirtualSessions() {
         }
     }, [user]);
 
+    useEffect(() => {
+        if (isCreateDialogOpen && user) {
+            fetchResources();
+        }
+    }, [isCreateDialogOpen, user]);
+
+    const fetchResources = async () => {
+        if (!user) return;
+        setLoadingResources(true);
+        try {
+            const allResources: Resource[] = [];
+
+            // Fetch past papers
+            const { data: papers } = await supabase
+                .from("past_papers")
+                .select("id, title, subject")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false })
+                .limit(50);
+
+            if (papers) {
+                papers.forEach(paper => {
+                    allResources.push({
+                        id: paper.id,
+                        title: paper.title,
+                        subject: paper.subject || undefined,
+                        type: "past_paper"
+                    });
+                });
+            }
+
+            // Fetch knowledge organizers
+            const { data: organizers } = await supabase
+                .from("knowledge_organizers")
+                .select("id, title, subject")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false })
+                .limit(50);
+
+            if (organizers) {
+                organizers.forEach(org => {
+                    allResources.push({
+                        id: org.id,
+                        title: org.title,
+                        subject: org.subject || undefined,
+                        type: "knowledge_organizer"
+                    });
+                });
+            }
+
+            // Fetch flashcards (grouped by topic/subject for selection)
+            const { data: flashcards } = await supabase
+                .from("flashcards")
+                .select("id, front, subject, topic")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false })
+                .limit(100);
+
+            if (flashcards) {
+                // Group flashcards by topic/subject
+                const grouped = new Map<string, { count: number; subject?: string; topic?: string }>();
+                flashcards.forEach(card => {
+                    const key = card.topic || card.subject || "General";
+                    if (!grouped.has(key)) {
+                        grouped.set(key, { count: 0, subject: card.subject || undefined, topic: card.topic || undefined });
+                    }
+                    grouped.get(key)!.count++;
+                });
+
+                grouped.forEach((data, key) => {
+                    allResources.push({
+                        id: `flashcard-group-${key}`,
+                        title: `${key} (${data.count} cards)`,
+                        subject: data.subject,
+                        type: "flashcard"
+                    });
+                });
+            }
+
+            setResources(allResources);
+        } catch (error) {
+            console.error("Error fetching resources:", error);
+        } finally {
+            setLoadingResources(false);
+        }
+    };
+
     const checkPremium = async () => {
         if (user && supabase) {
             const premium = await hasPremium(supabase);
@@ -77,10 +180,12 @@ export default function VirtualSessions() {
     const fetchSessions = async () => {
         try {
             setLoading(true);
+            // Fetch verified sessions, or unverified sessions created by current user
             const { data, error } = await supabase
                 .from("virtual_sessions")
                 .select("*")
                 .in("status", ["upcoming", "live"])
+                .or(`email_verified.eq.true${user ? `,and(email_verified.eq.false,created_by.eq.${user.id})` : ''}`)
                 .order("scheduled_time", { ascending: true });
 
             if (error) {
@@ -190,9 +295,18 @@ export default function VirtualSessions() {
             return;
         }
 
+        setIsVerifying(true);
         try {
             const meetingRoomId = generateMeetingRoomId();
             const meetingUrl = `https://meet.jit.si/${meetingRoomId}`;
+
+            // Separate selected resources by type
+            const pastPapers = selectedResources.filter(id => resources.find(r => r.id === id)?.type === "past_paper");
+            const knowledgeOrganizers = selectedResources.filter(id => resources.find(r => r.id === id)?.type === "knowledge_organizer");
+            const flashcards = selectedResources.filter(id => resources.find(r => r.id === id)?.type === "flashcard");
+
+            // Generate verification token
+            const verificationToken = crypto.randomUUID();
 
             const { data, error } = await supabase
                 .from("virtual_sessions")
@@ -207,6 +321,11 @@ export default function VirtualSessions() {
                     max_attendees: parseInt(formData.max_attendees) || 50,
                     meeting_room_id: meetingRoomId,
                     meeting_url: meetingUrl,
+                    linked_past_papers: pastPapers.length > 0 ? pastPapers : null,
+                    linked_knowledge_organizers: knowledgeOrganizers.length > 0 ? knowledgeOrganizers : null,
+                    linked_flashcards: flashcards.length > 0 ? flashcards : null,
+                    email_verified: false,
+                    verification_token: verificationToken,
                     status: "upcoming",
                 })
                 .select()
@@ -214,9 +333,34 @@ export default function VirtualSessions() {
 
             if (error) throw error;
 
+            // Send verification email
+            try {
+                const authToken = await supabase.auth.getSession();
+                const response = await fetch("/api/email/send-verification", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authToken.data.session?.access_token || ""}`,
+                    },
+                    body: JSON.stringify({
+                        sessionId: data.id,
+                        sessionTitle: formData.title,
+                        scheduledTime: formData.scheduled_time,
+                        meetingUrl: meetingUrl,
+                    }),
+                });
+
+                if (!response.ok) {
+                    console.warn("Failed to send verification email, but session was created");
+                }
+            } catch (emailError) {
+                console.error("Error sending verification email:", emailError);
+                // Don't fail the whole operation if email fails
+            }
+
             toast({
-                title: "Success",
-                description: "Virtual session created successfully!",
+                title: "Session Created!",
+                description: "Check your email to verify the session. The session will be visible after verification.",
             });
 
             setIsCreateDialogOpen(false);
@@ -229,6 +373,7 @@ export default function VirtualSessions() {
                 duration_minutes: "60",
                 max_attendees: "50",
             });
+            setSelectedResources([]);
             fetchSessions();
         } catch (error: any) {
             console.error("Error creating session:", error);
@@ -237,6 +382,8 @@ export default function VirtualSessions() {
                 description: error.message || "Failed to create session. Please try again.",
                 variant: "destructive",
             });
+        } finally {
+            setIsVerifying(false);
         }
     };
 
@@ -375,6 +522,28 @@ export default function VirtualSessions() {
                                             <p className="text-sm text-muted-foreground mt-1">
                                                 Hosted by {session.tutor_name} • <Users className="w-3 h-3 inline pb-0.5" /> {session.registered_users.length} registered
                                             </p>
+                                            {(session.linked_past_papers?.length || session.linked_knowledge_organizers?.length || session.linked_flashcards?.length) && (
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                    {session.linked_past_papers && session.linked_past_papers.length > 0 && (
+                                                        <Badge variant="outline" className="text-xs">
+                                                            <FileText className="w-3 h-3 mr-1" />
+                                                            {session.linked_past_papers.length} Past Paper{session.linked_past_papers.length > 1 ? 's' : ''}
+                                                        </Badge>
+                                                    )}
+                                                    {session.linked_knowledge_organizers && session.linked_knowledge_organizers.length > 0 && (
+                                                        <Badge variant="outline" className="text-xs">
+                                                            <Layers className="w-3 h-3 mr-1" />
+                                                            {session.linked_knowledge_organizers.length} Knowledge Organizer{session.linked_knowledge_organizers.length > 1 ? 's' : ''}
+                                                        </Badge>
+                                                    )}
+                                                    {session.linked_flashcards && session.linked_flashcards.length > 0 && (
+                                                        <Badge variant="outline" className="text-xs">
+                                                            <Layers className="w-3 h-3 mr-1" />
+                                                            {session.linked_flashcards.length} Flashcard Set{session.linked_flashcards.length > 1 ? 's' : ''}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="flex gap-2">
@@ -495,18 +664,82 @@ export default function VirtualSessions() {
                                 placeholder="50"
                             />
                         </div>
+
+                        <div className="space-y-3 pt-2 border-t">
+                            <Label>Link Resources (Optional)</Label>
+                            <p className="text-sm text-muted-foreground">
+                                Select past papers, knowledge organizers, or flashcard sets to link to this session.
+                            </p>
+                            {loadingResources ? (
+                                <div className="flex items-center justify-center py-4">
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                </div>
+                            ) : resources.length === 0 ? (
+                                <p className="text-sm text-muted-foreground py-4 text-center">
+                                    No resources available. Create past papers, knowledge organizers, or flashcards first.
+                                </p>
+                            ) : (
+                                <div className="max-h-60 overflow-y-auto space-y-2 border rounded-lg p-3">
+                                    {resources.map((resource) => (
+                                        <div key={resource.id} className="flex items-center space-x-2">
+                                            <UICheckbox
+                                                id={`resource-${resource.id}`}
+                                                checked={selectedResources.includes(resource.id)}
+                                                onCheckedChange={(checked) => {
+                                                    if (checked) {
+                                                        setSelectedResources([...selectedResources, resource.id]);
+                                                    } else {
+                                                        setSelectedResources(selectedResources.filter(id => id !== resource.id));
+                                                    }
+                                                }}
+                                            />
+                                            <Label
+                                                htmlFor={`resource-${resource.id}`}
+                                                className="flex-1 cursor-pointer flex items-center gap-2"
+                                            >
+                                                {resource.type === "past_paper" && <FileText className="w-4 h-4 text-blue-500" />}
+                                                {resource.type === "knowledge_organizer" && <Layers className="w-4 h-4 text-green-500" />}
+                                                {resource.type === "flashcard" && <Layers className="w-4 h-4 text-purple-500" />}
+                                                <span className="text-sm">{resource.title}</span>
+                                                {resource.subject && (
+                                                    <Badge variant="outline" className="text-xs ml-auto">
+                                                        {resource.subject}
+                                                    </Badge>
+                                                )}
+                                            </Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {selectedResources.length > 0 && (
+                                <p className="text-sm text-muted-foreground">
+                                    {selectedResources.length} resource{selectedResources.length > 1 ? 's' : ''} selected
+                                </p>
+                            )}
+                        </div>
+
                         <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                             <p className="text-sm text-blue-700 dark:text-blue-400">
-                                <strong>Note:</strong> Sessions use Jitsi Meet for video conferencing. A unique meeting room will be created automatically when you save this session.
+                                <strong>Note:</strong> After creating the session, you'll receive an email to verify it. The session will be visible to others after verification.
                             </p>
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                        <Button variant="outline" onClick={() => {
+                            setIsCreateDialogOpen(false);
+                            setSelectedResources([]);
+                        }}>
                             Cancel
                         </Button>
-                        <Button onClick={handleCreateSession}>
-                            Create Session
+                        <Button onClick={handleCreateSession} disabled={isVerifying}>
+                            {isVerifying ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Creating...
+                                </>
+                            ) : (
+                                "Create Session"
+                            )}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
