@@ -13,7 +13,7 @@ ALTER TABLE public.virtual_sessions
 ADD COLUMN IF NOT EXISTS linked_knowledge_organizers UUID[] DEFAULT ARRAY[]::UUID[];
 
 ALTER TABLE public.virtual_sessions
-ADD COLUMN IF NOT EXISTS linked_flashcards UUID[] DEFAULT ARRAY[]::UUID[];
+ADD COLUMN IF NOT EXISTS linked_flashcards TEXT[] DEFAULT ARRAY[]::TEXT[];
 
 -- Add email verification columns
 ALTER TABLE public.virtual_sessions

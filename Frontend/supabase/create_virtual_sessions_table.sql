@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public.virtual_sessions (
   registered_users UUID[] DEFAULT ARRAY[]::UUID[], -- Array of registered user IDs
   linked_past_papers UUID[] DEFAULT ARRAY[]::UUID[], -- Array of past paper IDs
   linked_knowledge_organizers UUID[] DEFAULT ARRAY[]::UUID[], -- Array of knowledge organizer IDs
-  linked_flashcards UUID[] DEFAULT ARRAY[]::UUID[], -- Array of flashcard IDs (or deck IDs)
+  linked_flashcards TEXT[] DEFAULT ARRAY[]::TEXT[], -- Array of flashcard IDs (or deck IDs)
   email_verified BOOLEAN DEFAULT FALSE, -- Email verification status
   verification_token TEXT, -- Token for email verification
   status TEXT DEFAULT 'upcoming' CHECK (status IN ('upcoming', 'live', 'completed', 'cancelled')),

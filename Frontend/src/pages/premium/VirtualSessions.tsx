@@ -1,6 +1,8 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox as UICheckbox } from "@/components/ui/checkbox";
 import {
     Dialog,
     DialogContent,
@@ -19,13 +21,11 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
 import { Clock, FileText, Layers, Loader2, Plus, Users, Video } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Checkbox as UICheckbox } from "@/components/ui/checkbox";
 
 interface VirtualSession {
     id: string;
@@ -189,84 +189,21 @@ export default function VirtualSessions() {
                 .order("scheduled_time", { ascending: true });
 
             if (error) {
-                // Table doesn't exist (PGRST error) or permission error
-                // Show sample data for demo purposes
-                console.log("Virtual sessions table not found or error:", error.message);
-                console.log("Showing sample sessions for demonstration");
-                setSessions(getSampleSessions());
+                console.error("Error fetching sessions:", error);
+                // Don't show samples on error, just empty list
+                setSessions([]);
                 return;
             }
 
-            // If table exists but is empty, show sample data for demo
-            // Otherwise show real data from database
-            if (data && data.length > 0) {
+            if (data) {
                 setSessions(data);
-            } else {
-                // Table exists but empty - show sample data so users can see how it works
-                console.log("Table exists but is empty, showing sample sessions for demonstration");
-                setSessions(getSampleSessions());
             }
         } catch (error: any) {
             console.error("Error fetching sessions:", error);
-            // Fallback to sample data if any error occurs (for demo purposes)
-            setSessions(getSampleSessions());
+            setSessions([]);
         } finally {
             setLoading(false);
         }
-    };
-
-    const getSampleSessions = (): VirtualSession[] => {
-        const now = Date.now();
-        return [
-            {
-                id: "sample-1",
-                title: "GCSE Maths: Algebra Revision",
-                description: "Comprehensive algebra revision session covering key topics for GCSE exams",
-                subject: "Mathematics",
-                tutor_name: "Dr. Smith",
-                scheduled_time: new Date(now + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-                duration_minutes: 60,
-                meeting_room_id: "maths-algebra-2024",
-                meeting_url: "https://meet.jit.si/maths-algebra-2024",
-                max_attendees: 50,
-                registered_users: [],
-                status: "upcoming",
-                created_by: "admin",
-                created_at: new Date().toISOString(),
-            },
-            {
-                id: "sample-2",
-                title: "English Lit: Macbeth Quotes Analysis",
-                description: "Deep dive into key quotes and themes in Macbeth",
-                subject: "English Literature",
-                tutor_name: "Ms. Jones",
-                scheduled_time: new Date(now + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-                duration_minutes: 45,
-                meeting_room_id: "english-macbeth-2024",
-                meeting_url: "https://meet.jit.si/english-macbeth-2024",
-                max_attendees: 40,
-                registered_users: [],
-                status: "upcoming",
-                created_by: "admin",
-                created_at: new Date().toISOString(),
-            },
-            {
-                id: "sample-3",
-                title: "Physics: Forces & Motion",
-                description: "Understanding Newton's laws and motion equations",
-                subject: "Physics",
-                tutor_name: "Mr. Brown",
-                scheduled_time: new Date(now + 48 * 60 * 60 * 1000).toISOString(), // 2 days from now
-                duration_minutes: 60,
-                meeting_room_id: "physics-forces-2024",
-                meeting_url: "https://meet.jit.si/physics-forces-2024",
-                max_attendees: 50,
-                registered_users: [],
-                status: "upcoming",
-                created_by: "admin",
-                created_at: new Date().toISOString(),
-            },
-        ];
     };
 
     const generateMeetingRoomId = () => {
@@ -487,91 +424,109 @@ export default function VirtualSessions() {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {sessions.map((session) => {
-                            const dateDisplay = getDateDisplay(session.scheduled_time);
-                            const isRegistered = user && session.registered_users.includes(user.id);
-                            const isPast = new Date(session.scheduled_time) < new Date();
-                            const canJoin = !isPast && (isRegistered || session.status === "live");
+                        <div className="space-y-4">
+                            {sessions.length === 0 ? (
+                                <div className="text-center py-12 border rounded-xl border-dashed">
+                                    <Video className="w-12 h-12 mx-auto text-muted-foreground mb-3 opacity-50" />
+                                    <h3 className="text-lg font-semibold text-muted-foreground">No Upcomming Sessions</h3>
+                                    <p className="text-sm text-muted-foreground max-w-sm mx-auto mt-1">
+                                        There are no verified sessions scheduled at the moment. {isPremium ? "Create one to get started!" : "Check back later!"}
+                                    </p>
+                                    {isPremium && (
+                                        <Button variant="outline" className="mt-4" onClick={() => setIsCreateDialogOpen(true)}>
+                                            <Plus className="w-4 h-4 mr-2" />
+                                            Create Session
+                                        </Button>
+                                    )}
+                                </div>
+                            ) : (
+                                sessions.map((session) => {
+                                    const dateDisplay = getDateDisplay(session.scheduled_time);
+                                    const isRegistered = user && session.registered_users.includes(user.id);
+                                    const isPast = new Date(session.scheduled_time) < new Date();
+                                    const canJoin = !isPast && (isRegistered || session.status === "live");
 
-                            return (
-                                <Card key={session.id} className="group hover:border-indigo-500/50 transition-colors">
-                                    <CardContent className="p-6 flex flex-col md:flex-row md:items-center gap-6">
-                                        <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex flex-col items-center justify-center font-bold">
-                                            <span className="text-xs uppercase opacity-70">{dateDisplay.month}</span>
-                                            <span className="text-2xl">{dateDisplay.day}</span>
-                                        </div>
+                                    return (
+                                        <Card key={session.id} className="group hover:border-indigo-500/50 transition-colors">
+                                            <CardContent className="p-6 flex flex-col md:flex-row md:items-center gap-6">
+                                                <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex flex-col items-center justify-center font-bold">
+                                                    <span className="text-xs uppercase opacity-70">{dateDisplay.month}</span>
+                                                    <span className="text-2xl">{dateDisplay.day}</span>
+                                                </div>
 
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                {session.subject && (
-                                                    <Badge variant="outline" className="text-xs">{session.subject}</Badge>
-                                                )}
-                                                <Badge variant={session.status === "live" ? "default" : "secondary"} className="text-xs">
-                                                    {session.status === "live" ? "LIVE" : "Upcoming"}
-                                                </Badge>
-                                                <span className="text-xs text-muted-foreground flex items-center">
-                                                    <Clock className="w-3 h-3 mr-1" /> {formatDate(session.scheduled_time)}
-                                                </span>
-                                            </div>
-                                            <h3 className="text-xl font-bold group-hover:text-indigo-500 transition-colors">
-                                                {session.title}
-                                            </h3>
-                                            {session.description && (
-                                                <p className="text-sm text-muted-foreground mt-1">{session.description}</p>
-                                            )}
-                                            <p className="text-sm text-muted-foreground mt-1">
-                                                Hosted by {session.tutor_name} • <Users className="w-3 h-3 inline pb-0.5" /> {session.registered_users.length} registered
-                                            </p>
-                                            {(session.linked_past_papers?.length || session.linked_knowledge_organizers?.length || session.linked_flashcards?.length) && (
-                                                <div className="flex flex-wrap gap-2 mt-2">
-                                                    {session.linked_past_papers && session.linked_past_papers.length > 0 && (
-                                                        <Badge variant="outline" className="text-xs">
-                                                            <FileText className="w-3 h-3 mr-1" />
-                                                            {session.linked_past_papers.length} Past Paper{session.linked_past_papers.length > 1 ? 's' : ''}
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        {session.subject && (
+                                                            <Badge variant="outline" className="text-xs">{session.subject}</Badge>
+                                                        )}
+                                                        <Badge variant={session.status === "live" ? "default" : "secondary"} className="text-xs">
+                                                            {session.status === "live" ? "LIVE" : "Upcoming"}
                                                         </Badge>
+                                                        <span className="text-xs text-muted-foreground flex items-center">
+                                                            <Clock className="w-3 h-3 mr-1" /> {formatDate(session.scheduled_time)}
+                                                        </span>
+                                                    </div>
+                                                    <h3 className="text-xl font-bold group-hover:text-indigo-500 transition-colors">
+                                                        {session.title}
+                                                    </h3>
+                                                    {session.description && (
+                                                        <p className="text-sm text-muted-foreground mt-1">{session.description}</p>
                                                     )}
-                                                    {session.linked_knowledge_organizers && session.linked_knowledge_organizers.length > 0 && (
-                                                        <Badge variant="outline" className="text-xs">
-                                                            <Layers className="w-3 h-3 mr-1" />
-                                                            {session.linked_knowledge_organizers.length} Knowledge Organizer{session.linked_knowledge_organizers.length > 1 ? 's' : ''}
-                                                        </Badge>
-                                                    )}
-                                                    {session.linked_flashcards && session.linked_flashcards.length > 0 && (
-                                                        <Badge variant="outline" className="text-xs">
-                                                            <Layers className="w-3 h-3 mr-1" />
-                                                            {session.linked_flashcards.length} Flashcard Set{session.linked_flashcards.length > 1 ? 's' : ''}
-                                                        </Badge>
+                                                    <p className="text-sm text-muted-foreground mt-1">
+                                                        Hosted by {session.tutor_name} • <Users className="w-3 h-3 inline pb-0.5" /> {session.registered_users.length} registered
+                                                    </p>
+                                                    {(session.linked_past_papers?.length || session.linked_knowledge_organizers?.length || session.linked_flashcards?.length) && (
+                                                        <div className="flex flex-wrap gap-2 mt-2">
+                                                            {session.linked_past_papers && session.linked_past_papers.length > 0 && (
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    <FileText className="w-3 h-3 mr-1" />
+                                                                    {session.linked_past_papers.length} Past Paper{session.linked_past_papers.length > 1 ? 's' : ''}
+                                                                </Badge>
+                                                            )}
+                                                            {session.linked_knowledge_organizers && session.linked_knowledge_organizers.length > 0 && (
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    <Layers className="w-3 h-3 mr-1" />
+                                                                    {session.linked_knowledge_organizers.length} Knowledge Organizer{session.linked_knowledge_organizers.length > 1 ? 's' : ''}
+                                                                </Badge>
+                                                            )}
+                                                            {session.linked_flashcards && session.linked_flashcards.length > 0 && (
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    <Layers className="w-3 h-3 mr-1" />
+                                                                    {session.linked_flashcards.length} Flashcard Set{session.linked_flashcards.length > 1 ? 's' : ''}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
-                                            )}
-                                        </div>
 
-                                        <div className="flex gap-2">
-                                            {canJoin ? (
-                                                <Button
-                                                    className="bg-green-600 hover:bg-green-700"
-                                                    onClick={() => handleJoinSession(session)}
-                                                >
-                                                    <Video className="w-4 h-4 mr-2" />
-                                                    Join Session
-                                                </Button>
-                                            ) : isRegistered ? (
-                                                <Button variant="outline" disabled>
-                                                    Registered
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    className="bg-indigo-600 hover:bg-indigo-700"
-                                                    onClick={() => handleRegister(session.id)}
-                                                >
-                                                    Register Now
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
+                                                <div className="flex gap-2">
+                                                    {canJoin ? (
+                                                        <Button
+                                                            className="bg-green-600 hover:bg-green-700"
+                                                            onClick={() => handleJoinSession(session)}
+                                                        >
+                                                            <Video className="w-4 h-4 mr-2" />
+                                                            Join Session
+                                                        </Button>
+                                                    ) : isRegistered ? (
+                                                        <Button variant="outline" disabled>
+                                                            Registered
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            className="bg-indigo-600 hover:bg-indigo-700"
+                                                            onClick={() => handleRegister(session.id)}
+                                                        >
+                                                            Register Now
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
