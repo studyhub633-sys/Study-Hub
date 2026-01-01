@@ -11,6 +11,7 @@ import AITutor from "./pages/AITutor";
 import Extracurricular from "./pages/Extracurricular";
 import FAQ from "./pages/FAQ";
 import Flashcards from "./pages/Flashcards";
+import ForgotPassword from "./pages/ForgotPassword";
 import GlobalLibrary from "./pages/GlobalLibrary";
 import Index from "./pages/Index";
 import Knowledge from "./pages/Knowledge";
@@ -29,6 +30,7 @@ import VirtualSessions from "./pages/premium/VirtualSessions";
 import PremiumDashboard from "./pages/PremiumDashboard";
 
 
+import ResetPassword from "./pages/ResetPassword";
 import Returns from "./pages/Returns";
 import Settings from "./pages/Settings";
 import Signup from "./pages/Signup";
@@ -54,6 +56,8 @@ const App = () => {
                 <Route path="/landing" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/returns" element={<Returns />} />

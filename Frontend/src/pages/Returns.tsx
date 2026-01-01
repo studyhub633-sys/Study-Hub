@@ -25,12 +25,12 @@ export default function Returns() {
               <CardHeader>
                 <CardTitle>Digital Services Refund Policy</CardTitle>
                 <CardDescription>
-                  Learnly.AI provides digital subscription services
+                  AmidstLearning provides digital subscription services
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-muted-foreground">
                 <p>
-                  Since Learnly.AI is a digital service providing access to online study tools and features,
+                  Since AmidstLearning is a digital service providing access to online study tools and features,
                   we operate under specific refund policies designed for digital products.
                 </p>
               </CardContent>

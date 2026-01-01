@@ -1,24 +1,18 @@
+import { useTheme } from "../contexts/ThemeContext";
 import "./AnimatedLogoIcon.css";
 
 const AnimatedLogoIcon = () => {
+  const { theme } = useTheme();
+
   return (
-    <div className="logo-icon-shell" aria-label="Learnly.AI animated logo">
+    <div className="logo-icon-shell" aria-label="AmidstLearning animated logo">
       <div className="logo-icon-scale">
         <div className="logo-book-icon">
-          <div className="logo-book-spine" />
-          <div className="logo-book-cover" />
-          <div className="logo-page logo-page-1" />
-          <div className="logo-page logo-page-2" />
-          <div className="logo-page logo-page-3" />
-
-          <div className="logo-bulb-container">
-            <div className="logo-light-ray logo-ray-1" />
-            <div className="logo-light-ray logo-ray-2" />
-            <div className="logo-light-ray logo-ray-3" />
-            <div className="logo-bulb">
-              <div className="logo-bulb-base" />
-            </div>
-          </div>
+          <img
+            src={theme === "dark" ? "/images/darkmode.png" : "/images/lightmode.png"}
+            alt="AmidstLearning Icon"
+            className="w-full h-full object-contain"
+          />
         </div>
       </div>
     </div>

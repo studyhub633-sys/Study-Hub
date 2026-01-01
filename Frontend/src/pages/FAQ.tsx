@@ -12,16 +12,16 @@ import { Link } from "react-router-dom";
 
 export const faqs = [
   {
-    question: "What is Learnly.AI?",
-    answer: "Study Spark Hub is an all-in-one study companion platform that helps students organize notes, create flashcards, practice with past papers, and track their academic progress. It's designed to make studying more efficient and effective.",
+    question: "What is AmidstLearning?",
+    answer: "AmidstLearning is an all-in-one study companion platform that helps students organize notes, create flashcards, practice with past papers, and track their academic progress. It's designed to make studying more efficient and effective.",
   },
   {
     question: "Where do the past papers come from?",
     answer: "All past papers are accessed via direct links to verified third-party educational repositories like Physics & Maths Tutor (PMT). Study Spark Hub acts as a search engine and organizer—we do not host, store, or modify any exam content ourselves. All papers open in a new tab on the original source website, ensuring full compliance with copyright and 'no framing' policies.",
   },
   {
-    question: "Is Study Spark Hub free?",
-    answer: "Yes! Study Spark Hub offers a free plan with access to basic features including notes, flashcards, and past papers. We also offer a Premium plan with advanced features like AI-powered tutoring and advanced analytics.",
+    question: "Is AmidstLearning free?",
+    answer: "Yes! AmidstLearning offers a free plan with access to basic features including notes, flashcards, and past papers. We also offer a Premium plan with advanced features like AI-powered tutoring and advanced analytics.",
   },
   {
     question: "How do I create notes?",
@@ -153,7 +153,7 @@ export default function FAQ() {
       {/* Simple Footer */}
       <footer className="border-t border-border bg-background/80 backdrop-blur-xl mt-12">
         <div className="container mx-auto px-4 py-8 text-center">
-          <p className="text-sm text-muted-foreground">© 2025 Study Hub. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">© 2025 AmidstLearning. All rights reserved.</p>
         </div>
       </footer>
     </div>

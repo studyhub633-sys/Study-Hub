@@ -236,7 +236,7 @@ export default function Premium() {
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-premium/10 text-premium mb-6">
             <Crown className="h-5 w-5" />
-            <span className="font-semibold">Study Hub Premium</span>
+            <span className="font-semibold">AmidstLearning Premium</span>
           </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             {isPremium ? (
@@ -431,7 +431,7 @@ export default function Premium() {
           <h3 className="text-lg font-semibold text-foreground mb-2">30-Day Money-Back Guarantee</h3>
           <p className="text-muted-foreground max-w-lg mx-auto">
             Not satisfied? Get a full refund within 30 days, no questions asked.
-            We're confident you'll love Study Hub Premium.
+            We're confident you'll love AmidstLearning Premium.
           </p>
         </div>
 

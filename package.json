@@ -1,9 +1,9 @@
 {
-  "name": "study-spark-hub",
+  "name": "amidst-learning",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Study Spark Hub - Frontend and Backend separated",
+  "description": "AmidstLearning - Frontend and Backend separated",
   "scripts": {
     "frontend:dev": "cd Frontend && npm run dev",
     "frontend:build": "cd Frontend && npm run build",

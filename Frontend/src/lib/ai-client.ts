@@ -1,5 +1,5 @@
 /**
- * AI Client for Learnly.AI
+ * AI Client for AmidstLearning
  * 
  * This client provides functions to interact with the Express.js backend
  * AI endpoints. All functions require authentication via Supabase.

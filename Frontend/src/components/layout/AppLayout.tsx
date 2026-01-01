@@ -55,7 +55,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <AnimatedLogoIcon />
                 </div>
               </div>
-              <h1 className="font-bold text-lg">Study Hub</h1>
+              <h1 className="font-bold text-lg">AmidstLearning</h1>
             </div>
 
             <div className="flex items-center gap-2">

@@ -1,5 +1,5 @@
 /**
- * Discount code management for Study Hub
+ * Discount code management for AmidstLearning
  */
 
 export interface DiscountCode {

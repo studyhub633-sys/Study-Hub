@@ -1,12 +1,20 @@
 .studyhub-logo-shell {
   position: relative;
   padding: 32px 24px 40px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+  border-radius: 24px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 50%, #fff7ed 100%);
   overflow: hidden;
+  box-shadow: 0 25px 60px rgba(99, 102, 241, 0.2), 0 10px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  min-height: 360px;
+  backdrop-filter: blur(12px);
+}
+
+.dark .studyhub-logo-shell {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  min-height: 360px;
+  backdrop-filter: none;
 }
 
 .studyhub-logo {
@@ -15,138 +23,85 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  z-index: 1;
+  gap: 4px;
+  z-index: 2;
 }
 
 .book-icon {
   position: relative;
-  width: 180px;
-  height: 140px;
-  margin: 0 auto 10px;
-}
-
-.book-cover {
-  position: absolute;
-  width: 120px;
-  height: 140px;
-  left: 30px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border-radius: 8px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-  animation: bookFloat 3s ease-in-out infinite;
-}
-
-.book-spine {
-  position: absolute;
-  width: 20px;
-  height: 140px;
-  left: 10px;
-  background: linear-gradient(90deg, #4f46e5 0%, #6366f1 100%);
-  border-radius: 4px 0 0 4px;
-  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
-  animation: bookFloat 3s ease-in-out infinite;
-}
-
-.page {
-  position: absolute;
-  width: 100px;
-  height: 120px;
-  background: white;
-  left: 40px;
-  top: 10px;
-  border-radius: 0 4px 4px 0;
-  transform-origin: left center;
-}
-
-.page-1 {
-  animation: pageTurn 4s ease-in-out infinite;
-  z-index: 3;
-}
-
-.page-2 {
-  animation: pageTurn 4s ease-in-out infinite 0.3s;
-  z-index: 2;
-}
-
-.page-3 {
-  animation: pageTurn 4s ease-in-out infinite 0.6s;
-  z-index: 1;
-}
-
-.bulb-container {
-  position: absolute;
-  top: -30px;
-  right: -20px;
-  animation: bulbFloat 2s ease-in-out infinite;
-}
-
-.bulb {
-  width: 50px;
-  height: 70px;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  border-radius: 50% 50% 0 0;
-  position: relative;
-  box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
-  animation: glow 2s ease-in-out infinite;
-}
-
-.bulb-base {
-  width: 30px;
-  height: 15px;
-  background: #d97706;
+  width: 350px;
+  height: 270px;
   margin: 0 auto;
-  border-radius: 0 0 5px 5px;
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.15));
+  transition: transform 0.3s ease;
 }
 
-.light-ray {
-  position: absolute;
-  width: 2px;
-  height: 40px;
-  background: linear-gradient(to bottom, rgba(251, 191, 36, 0.8), transparent);
-  top: 20px;
-  left: 24px;
-}
-
-.ray-1 {
-  transform: rotate(-30deg);
-  transform-origin: top center;
-  animation: rayPulse 2s ease-in-out infinite;
-}
-
-.ray-2 {
-  transform: rotate(0deg);
-  animation: rayPulse 2s ease-in-out infinite 0.2s;
-}
-
-.ray-3 {
-  transform: rotate(30deg);
-  transform-origin: top center;
-  animation: rayPulse 2s ease-in-out infinite 0.4s;
+.dark .book-icon {
+  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.3));
 }
 
 .brand-name {
-  font-size: 42px;
-  font-weight: 800;
+  font-size: 80px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -2px;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+  animation: fadeInUp 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .brand-name {
   color: white;
-  letter-spacing: 1px;
   text-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-  animation: fadeInUp 1.5s ease-out;
 }
 
 .brand-name .study {
+  background: linear-gradient(to bottom right, #f97316, #ea580c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 6px rgba(234, 88, 12, 0.3));
+}
+
+.dark .brand-name .study {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: initial;
   color: #fbbf24;
+  filter: none;
 }
 
 .brand-name .hub {
+  background: linear-gradient(to bottom right, #8b5cf6, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 6px rgba(124, 58, 237, 0.3));
+}
+
+.dark .brand-name .hub {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: initial;
   color: #a78bfa;
+  filter: none;
 }
 
 .tagline {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: 3px;
+  font-size: 30px;
+  color: #1e293b;
+  font-weight: 600;
+  letter-spacing: 8px;
+  text-transform: uppercase;
   animation: fadeIn 2s ease-out 0.5s both;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .tagline {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  letter-spacing: 4px;
 }
 
 .studyhub-logo-particles {
@@ -155,47 +110,124 @@
   height: 100%;
   inset: 0;
   pointer-events: none;
+  z-index: 1;
 }
 
 .particle {
   position: absolute;
-  width: 6px;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.6);
+  width: 10px;
+  height: 10px;
+  background: rgba(99, 102, 241, 0.6);
   border-radius: 50%;
-  animation: float 4s ease-in-out infinite;
+  animation: float 6s ease-in-out infinite;
+  filter: blur(1.5px);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
 }
 
-.particle:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; }
-.particle:nth-child(2) { left: 80%; top: 30%; animation-delay: 1s; }
-.particle:nth-child(3) { left: 30%; top: 70%; animation-delay: 2s; }
-.particle:nth-child(4) { left: 70%; top: 60%; animation-delay: 1.5s; }
-.particle:nth-child(5) { left: 50%; top: 15%; animation-delay: 0.5s; }
+.dark .particle {
+  background: rgba(255, 255, 255, 0.4);
+  width: 6px;
+  height: 6px;
+  filter: none;
+  box-shadow: none;
+}
+
+.particle:nth-child(1) {
+  left: 10%;
+  top: 20%;
+  animation-delay: 0s;
+}
+
+.particle:nth-child(2) {
+  left: 80%;
+  top: 30%;
+  animation-delay: 1s;
+}
+
+.particle:nth-child(3) {
+  left: 30%;
+  top: 70%;
+  animation-delay: 2s;
+}
+
+.particle:nth-child(4) {
+  left: 70%;
+  top: 60%;
+  animation-delay: 1.5s;
+}
+
+.particle:nth-child(5) {
+  left: 50%;
+  top: 15%;
+  animation-delay: 0.5s;
+}
 
 @keyframes bookFloat {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes pageTurn {
-  0%, 40% { transform: rotateY(0deg); opacity: 1; }
-  50%, 90% { transform: rotateY(-180deg); opacity: 0.3; }
-  100% { transform: rotateY(0deg); opacity: 1; }
+
+  0%,
+  40% {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
+
+  50%,
+  90% {
+    transform: rotateY(-180deg);
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
 }
 
 @keyframes bulbFloat {
-  0%, 100% { transform: translateY(0px) rotate(-5deg); }
-  50% { transform: translateY(-8px) rotate(5deg); }
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(-5deg);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(5deg);
+  }
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.6); }
-  50% { box-shadow: 0 0 50px rgba(251, 191, 36, 0.9); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
+  }
+
+  50% {
+    box-shadow: 0 0 50px rgba(251, 191, 36, 0.9);
+  }
 }
 
 @keyframes rayPulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeInUp {
@@ -203,6 +235,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -210,15 +243,23 @@
 }
 
 @keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px) translateX(0px);
     opacity: 0.4;
   }
+
   50% {
     transform: translateY(-30px) translateX(10px);
     opacity: 0.8;
@@ -239,11 +280,3 @@
     letter-spacing: 2px;
   }
 }
-
-
-
-
-
-
-
-

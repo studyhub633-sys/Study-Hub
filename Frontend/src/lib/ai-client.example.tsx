@@ -1,15 +1,15 @@
 /**
  * Example usage of AI Client functions in React components
  * 
- * This file shows how to integrate AI features into your Study Spark Hub app.
+ * This file shows how to integrate AI features into your AmidstLearning app.
  * Copy these patterns into your actual components.
  */
 
-import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { generateQuestion, evaluateAnswer, generateFlashcards } from "@/lib/ai-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { evaluateAnswer, generateFlashcards, generateQuestion } from "@/lib/ai-client";
+import { useState } from "react";
 
 // ============================================
 // Example 1: Generate Question Component

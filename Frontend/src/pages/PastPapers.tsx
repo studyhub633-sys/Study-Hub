@@ -692,6 +692,7 @@ export default function PastPapers() {
                     </div>
                   )}
 
+                  {/* Controls */}
                   <div className="flex items-center gap-2">
                     <Button
                       variant={isCompleted ? "outline" : "default"}
@@ -734,6 +735,24 @@ export default function PastPapers() {
                         )}
                       </>
                     )}
+                    {/* Edit/Delete buttons hidden as requested
+              <Button
+                variant="ghost" 
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={() => handleEditPaper(paper)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+               <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                onClick={() => handleDeletePaper(paper.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              */}
                   </div>
                 </div>
               );

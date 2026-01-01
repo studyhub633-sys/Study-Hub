@@ -1,5 +1,5 @@
 /**
- * Payment Client for Learnly.AI
+ * Payment Client for AmidstLearning
  * Handles PayPal payment integration
  */
 
