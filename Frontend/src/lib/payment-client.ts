@@ -1,5 +1,5 @@
 /**
- * Payment Client for AmidstLearning
+ * Payment Client for Scientia.ai
  * Handles PayPal payment integration
  */
 

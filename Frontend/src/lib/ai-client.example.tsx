@@ -1,7 +1,7 @@
 /**
  * Example usage of AI Client functions in React components
  * 
- * This file shows how to integrate AI features into your AmidstLearning app.
+ * This file shows how to integrate AI features into your Scientia.ai app.
  * Copy these patterns into your actual components.
  */
 

@@ -1,5 +1,5 @@
 /**
- * AI Client for AmidstLearning
+ * AI Client for Scientia.ai
  * 
  * This client provides functions to interact with the Express.js backend
  * AI endpoints. All functions require authentication via Supabase.

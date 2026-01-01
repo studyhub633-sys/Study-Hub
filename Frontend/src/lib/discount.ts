@@ -1,5 +1,5 @@
 /**
- * Discount code management for AmidstLearning
+ * Discount code management for Scientia.ai
  */
 
 export interface DiscountCode {

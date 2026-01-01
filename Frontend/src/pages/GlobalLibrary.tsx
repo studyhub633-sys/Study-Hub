@@ -385,7 +385,7 @@ export default function GlobalLibrary() {
                                             </Button>
                                             <div className="pt-4 border-t border-primary/5">
                                                 <p className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                                                    <Info className="h-3 w-3" /> Note: This uses URLs only. AmidstLearning does not host or redistribute any PDF files.
+                                                    <Info className="h-3 w-3" /> Note: This uses URLs only. Scientia.ai does not host or redistribute any PDF files.
                                                 </p>
                                             </div>
                                         </CardContent>
@@ -446,7 +446,7 @@ export default function GlobalLibrary() {
                                     <h3 className="font-bold text-lg">100% Legal & Safe</h3>
                                     <p className="text-sm text-muted-foreground">
                                         These links open official third-party resources in a <strong>new tab</strong>.
-                                        AmidstLearning does not host, frame, or redistribute any copyrighted materials.
+                                        Scientia.ai does not host, frame, or redistribute any copyrighted materials.
                                     </p>
                                 </div>
                             </div>

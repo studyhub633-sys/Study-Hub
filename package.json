@@ -1,9 +1,9 @@
 {
-  "name": "amidst-learning",
+  "name": "scientia-ai",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "AmidstLearning - Frontend and Backend separated",
+  "description": "Scientia.ai - Frontend and Backend separated",
   "scripts": {
     "frontend:dev": "cd Frontend && npm run dev",
     "frontend:build": "cd Frontend && npm run build",

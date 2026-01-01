@@ -149,7 +149,7 @@ export default function Landing() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <AnimatedLogoIcon />
-            <h1 className="font-bold text-xl">AmidstLearning</h1>
+            <h1 className="font-bold text-xl">Scientia.ai</h1>
           </div>
 
           {/* Desktop Navigation */}
@@ -187,7 +187,7 @@ export default function Landing() {
                 <div className="flex flex-col gap-6 mt-6">
                   <div className="flex items-center gap-2">
                     <AnimatedLogoIcon />
-                    <span className="font-bold text-lg">AmidstLearning</span>
+                    <span className="font-bold text-lg">Scientia.ai</span>
                   </div>
 
                   <div className="flex flex-col gap-4">
@@ -284,7 +284,7 @@ export default function Landing() {
       <section className="container mx-auto px-4 py-20 bg-muted/50 rounded-3xl my-20">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose AmidstLearning?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Scientia.ai?</h2>
             <p className="text-muted-foreground text-lg">
               Join thousands of students who are already improving their study habits
             </p>
@@ -344,7 +344,7 @@ export default function Landing() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <AnimatedLogoIcon />
-                <h3 className="font-bold text-lg">AmidstLearning</h3>
+                <h3 className="font-bold text-lg">Scientia.ai</h3>
               </div>
               <p className="text-sm text-muted-foreground">
                 Your all-in-one study companion for organized learning and academic success.
@@ -397,7 +397,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">© 2025 AmidstLearning. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© 2025 Scientia.ai. All rights reserved.</p>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
               <Link to="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
