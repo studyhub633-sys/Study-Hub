@@ -63,7 +63,7 @@ const features = [
 const plans = [
   {
     name: "Monthly",
-    price: "£5.99",
+    price: "£4.99",
     period: "/month",
     description: "Perfect for trying out premium features",
     features: [
@@ -75,17 +75,17 @@ const plans = [
   },
   {
     name: "Yearly",
-    price: "£65.99",
+    price: "£39.99",
     period: "/year",
-    description: "Best value - save over £6!",
+    description: "Our best value - save over £19 annually!",
     features: [
       "All premium features",
-      "2 months free",
+      "4 months free",
       "Priority new features",
       "Exclusive content",
     ],
     popular: true,
-    savings: "Save £6",
+    savings: "Save £19.89",
   },
 ];
 
