@@ -687,7 +687,7 @@ export default function Knowledge() {
     const matchesSubject = selectedSubject === "All Subjects" || org.subject === selectedSubject;
     const orgBoard = org.content?.exam_board;
     const matchesBoard = selectedBoard === "All Boards" || orgBoard === selectedBoard;
-    const matchesTier = selectedTier === "All Tiers" || org.tier === selectedTier;
+    const matchesTier = selectedTier === "All Tiers" || org.tier?.toLowerCase() === selectedTier.toLowerCase();
     return matchesSearch && matchesSubject && matchesBoard && matchesTier;
   });
 
