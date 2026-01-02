@@ -687,9 +687,31 @@ export default function Knowledge() {
     const matchesSubject = selectedSubject === "All Subjects" || org.subject === selectedSubject;
     const orgBoard = org.content?.exam_board;
     const matchesBoard = selectedBoard === "All Boards" || orgBoard === selectedBoard;
-    const matchesTier = selectedTier === "All Tiers" || org.tier?.toLowerCase() === selectedTier.toLowerCase();
+    const matchesTier = selectedTier === "All Tiers" ||
+      (selectedTier === "Unassigned" && !org.tier) ||
+      (org.tier?.toLowerCase() === selectedTier.toLowerCase());
     return matchesSearch && matchesSubject && matchesBoard && matchesTier;
   });
+
+  // Sync selectedOrganizer with filters - if current selection is no longer in filtered list, select first match
+  useEffect(() => {
+    if (selectedOrganizer && filteredOrganizers.length > 0) {
+      const isSelectedInFiltered = filteredOrganizers.some(org => org.id === selectedOrganizer.id);
+      if (!isSelectedInFiltered) {
+        setSelectedOrganizer(filteredOrganizers[0]);
+        if (filteredOrganizers[0].content?.sections?.length > 0) {
+          setOpenSections([filteredOrganizers[0].content.sections[0].title]);
+        }
+      }
+    } else if (selectedOrganizer && filteredOrganizers.length === 0) {
+      setSelectedOrganizer(null);
+    } else if (!selectedOrganizer && filteredOrganizers.length > 0) {
+      setSelectedOrganizer(filteredOrganizers[0]);
+      if (filteredOrganizers[0].content?.sections?.length > 0) {
+        setOpenSections([filteredOrganizers[0].content.sections[0].title]);
+      }
+    }
+  }, [searchQuery, selectedSubject, selectedBoard, selectedTier, filteredOrganizers.length]);
 
   const toggleSection = (title: string) => {
     setOpenSections((prev) =>
@@ -794,6 +816,7 @@ export default function Knowledge() {
               <SelectItem value="All Tiers">All Tiers</SelectItem>
               <SelectItem value="Higher">Higher Tier</SelectItem>
               <SelectItem value="Foundation">Foundation Tier</SelectItem>
+              <SelectItem value="Unassigned">Unassigned</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -811,6 +834,22 @@ export default function Knowledge() {
                 <Button onClick={handleCreateOrganizer}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Organizer
+                </Button>
+              </div>
+            ) : filteredOrganizers.length === 0 ? (
+              <div className="glass-card p-8 text-center">
+                <Brain className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">No organizers found</h3>
+                <p className="text-muted-foreground mb-4">
+                  Try adjusting your filters or create a new organizer
+                </p>
+                <Button variant="outline" onClick={() => {
+                  setSelectedSubject("All Subjects");
+                  setSelectedBoard("All Boards");
+                  setSelectedTier("All Tiers");
+                  setSearchQuery("");
+                }}>
+                  Clear Filters
                 </Button>
               </div>
             ) : (

@@ -483,7 +483,9 @@ export default function PastPapers() {
     const matchesSearch = paper.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = selectedSubject === "All Subjects" || paper.subject === selectedSubject;
     const matchesBoard = selectedBoard === "All Boards" || paper.exam_board === selectedBoard;
-    const matchesTier = selectedTier === "All Tiers" || paper.tier?.toLowerCase() === selectedTier.toLowerCase();
+    const matchesTier = selectedTier === "All Tiers" ||
+      (selectedTier === "Unassigned" && !paper.tier) ||
+      (paper.tier?.toLowerCase() === selectedTier.toLowerCase());
     return matchesSearch && matchesSubject && matchesBoard && matchesTier;
   });
 
@@ -615,6 +617,7 @@ export default function PastPapers() {
               <SelectItem value="All Tiers">All Tiers</SelectItem>
               <SelectItem value="Higher">Higher Tier</SelectItem>
               <SelectItem value="Foundation">Foundation Tier</SelectItem>
+              <SelectItem value="Unassigned">Unassigned</SelectItem>
             </SelectContent>
           </Select>
         </div>
