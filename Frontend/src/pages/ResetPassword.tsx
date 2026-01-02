@@ -16,8 +16,17 @@ export default function ResetPassword() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const { updatePassword } = useAuth();
+    const { updatePassword, session, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+
+    // Check if we have a recovery session
+    const [checkingSession, setCheckingSession] = useState(true);
+
+    useEffect(() => {
+        if (!authLoading) {
+            setCheckingSession(false);
+        }
+    }, [authLoading]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -60,10 +69,26 @@ export default function ResetPassword() {
                     <CardDescription>
                         {submitted
                             ? "Your password has been successfully reset"
-                            : "Enter your new password below"}
+                            : !session && !checkingSession
+                                ? "Your reset link may have expired or is invalid."
+                                : "Enter your new password below"}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
+                    {!session && !checkingSession && !submitted && (
+                        <div className="mb-4">
+                            <Alert variant="destructive">
+                                <AlertDescription>
+                                    Authentication session is missing. This happens if the link is expired or if you've opened it in a different browser than where you started.
+                                </AlertDescription>
+                            </Alert>
+                            <Link to="/forgot-password">
+                                <Button variant="outline" className="w-full mt-2">
+                                    Request a new link
+                                </Button>
+                            </Link>
+                        </div>
+                    )}
                     {submitted ? (
                         <div className="text-center py-4 space-y-4">
                             <div className="flex justify-center">
@@ -125,7 +150,11 @@ export default function ResetPassword() {
                                     disabled={loading}
                                 />
                             </div>
-                            <Button type="submit" className="w-full" disabled={loading}>
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={loading || !session}
+                            >
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
