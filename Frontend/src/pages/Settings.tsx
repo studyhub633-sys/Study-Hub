@@ -56,6 +56,7 @@ export default function Settings() {
     year_group: "",
     subjects: "",
     avatar_url: "",
+    is_premium: false,
   });
 
   // Notification settings state
@@ -96,6 +97,7 @@ export default function Settings() {
             year_group: (profile as any).year_group || "",
             subjects: (profile as any).subjects || "",
             avatar_url: profile.avatar_url || "",
+            is_premium: (profile as any).is_premium || false,
           });
         } else {
           // Set default values from user
@@ -108,6 +110,7 @@ export default function Settings() {
             year_group: "",
             subjects: "",
             avatar_url: "",
+            is_premium: false,
           });
         }
       } catch (error) {
@@ -333,7 +336,13 @@ export default function Settings() {
                         <h3 className="font-semibold text-foreground">{displayName}</h3>
                         <p className="text-sm text-muted-foreground">{profileData.email || user?.email}</p>
                         <div className="flex items-center gap-1 mt-1">
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">Free Plan</span>
+                          {profileData.is_premium ? (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-white font-medium flex items-center gap-1">
+                              <Crown className="w-3 h-3" /> Premium User
+                            </span>
+                          ) : (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">Free Plan</span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -614,19 +623,35 @@ export default function Settings() {
                     <div className="p-4 rounded-xl bg-muted/50 border border-border mb-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-semibold text-foreground">Free Plan</p>
-                          <p className="text-sm text-muted-foreground">Basic access to study materials</p>
+                          <p className="font-semibold text-foreground">
+                            {profileData.is_premium ? "Premium Plan" : "Free Plan"}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {profileData.is_premium
+                              ? "You have full access to all premium features."
+                              : "Basic access to study materials"}
+                          </p>
                         </div>
-                        <Button className="bg-premium hover:bg-premium/90 text-premium-foreground">
-                          <Crown className="h-4 w-4 mr-2" />
-                          Upgrade to Premium
-                        </Button>
+                        {!profileData.is_premium && (
+                          <Button className="bg-premium hover:bg-premium/90 text-premium-foreground">
+                            <Crown className="h-4 w-4 mr-2" />
+                            Upgrade to Premium
+                          </Button>
+                        )}
+                        {profileData.is_premium && (
+                          <div className="flex items-center text-green-500 font-medium">
+                            <Shield className="h-4 w-4 mr-2" />
+                            Active
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    <p className="text-sm text-muted-foreground">
-                      Unlock AI-powered features, advanced analytics, and ad-free studying with Premium.
-                    </p>
+                    {!profileData.is_premium && (
+                      <p className="text-sm text-muted-foreground">
+                        Unlock AI-powered features, advanced analytics, and ad-free studying with Premium.
+                      </p>
+                    )}
                   </div>
                 )}
               </>
