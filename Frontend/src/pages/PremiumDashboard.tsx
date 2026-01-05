@@ -7,6 +7,7 @@ import { hasPremium } from "@/lib/premium";
 import {
     Brain,
     Calculator,
+    Calendar,
     FileText,
     Lock,
     Sparkles,
@@ -90,6 +91,22 @@ export default function PremiumDashboard() {
             path: "/premium/virtual-sessions",
             color: "text-indigo-500",
             bg: "bg-indigo-500/10",
+        },
+        {
+            title: "Homework Tracker",
+            description: "Track assignments with smart notifications when they're due.",
+            icon: Calendar,
+            path: "/premium/homework-tracker",
+            color: "text-pink-500",
+            bg: "bg-pink-500/10",
+        },
+        {
+            title: "AI Study Plans",
+            description: "Get personalized study schedules based on your exam dates.",
+            icon: Sparkles,
+            path: "/premium/study-plans",
+            color: "text-cyan-500",
+            bg: "bg-cyan-500/10",
         },
     ];
 

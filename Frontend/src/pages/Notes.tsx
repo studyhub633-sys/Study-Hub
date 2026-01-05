@@ -33,11 +33,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
   Bold,
   BookOpen,
   Clock,
+  Crown,
   Download,
   Edit,
   Filter,
@@ -45,6 +47,7 @@ import {
   LayoutTemplate,
   Link as LinkIcon,
   Loader2,
+  Lock,
   Plus,
   Search,
   Trash2,
@@ -58,6 +61,8 @@ interface Note {
   subject: string;
   topic: string;
   tags: string[];
+  grade_level?: string;
+  is_premium?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -82,6 +87,8 @@ export default function Notes() {
   const { toast } = useToast();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
+  const [checkingPremium, setCheckingPremium] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -99,9 +106,22 @@ export default function Notes() {
 
   useEffect(() => {
     if (user) {
+      checkPremiumStatus();
       fetchNotes();
     }
   }, [user]);
+
+  const checkPremiumStatus = async () => {
+    if (!user || !supabase) return;
+    try {
+      const premium = await hasPremium(supabase);
+      setIsPremium(premium);
+    } catch (error) {
+      console.error("Error checking premium status:", error);
+    } finally {
+      setCheckingPremium(false);
+    }
+  };
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -134,14 +154,44 @@ export default function Notes() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      // Fetch user's own notes
+      const { data: userNotes, error: userError } = await supabase
         .from("notes")
         .select("*")
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false });
 
-      if (error) throw error;
-      setNotes(data || []);
+      if (userError) throw userError;
+
+      // If premium, also fetch Grade 9 premium notes
+      if (isPremium) {
+        const { data: premiumNotes, error: premiumError } = await supabase
+          .from("global_premium_notes")
+          .select("*")
+          .eq("grade_level", "9")
+          .order("created_at", { ascending: false });
+
+        if (!premiumError && premiumNotes) {
+          // Convert premium notes to Note format
+          const formattedPremiumNotes = premiumNotes.map(note => ({
+            id: note.id,
+            title: note.title,
+            content: note.content,
+            subject: note.subject || "",
+            topic: note.topic || "",
+            tags: note.tags || [],
+            grade_level: note.grade_level,
+            is_premium: true,
+            created_at: note.created_at,
+            updated_at: note.created_at,
+          }));
+          setNotes([...userNotes, ...formattedPremiumNotes]);
+        } else {
+          setNotes(userNotes || []);
+        }
+      } else {
+        setNotes(userNotes || []);
+      }
 
       // Select the first note if none selected
       if (!selectedNote && data && data.length > 0) {

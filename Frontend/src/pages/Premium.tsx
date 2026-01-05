@@ -13,6 +13,7 @@ import {
   CheckCircle,
   Clock,
   Crown,
+  FileText,
   Loader2,
   Rocket,
   Shield,
@@ -30,8 +31,8 @@ import { toast } from "sonner";
 const features = [
   {
     icon: Brain,
-    title: "AI Question Bank",
-    description: "Access 500+ AI-generated questions tailored to your exam board and subjects",
+    title: "Unlimited AI Question Generation",
+    description: "Generate unlimited AI questions tailored to your exam board and subjects (50/day for free users)",
   },
   {
     icon: Sparkles,
@@ -50,13 +51,28 @@ const features = [
   },
   {
     icon: Shield,
-    title: "Ad-Free Experience",
+    title: "Fully Ad-Free Experience",
     description: "Study without distractions with a completely ad-free interface",
   },
   {
     icon: Users,
     title: "Priority Support",
     description: "Get help faster with dedicated premium customer support",
+  },
+  {
+    icon: Brain,
+    title: "Grade 9 Premium Notes",
+    description: "Access exclusive Grade 9 notes and study materials",
+  },
+  {
+    icon: Clock,
+    title: "Homework Tracker",
+    description: "Track assignments with smart notifications when they're due",
+  },
+  {
+    icon: Sparkles,
+    title: "AI-Powered Study Plans",
+    description: "Get personalized study schedules based on your exam dates",
   },
 ];
 
@@ -443,10 +459,11 @@ export default function Premium() {
               <Crown className="h-4 w-4 text-premium-foreground" />
             </div>
           </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">AI Question Bank</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Unlimited AI Content Generation</h3>
           <p className="text-muted-foreground mb-4">
             This feature is available for Premium members only.
-            Upgrade to access 500+ AI-generated practice questions.
+            Upgrade to access unlimited AI-generated questions, flashcards, and study materials.
+            Free users get 50 AI requests per day.
           </p>
           {isPremium ? (
             <div className="flex items-center gap-2 text-secondary">

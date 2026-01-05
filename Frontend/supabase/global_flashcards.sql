@@ -244,7 +244,102 @@ INSERT INTO public.global_flashcards (front, back, subject, topic) VALUES
 ('What is limited liability?', 'The owner''s personal assets are protected from business debts', 'Business', 'Business Activity'),
 ('What are the 4 Ps of the marketing mix?', 'Product, Price, Place, and Promotion', 'Business', 'Business Activity'),
 ('What is penetration pricing?', 'Setting a low initial price to attract customers and gain market share', 'Business', 'Business Activity'),
-('What is price skimming?', 'Setting a high initial price for a new product, then lowering it over time', 'Business', 'Business Activity');
+('What is price skimming?', 'Setting a high initial price for a new product, then lowering it over time', 'Business', 'Business Activity'),
+
+-- =====================
+-- ADDITIONAL FLASHCARDS - More Topics
+-- =====================
+-- BIOLOGY: Homeostasis
+('What is homeostasis?', 'The maintenance of a constant internal environment', 'Biology', 'Homeostasis'),
+('What is negative feedback?', 'A mechanism that reverses a change in conditions to maintain stability', 'Biology', 'Homeostasis'),
+('What hormone controls blood glucose levels?', 'Insulin (lowers) and Glucagon (raises)', 'Biology', 'Homeostasis'),
+('What is the role of the pancreas in blood glucose control?', 'Produces insulin and glucagon to regulate blood sugar', 'Biology', 'Homeostasis'),
+('What is Type 1 diabetes?', 'A condition where the pancreas produces little or no insulin', 'Biology', 'Homeostasis'),
+('What is Type 2 diabetes?', 'A condition where the body becomes resistant to insulin', 'Biology', 'Homeostasis'),
+
+-- BIOLOGY: Inheritance
+('What is a gene?', 'A section of DNA that codes for a specific protein', 'Biology', 'Inheritance'),
+('What is an allele?', 'A different version of the same gene', 'Biology', 'Inheritance'),
+('What is a dominant allele?', 'An allele that is always expressed if present', 'Biology', 'Inheritance'),
+('What is a recessive allele?', 'An allele that is only shows if both copies are present', 'Biology', 'Inheritance'),
+('What is a genotype?', 'The genetic makeup of an organism (e.g., BB, Bb, bb)', 'Biology', 'Inheritance'),
+('What is a phenotype?', 'The physical characteristics of an organism', 'Biology', 'Inheritance'),
+('What is homozygous?', 'Having two identical alleles (e.g., BB or bb)', 'Biology', 'Inheritance'),
+('What is heterozygous?', 'Having two different alleles (e.g., Bb)', 'Biology', 'Inheritance'),
+
+-- CHEMISTRY: Rates of Reaction
+('What are the four factors that affect rate of reaction?', 'Temperature, concentration, surface area, and catalysts', 'Chemistry', 'Rates of Reaction'),
+('How does temperature affect reaction rate?', 'Higher temperature increases particle energy and collision frequency', 'Chemistry', 'Rates of Reaction'),
+('How does concentration affect reaction rate?', 'Higher concentration means more particles per unit volume, more collisions', 'Chemistry', 'Rates of Reaction'),
+('What is a catalyst?', 'A substance that speeds up a reaction without being used up', 'Chemistry', 'Rates of Reaction'),
+('How does surface area affect reaction rate?', 'Larger surface area provides more area for collisions to occur', 'Chemistry', 'Rates of Reaction'),
+
+-- CHEMISTRY: Acids and Bases
+('What is the pH scale?', 'A scale from 0-14 measuring acidity/alkalinity (7 is neutral)', 'Chemistry', 'Acids and Bases'),
+('What is an acid?', 'A substance with pH less than 7 that releases H+ ions', 'Chemistry', 'Acids and Bases'),
+('What is a base?', 'A substance with pH greater than 7 that releases OH- ions', 'Chemistry', 'Acids and Bases'),
+('What is neutralization?', 'The reaction between an acid and a base to form salt and water', 'Chemistry', 'Acids and Bases'),
+('What is the general equation for neutralization?', 'Acid + Base → Salt + Water', 'Chemistry', 'Acids and Bases'),
+
+-- PHYSICS: Forces
+('What is Newton''s First Law?', 'An object at rest stays at rest, an object in motion stays in motion unless acted upon by a force', 'Physics', 'Forces'),
+('What is Newton''s Second Law?', 'F = ma (Force = mass × acceleration)', 'Physics', 'Forces'),
+('What is Newton''s Third Law?', 'For every action there is an equal and opposite reaction', 'Physics', 'Forces'),
+('What is weight?', 'The force of gravity acting on an object (W = mg)', 'Physics', 'Forces'),
+('What is the difference between mass and weight?', 'Mass is the amount of matter (kg), weight is the force of gravity (N)', 'Physics', 'Forces'),
+('What is friction?', 'A force that opposes motion between two surfaces in contact', 'Physics', 'Forces'),
+
+-- PHYSICS: Motion
+('What is velocity?', 'Speed in a given direction (vector quantity)', 'Physics', 'Motion'),
+('What is acceleration?', 'The rate of change of velocity (a = Δv/Δt)', 'Physics', 'Motion'),
+('What is the equation for distance?', 'Distance = Speed × Time (s = vt)', 'Physics', 'Motion'),
+('What is the equation for acceleration?', 'Acceleration = Change in Velocity / Time (a = (v-u)/t)', 'Physics', 'Motion'),
+
+-- MATHEMATICS: Number
+('What is a prime number?', 'A number greater than 1 that has only two factors: 1 and itself', 'Mathematics', 'Number'),
+('What is the highest common factor (HCF)?', 'The largest number that divides into two or more numbers', 'Mathematics', 'Number'),
+('What is the lowest common multiple (LCM)?', 'The smallest number that is a multiple of two or more numbers', 'Mathematics', 'Number'),
+('What is a square number?', 'A number multiplied by itself (e.g., 4 = 2²)', 'Mathematics', 'Number'),
+('What is a cube number?', 'A number multiplied by itself three times (e.g., 8 = 2³)', 'Mathematics', 'Number'),
+
+-- MATHEMATICS: Ratio and Proportion
+('How do you simplify a ratio?', 'Divide both parts by their highest common factor', 'Mathematics', 'Ratio'),
+('What is direct proportion?', 'When one quantity increases, the other increases by the same factor (y = kx)', 'Mathematics', 'Ratio'),
+('What is inverse proportion?', 'When one quantity increases, the other decreases (y = k/x)', 'Mathematics', 'Ratio'),
+('How do you share an amount in a given ratio?', 'Add the ratio parts, divide the amount by the total, multiply each part', 'Mathematics', 'Ratio'),
+
+-- ENGLISH: Language Analysis
+('What is alliteration?', 'Repetition of consonant sounds at the start of words', 'English Language', 'Language Analysis'),
+('What is assonance?', 'Repetition of vowel sounds within words', 'English Language', 'Language Analysis'),
+('What is sibilance?', 'Repetition of ''s'' sounds for effect', 'English Language', 'Language Analysis'),
+('What is a semantic field?', 'A group of words related in meaning', 'English Language', 'Language Analysis'),
+('What is pathetic fallacy?', 'Attributing human emotions to nature or inanimate objects', 'English Language', 'Language Analysis'),
+
+-- ENGLISH LITERATURE: Romeo and Juliet
+('Who wrote Romeo and Juliet?', 'William Shakespeare', 'English Literature', 'Shakespeare'),
+('What is the main theme of Romeo and Juliet?', 'The destructive power of love and family feuds', 'English Literature', 'Shakespeare'),
+('What is a tragic flaw in Romeo?', 'His impulsive nature and passionate love', 'English Literature', 'Shakespeare'),
+('What role does Friar Laurence play?', 'He marries the lovers and provides the potion plan', 'English Literature', 'Shakespeare'),
+
+-- GEOGRAPHY: Urban Issues
+('What is urbanisation?', 'The growth of cities and urban areas', 'Geography', 'Urban Issues'),
+('What is a megacity?', 'A city with over 10 million inhabitants', 'Geography', 'Urban Issues'),
+('What are push factors?', 'Reasons people leave rural areas (e.g., lack of jobs)', 'Geography', 'Urban Issues'),
+('What are pull factors?', 'Reasons people move to cities (e.g., better opportunities)', 'Geography', 'Urban Issues'),
+('What is urban sprawl?', 'The uncontrolled expansion of urban areas into surrounding countryside', 'Geography', 'Urban Issues'),
+
+-- HISTORY: Norman Conquest
+('When did the Battle of Hastings occur?', '14th October 1066', 'History', 'Norman Conquest'),
+('Who won the Battle of Hastings?', 'William the Conqueror (Duke of Normandy)', 'History', 'Norman Conquest'),
+('What was the Domesday Book?', 'A survey of all land and property in England (1086)', 'History', 'Norman Conquest'),
+('What was the Feudal System?', 'A hierarchical system where the king granted land to barons in exchange for loyalty', 'History', 'Norman Conquest'),
+
+-- COMPUTER SCIENCE: Programming
+('What is a variable?', 'A named storage location that holds a value', 'Computer Science', 'Programming'),
+('What is an algorithm?', 'A step-by-step procedure to solve a problem', 'Computer Science', 'Programming'),
+('What is a loop?', 'A programming construct that repeats code', 'Computer Science', 'Programming'),
+('What is selection?', 'A programming construct that makes decisions (if/else)', 'Computer Science', 'Programming'),
+('What is iteration?', 'Repeating a process or loop', 'Computer Science', 'Programming');
 
 -- ============================================
 -- 4. Backfill for Existing Users

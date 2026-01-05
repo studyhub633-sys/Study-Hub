@@ -9,10 +9,19 @@ export async function checkAndRecordUsage(user, featureType, prompt = null, subj
     const TESTER_EMAILS = ['admin@studyhub.com', 'tester@studyhub.com', 'andre@studyhub.com'];
     const isTester = TESTER_EMAILS.includes(user.email);
 
-    // BETA OVERRIDE: Everyone gets premium limits during beta testing
-    // to bypass database schema cache issues (PGRST204)
-    const isPremium = true;
-    const MAX_DAILY_USAGE = 500;
+    // Check if user has premium access
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", user.id)
+        .single();
+    
+    const isPremium = profile?.is_premium || false;
+    
+    // Free users: 50 requests/day, Premium: unlimited (set to very high number)
+    const MAX_DAILY_USAGE_FREE = 50;
+    const MAX_DAILY_USAGE_PREMIUM = 10000; // Effectively unlimited
+    const MAX_DAILY_USAGE = isPremium ? MAX_DAILY_USAGE_PREMIUM : MAX_DAILY_USAGE_FREE;
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     // Count usage across ALL features in the last 24 hours

@@ -339,7 +339,63 @@ VALUES
 ('Maths Component 1 - June 2018', 'Mathematics', 2018, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-1H/June%202018%20QP%20-%20Component%201%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
 ('Maths Component 1 - June 2017', 'Mathematics', 2017, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/WJEC-England/Component-1H/June%202017%20QP%20-%20Component%201%20(H)%20Eduqas%20Maths%20GCSE.pdf', 'link'),
 ('English Language Component 1 - June 2023', 'English Language', 2023, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/WJEC-England/Component-1/June%202023%20QP%20-%20Component%201%20Eduqas%20English%20Language%20GCSE.pdf', 'link'),
-('Biology Component 1 - June 2023', 'Biology', 2023, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/WJEC-England/Component-1H/June%202023%20QP%20-%20Component%201%20(H)%20Eduqas%20Biology%20GCSE.pdf', 'link');
+('Biology Component 1 - June 2023', 'Biology', 2023, 'Eduqas/WJEC', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/WJEC-England/Component-1H/June%202023%20QP%20-%20Component%201%20(H)%20Eduqas%20Biology%20GCSE.pdf', 'link'),
+
+-- =====================
+-- ADDITIONAL PAPERS - More Years and Boards
+-- =====================
+-- AQA Additional Years
+('Maths Paper 1F - June 2023', 'Mathematics', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-1F/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 2F - June 2023', 'Mathematics', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-2F/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 3F - June 2023', 'Mathematics', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-3F/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 1F - June 2024', 'Mathematics', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-1F/QP/June%202024%20QP.pdf', 'link'),
+('Maths Paper 2F - June 2024', 'Mathematics', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-2F/QP/June%202024%20QP.pdf', 'link'),
+('Maths Paper 3F - June 2024', 'Mathematics', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-3F/QP/June%202024%20QP.pdf', 'link'),
+
+-- Biology Foundation
+('Biology Paper 1F - June 2023', 'Biology', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-1F/QP/June%202023%20QP.pdf', 'link'),
+('Biology Paper 2F - June 2023', 'Biology', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-2F/QP/June%202023%20QP.pdf', 'link'),
+('Biology Paper 1F - June 2024', 'Biology', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-1F/QP/June%202024%20QP.pdf', 'link'),
+('Biology Paper 2F - June 2024', 'Biology', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-2F/QP/June%202024%20QP.pdf', 'link'),
+
+-- Chemistry Foundation
+('Chemistry Paper 1F - June 2023', 'Chemistry', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-1F/QP/June%202023%20QP.pdf', 'link'),
+('Chemistry Paper 2F - June 2023', 'Chemistry', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-2F/QP/June%202023%20QP.pdf', 'link'),
+('Chemistry Paper 1F - June 2024', 'Chemistry', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-1F/QP/June%202024%20QP.pdf', 'link'),
+('Chemistry Paper 2F - June 2024', 'Chemistry', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-2F/QP/June%202024%20QP.pdf', 'link'),
+
+-- Physics Foundation
+('Physics Paper 1F - June 2023', 'Physics', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-1F/QP/June%202023%20QP.pdf', 'link'),
+('Physics Paper 2F - June 2023', 'Physics', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-2F/QP/June%202023%20QP.pdf', 'link'),
+('Physics Paper 1F - June 2024', 'Physics', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-1F/QP/June%202024%20QP.pdf', 'link'),
+('Physics Paper 2F - June 2024', 'Physics', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-2F/QP/June%202024%20QP.pdf', 'link'),
+
+-- Edexcel Additional Papers
+('Maths Paper 2H - June 2022', 'Mathematics', 2022, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-2H/QP/June%202022%20QP.pdf', 'link'),
+('Maths Paper 3H - June 2022', 'Mathematics', 2022, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-3H/QP/June%202022%20QP.pdf', 'link'),
+('Maths Paper 2H - June 2024', 'Mathematics', 2024, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-2H/QP/June%202024%20QP.pdf', 'link'),
+('Maths Paper 3H - June 2024', 'Mathematics', 2024, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-3H/QP/June%202024%20QP.pdf', 'link'),
+('Biology Paper 2H - June 2023', 'Biology', 2023, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/Edexcel/Paper-2H/June%202023%20QP%20-%20Paper%202%20(H)%20Edexcel%20Biology%20GCSE.pdf', 'link'),
+('Chemistry Paper 2H - June 2023', 'Chemistry', 2023, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/Edexcel/Paper-2H/June%202023%20QP%20-%20Paper%202%20(H)%20Edexcel%20Chemistry%20GCSE.pdf', 'link'),
+('Physics Paper 2H - June 2023', 'Physics', 2023, 'Edexcel', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/Edexcel/Paper-2H/June%202023%20QP%20-%20Paper%202%20(H)%20Edexcel%20Physics%20GCSE.pdf', 'link'),
+
+-- OCR Additional Papers
+('Maths Paper 2 - June 2023', 'Mathematics', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-2/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 3 - June 2023', 'Mathematics', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-3/QP/June%202023%20QP.pdf', 'link'),
+('Maths Paper 2 - June 2024', 'Mathematics', 2024, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-2/QP/June%202024%20QP.pdf', 'link'),
+('Maths Paper 3 - June 2024', 'Mathematics', 2024, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-3/QP/June%202024%20QP.pdf', 'link'),
+('Biology Paper 2 - June 2023', 'Biology', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/OCR-A/Paper-2/June%202023%20QP%20-%20Paper%202%20(H)%20OCR%20Biology%20A%20GCSE.pdf', 'link'),
+('Chemistry Paper 2 - June 2023', 'Chemistry', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/OCR-A/Paper-2/June%202023%20QP%20-%20Paper%202%20(H)%20OCR%20Chemistry%20A%20GCSE.pdf', 'link'),
+
+-- Additional Subjects
+('French Paper 1 - June 2023', 'French', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/French/GCSE/Past-Papers/AQA/Paper-1/QP/June%202023%20QP.pdf', 'link'),
+('French Paper 2 - June 2023', 'French', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/French/GCSE/Past-Papers/AQA/Paper-2/QP/June%202023%20QP.pdf', 'link'),
+('Spanish Paper 1 - June 2023', 'Spanish', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Spanish/GCSE/Past-Papers/AQA/Paper-1/QP/June%202023%20QP.pdf', 'link'),
+('Spanish Paper 2 - June 2023', 'Spanish', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Spanish/GCSE/Past-Papers/AQA/Paper-2/QP/June%202023%20QP.pdf', 'link'),
+('Computer Science Paper 1 - June 2023', 'Computer Science', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/AQA/Paper-1/QP/June%202023%20QP.pdf', 'link'),
+('Computer Science Paper 2 - June 2023', 'Computer Science', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/AQA/Paper-2/QP/June%202023%20QP.pdf', 'link'),
+('Business Paper 1 - June 2023', 'Business', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Business/GCSE/Past-Papers/AQA/Paper-1/QP/June%202023%20QP.pdf', 'link'),
+('Business Paper 2 - June 2023', 'Business', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Business/GCSE/Past-Papers/AQA/Paper-2/QP/June%202023%20QP.pdf', 'link');
 
 
 -- ============================================

@@ -27,9 +27,11 @@ const PastPapers = lazy(() => import("./pages/PastPapers"));
 const Premium = lazy(() => import("./pages/Premium"));
 const FocusMode = lazy(() => import("./pages/premium/FocusMode"));
 const HomeworkSolver = lazy(() => import("./pages/premium/HomeworkSolver"));
+const HomeworkTracker = lazy(() => import("./pages/premium/HomeworkTracker"));
 const Leaderboard = lazy(() => import("./pages/premium/Leaderboard"));
 const NoteCondenser = lazy(() => import("./pages/premium/NoteCondenser"));
 const PredictedGrades = lazy(() => import("./pages/premium/PredictedGrades"));
+const StudyPlans = lazy(() => import("./pages/premium/StudyPlans"));
 const VirtualSessions = lazy(() => import("./pages/premium/VirtualSessions"));
 const PremiumDashboard = lazy(() => import("./pages/PremiumDashboard"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -153,6 +155,22 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <NoteCondenser />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/premium/homework-tracker"
+                    element={
+                      <ProtectedRoute>
+                        <HomeworkTracker />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/premium/study-plans"
+                    element={
+                      <ProtectedRoute>
+                        <StudyPlans />
                       </ProtectedRoute>
                     }
                   />

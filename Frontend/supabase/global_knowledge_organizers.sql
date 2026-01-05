@@ -1044,7 +1044,146 @@ VALUES (
 );
 
 -- ============================================
--- 16. FINAL BACKFILL FOR EXISTING USERS
+-- 16. ADDITIONAL KNOWLEDGE ORGANISERS
+-- ============================================
+
+-- BIOLOGY: Homeostasis
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Homeostasis & Blood Glucose Control',
+  'Biology',
+  'Homeostasis',
+  '{
+    "sections": [
+      {
+        "title": "What is Homeostasis?",
+        "content": "The maintenance of a constant internal environment despite external changes.",
+        "keyPoints": [
+          "Body temperature: Maintained around 37°C",
+          "Blood glucose: Controlled by insulin and glucagon",
+          "Water balance: Regulated by kidneys",
+          "Negative feedback: Reverses changes to maintain stability"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Blood Glucose Control",
+        "content": "The pancreas produces hormones to regulate blood sugar levels.",
+        "keyPoints": [
+          "Insulin: Lowers blood glucose (released when high)",
+          "Glucagon: Raises blood glucose (released when low)",
+          "Type 1 Diabetes: Pancreas produces little/no insulin",
+          "Type 2 Diabetes: Body becomes resistant to insulin"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- CHEMISTRY: Rates of Reaction
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Rates of Reaction & Collision Theory',
+  'Chemistry',
+  'Rates of Reaction',
+  '{
+    "sections": [
+      {
+        "title": "Factors Affecting Rate",
+        "content": "Four main factors influence how fast a reaction occurs.",
+        "keyPoints": [
+          "Temperature: Higher = more collisions, faster rate",
+          "Concentration: Higher = more particles, more collisions",
+          "Surface Area: Larger = more area for collisions",
+          "Catalysts: Speed up reaction without being used up"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Collision Theory",
+        "content": "Particles must collide with sufficient energy and correct orientation.",
+        "keyPoints": [
+          "Activation Energy: Minimum energy needed for reaction",
+          "Successful Collisions: Must have enough energy",
+          "Catalysts: Lower activation energy"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- PHYSICS: Forces & Motion
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Forces, Motion & Newton''s Laws',
+  'Physics',
+  'Forces',
+  '{
+    "sections": [
+      {
+        "title": "Newton''s Laws",
+        "content": "Three fundamental laws describing motion and forces.",
+        "keyPoints": [
+          "1st Law: Object at rest stays at rest (inertia)",
+          "2nd Law: F = ma (Force = mass × acceleration)",
+          "3rd Law: Action and reaction are equal and opposite"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Motion Equations",
+        "content": "Key formulas for calculating motion.",
+        "keyPoints": [
+          "Distance = Speed × Time (s = vt)",
+          "Acceleration = (v - u) / t",
+          "Weight = Mass × Gravity (W = mg)"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- MATHEMATICS: Ratio & Proportion
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Ratio, Proportion & Scale',
+  'Mathematics',
+  'Ratio',
+  '{
+    "sections": [
+      {
+        "title": "Simplifying Ratios",
+        "content": "Reduce ratios to their simplest form by dividing by the HCF.",
+        "keyPoints": [
+          "Find HCF of both numbers",
+          "Divide both parts by HCF",
+          "Keep in same units (convert if needed)"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Direct & Inverse Proportion",
+        "content": "Understanding how quantities relate to each other.",
+        "keyPoints": [
+          "Direct: y = kx (both increase together)",
+          "Inverse: y = k/x (one increases, other decreases)",
+          "Use ratios to solve proportion problems"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- ============================================
+-- 17. FINAL BACKFILL FOR EXISTING USERS
 -- ============================================
 INSERT INTO public.knowledge_organizers (user_id, title, subject, topic, content)
 SELECT 
