@@ -1183,7 +1183,679 @@ VALUES (
 );
 
 -- ============================================
--- 17. FINAL BACKFILL FOR EXISTING USERS
+-- 17. ADDITIONAL KNOWLEDGE ORGANISERS (20+ more)
+-- ============================================
+
+-- BIOLOGY: Ecology
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Ecology: Food Chains & Ecosystems',
+  'Biology',
+  'Ecology',
+  '{
+    "sections": [
+      {
+        "title": "Food Chains & Webs",
+        "content": "Energy flows through ecosystems from producers to consumers.",
+        "keyPoints": [
+          "Producer: Makes own food (plants)",
+          "Primary Consumer: Eats producers (herbivores)",
+          "Secondary Consumer: Eats primary consumers (carnivores)",
+          "Decomposer: Breaks down dead matter"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Energy Transfer",
+        "content": "Only 10% of energy is transferred between trophic levels.",
+        "keyPoints": [
+          "90% lost as heat, movement, waste",
+          "Biomass decreases up the food chain",
+          "Pyramids of biomass show this relationship"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- BIOLOGY: Evolution
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Evolution & Natural Selection',
+  'Biology',
+  'Evolution',
+  '{
+    "sections": [
+      {
+        "title": "Natural Selection",
+        "content": "Process where advantageous traits become more common in a population.",
+        "keyPoints": [
+          "Variation exists in populations",
+          "Competition for resources",
+          "Survival of the fittest",
+          "Advantageous traits passed to offspring"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Evidence for Evolution",
+        "content": "Multiple lines of evidence support the theory of evolution.",
+        "keyPoints": [
+          "Fossils: Show gradual changes over time",
+          "DNA: Similarities between species",
+          "Antibiotic resistance: Evolution in action"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- CHEMISTRY: Electrolysis
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Electrolysis: Breaking Down Compounds',
+  'Chemistry',
+  'Electrolysis',
+  '{
+    "sections": [
+      {
+        "title": "What is Electrolysis?",
+        "content": "The breakdown of a compound using electricity.",
+        "keyPoints": [
+          "Requires an electrolyte (molten or dissolved)",
+          "Needs a power supply (DC current)",
+          "Electrodes: Anode (positive) and Cathode (negative)"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "What Happens at Each Electrode?",
+        "content": "Ions move to opposite electrodes and gain or lose electrons.",
+        "keyPoints": [
+          "Anode: Negative ions lose electrons (oxidation)",
+          "Cathode: Positive ions gain electrons (reduction)",
+          "OIL RIG: Oxidation Is Loss, Reduction Is Gain"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- CHEMISTRY: Energy Changes
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Energy Changes in Reactions',
+  'Chemistry',
+  'Energy Changes',
+  '{
+    "sections": [
+      {
+        "title": "Exothermic Reactions",
+        "content": "Reactions that release energy to the surroundings.",
+        "keyPoints": [
+          "Temperature of surroundings increases",
+          "Examples: Combustion, neutralization",
+          "Products have less energy than reactants"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Endothermic Reactions",
+        "content": "Reactions that take in energy from the surroundings.",
+        "keyPoints": [
+          "Temperature of surroundings decreases",
+          "Examples: Thermal decomposition",
+          "Products have more energy than reactants"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- PHYSICS: Magnetism
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Magnetism & Electromagnetism',
+  'Physics',
+  'Magnetism',
+  '{
+    "sections": [
+      {
+        "title": "Magnetic Fields",
+        "content": "The region around a magnet where magnetic forces act.",
+        "keyPoints": [
+          "Field lines go from North to South",
+          "Like poles repel, opposite poles attract",
+          "Stronger near the poles"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Electromagnets",
+        "content": "Magnets created by passing current through a coil.",
+        "keyPoints": [
+          "Strength increases with more turns or more current",
+          "Can be turned on/off",
+          "Used in motors, generators, and relays"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- PHYSICS: Particle Model
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Particle Model of Matter',
+  'Physics',
+  'Particle Model',
+  '{
+    "sections": [
+      {
+        "title": "States of Matter",
+        "content": "Matter exists in three states with different particle arrangements.",
+        "keyPoints": [
+          "Solid: Fixed shape, particles vibrate in place",
+          "Liquid: Takes container shape, particles can move",
+          "Gas: Fills container, particles move freely"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Density & Pressure",
+        "content": "Density is mass per unit volume. Pressure is force per unit area.",
+        "keyPoints": [
+          "Density = Mass / Volume (ρ = m/V)",
+          "Pressure = Force / Area (P = F/A)",
+          "Particles in gases exert pressure on container walls"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- MATHEMATICS: Fractions
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Fractions: Operations & Conversions',
+  'Mathematics',
+  'Number',
+  '{
+    "sections": [
+      {
+        "title": "Adding & Subtracting Fractions",
+        "content": "Find a common denominator before adding or subtracting.",
+        "keyPoints": [
+          "Find LCM of denominators",
+          "Convert to equivalent fractions",
+          "Add/subtract numerators, keep denominator"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Multiplying & Dividing Fractions",
+        "content": "Multiply numerators and denominators separately. To divide, flip and multiply.",
+        "keyPoints": [
+          "Multiply: (a/b) × (c/d) = ac/bd",
+          "Divide: (a/b) ÷ (c/d) = (a/b) × (d/c)",
+          "Simplify the answer"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- MATHEMATICS: Percentages
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Percentages: Calculations & Applications',
+  'Mathematics',
+  'Number',
+  '{
+    "sections": [
+      {
+        "title": "Finding Percentages",
+        "content": "Calculate percentages of amounts using multiplication.",
+        "keyPoints": [
+          "Percentage of amount: (percentage/100) × amount",
+          "Percentage increase: amount × (1 + percentage/100)",
+          "Percentage decrease: amount × (1 - percentage/100)"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Reverse Percentages",
+        "content": "Find the original amount when you know the percentage change.",
+        "keyPoints": [
+          "If increased by 20%, divide by 1.2",
+          "If decreased by 15%, divide by 0.85",
+          "Set up equations: original × multiplier = new"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- ENGLISH: Language Analysis
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Language Analysis: Structure & Effect',
+  'English Language',
+  'Language Analysis',
+  '{
+    "sections": [
+      {
+        "title": "Structural Features",
+        "content": "How a text is organized affects meaning and impact.",
+        "keyPoints": [
+          "Paragraph length: Short for emphasis, long for detail",
+          "Sentence variety: Mix of simple and complex",
+          "Opening/Closing: Hook reader, leave lasting impression"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Language Devices",
+        "content": "Writers use specific techniques to create effects.",
+        "keyPoints": [
+          "Imagery: Simile, metaphor, personification",
+          "Sound: Alliteration, onomatopoeia, sibilance",
+          "Emphasis: Repetition, rhetorical questions"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- GEOGRAPHY: Urban Issues
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Urban Issues & Challenges',
+  'Geography',
+  'Urban Issues',
+  '{
+    "sections": [
+      {
+        "title": "Urban Growth",
+        "content": "Cities are growing rapidly, especially in LICs.",
+        "keyPoints": [
+          "Push factors: Lack of jobs, poor services in rural areas",
+          "Pull factors: Better opportunities, healthcare, education",
+          "Megacities: Over 10 million inhabitants"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Urban Challenges",
+        "content": "Rapid growth creates problems for cities.",
+        "keyPoints": [
+          "Housing: Slums and informal settlements",
+          "Traffic: Congestion and pollution",
+          "Services: Strain on water, waste, healthcare"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- HISTORY: Norman Conquest
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'The Norman Conquest: 1066 & Aftermath',
+  'History',
+  'Norman Conquest',
+  '{
+    "sections": [
+      {
+        "title": "The Battle of Hastings",
+        "content": "14th October 1066 - William of Normandy defeats Harold Godwinson.",
+        "keyPoints": [
+          "Harold''s army weakened by Battle of Stamford Bridge",
+          "William''s cavalry and archers decisive",
+          "Harold killed, William becomes King of England"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Norman Control",
+        "content": "William established control through castles and the Domesday Book.",
+        "keyPoints": [
+          "Motte and Bailey castles: Quick to build, defensive",
+          "Domesday Book (1086): Survey of all land and property",
+          "Feudal System: Hierarchical land ownership"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- COMPUTER SCIENCE: Programming Basics
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Programming: Variables, Selection & Iteration',
+  'Computer Science',
+  'Programming',
+  '{
+    "sections": [
+      {
+        "title": "Variables & Data Types",
+        "content": "Variables store data that can change during program execution.",
+        "keyPoints": [
+          "Integer: Whole numbers (e.g., 5, -10)",
+          "String: Text (e.g., \"Hello\")",
+          "Boolean: True or False",
+          "Float: Decimal numbers (e.g., 3.14)"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Control Structures",
+        "content": "Selection and iteration control program flow.",
+        "keyPoints": [
+          "Selection: IF/ELSE statements make decisions",
+          "Iteration: FOR and WHILE loops repeat code",
+          "Nested structures: Loops and conditions inside each other"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "OCR"
+  }'::jsonb
+);
+
+-- BIOLOGY: Human Biology
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Human Biology: Organ Systems',
+  'Biology',
+  'Human Biology',
+  '{
+    "sections": [
+      {
+        "title": "Circulatory System",
+        "content": "Transports oxygen, nutrients, and waste around the body.",
+        "keyPoints": [
+          "Heart: Pumps blood through arteries and veins",
+          "Red blood cells: Carry oxygen using hemoglobin",
+          "White blood cells: Fight infection"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Respiratory System",
+        "content": "Exchanges gases between the body and environment.",
+        "keyPoints": [
+          "Lungs: Site of gas exchange",
+          "Alveoli: Tiny air sacs with large surface area",
+          "Oxygen diffuses into blood, CO2 diffuses out"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- CHEMISTRY: Chemical Analysis
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Chemical Analysis: Tests & Identification',
+  'Chemistry',
+  'Chemical Analysis',
+  '{
+    "sections": [
+      {
+        "title": "Flame Tests",
+        "content": "Metal ions produce characteristic flame colors.",
+        "keyPoints": [
+          "Lithium: Crimson red",
+          "Sodium: Yellow",
+          "Potassium: Lilac",
+          "Calcium: Orange-red"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Gas Tests",
+        "content": "Different gases can be identified by specific tests.",
+        "keyPoints": [
+          "Hydrogen: Squeaky pop with lit splint",
+          "Oxygen: Relights glowing splint",
+          "Carbon Dioxide: Turns limewater cloudy",
+          "Chlorine: Bleaches damp litmus paper"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- PHYSICS: Forces & Motion
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Forces & Motion: Calculations',
+  'Physics',
+  'Motion',
+  '{
+    "sections": [
+      {
+        "title": "Motion Equations",
+        "content": "Key formulas for calculating distance, speed, and acceleration.",
+        "keyPoints": [
+          "Distance = Speed × Time (s = vt)",
+          "Acceleration = (Final Velocity - Initial Velocity) / Time",
+          "Average Speed = Total Distance / Total Time"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Distance-Time Graphs",
+        "content": "Graphs show how distance changes over time.",
+        "keyPoints": [
+          "Straight line: Constant speed",
+          "Curved line: Changing speed (acceleration)",
+          "Horizontal line: Stationary (not moving)"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- MATHEMATICS: Algebra - Expanding & Factorising
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Algebra: Expanding & Factorising',
+  'Mathematics',
+  'Algebra',
+  '{
+    "sections": [
+      {
+        "title": "Expanding Brackets",
+        "content": "Multiply each term inside by each term outside.",
+        "keyPoints": [
+          "Single: a(b + c) = ab + ac",
+          "Double: (a + b)(c + d) = ac + ad + bc + bd",
+          "FOIL: First, Outer, Inner, Last"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Factorising",
+        "content": "Reverse of expanding - find common factors.",
+        "keyPoints": [
+          "Common factor: ab + ac = a(b + c)",
+          "Quadratic: x² + 5x + 6 = (x + 2)(x + 3)",
+          "Difference of squares: a² - b² = (a + b)(a - b)"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- ENGLISH LITERATURE: Poetry Analysis
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Poetry Analysis: Form, Structure & Language',
+  'English Literature',
+  'Poetry',
+  '{
+    "sections": [
+      {
+        "title": "Poetic Form",
+        "content": "The structure and pattern of a poem affects its meaning.",
+        "keyPoints": [
+          "Stanza: Group of lines (like a paragraph)",
+          "Rhyme scheme: Pattern of rhyming (ABAB, AABB)",
+          "Meter: Rhythm pattern (iambic pentameter)"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Poetic Devices",
+        "content": "Writers use specific techniques to create imagery and meaning.",
+        "keyPoints": [
+          "Metaphor: Direct comparison (life is a journey)",
+          "Simile: Comparison using like/as",
+          "Enjambment: Line continues into next"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- GEOGRAPHY: Weather & Climate
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Weather & Climate: Patterns & Causes',
+  'Geography',
+  'Weather & Climate',
+  '{
+    "sections": [
+      {
+        "title": "Weather vs Climate",
+        "content": "Weather is short-term, climate is long-term patterns.",
+        "keyPoints": [
+          "Weather: Day-to-day conditions (temperature, rain)",
+          "Climate: Average weather over 30+ years",
+          "Factors: Latitude, altitude, distance from sea"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "UK Climate",
+        "content": "Temperate maritime climate with mild, wet winters.",
+        "keyPoints": [
+          "Influenced by North Atlantic Drift (warm current)",
+          "Prevailing winds from southwest",
+          "Rainfall varies: West wetter than East"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "AQA"
+  }'::jsonb
+);
+
+-- HISTORY: World War I
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'World War I: Causes & Key Events',
+  'History',
+  'World War I',
+  '{
+    "sections": [
+      {
+        "title": "Causes of WWI",
+        "content": "Multiple factors led to the outbreak of war in 1914.",
+        "keyPoints": [
+          "Militarism: Arms race between nations",
+          "Alliances: Triple Entente vs Triple Alliance",
+          "Imperialism: Competition for colonies",
+          "Nationalism: Pride and rivalry between countries"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Key Events",
+        "content": "Major battles and turning points of the war.",
+        "keyPoints": [
+          "1914: War begins, Battle of the Marne",
+          "1916: Battle of the Somme, Verdun",
+          "1917: USA enters war, Russian Revolution",
+          "1918: Armistice signed, war ends"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "Edexcel"
+  }'::jsonb
+);
+
+-- COMPUTER SCIENCE: Data Representation
+INSERT INTO public.global_knowledge_organizers (title, subject, topic, content)
+VALUES (
+  'Data Representation: Binary & Hexadecimal',
+  'Computer Science',
+  'Data Representation',
+  '{
+    "sections": [
+      {
+        "title": "Binary System",
+        "content": "Computers use binary (base 2) to represent data.",
+        "keyPoints": [
+          "Only uses 0 and 1 (bits)",
+          "Each position is a power of 2",
+          "8 bits = 1 byte",
+          "Binary to decimal: Add powers of 2"
+        ],
+        "color": "primary"
+      },
+      {
+        "title": "Hexadecimal",
+        "content": "Base 16 system using 0-9 and A-F.",
+        "keyPoints": [
+          "More compact than binary",
+          "Each hex digit = 4 bits",
+          "Used for memory addresses and colors"
+        ],
+        "color": "secondary"
+      }
+    ],
+    "exam_board": "OCR"
+  }'::jsonb
+);
+
+-- ============================================
+-- 18. FINAL BACKFILL FOR EXISTING USERS
 -- ============================================
 INSERT INTO public.knowledge_organizers (user_id, title, subject, topic, content)
 SELECT 

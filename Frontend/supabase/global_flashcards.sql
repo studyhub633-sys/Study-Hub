@@ -339,7 +339,57 @@ INSERT INTO public.global_flashcards (front, back, subject, topic) VALUES
 ('What is an algorithm?', 'A step-by-step procedure to solve a problem', 'Computer Science', 'Programming'),
 ('What is a loop?', 'A programming construct that repeats code', 'Computer Science', 'Programming'),
 ('What is selection?', 'A programming construct that makes decisions (if/else)', 'Computer Science', 'Programming'),
-('What is iteration?', 'Repeating a process or loop', 'Computer Science', 'Programming');
+('What is iteration?', 'Repeating a process or loop', 'Computer Science', 'Programming'),
+
+-- =====================
+-- ADDITIONAL FLASHCARDS (20+ more)
+-- =====================
+-- BIOLOGY: Ecology
+('What is a producer?', 'An organism that makes its own food using sunlight (plants)', 'Biology', 'Ecology'),
+('What is a consumer?', 'An organism that eats other organisms for energy', 'Biology', 'Ecology'),
+('What is a decomposer?', 'An organism that breaks down dead matter (bacteria, fungi)', 'Biology', 'Ecology'),
+('What is a food chain?', 'A sequence showing energy transfer from producer to top predator', 'Biology', 'Ecology'),
+('What is a food web?', 'Multiple interconnected food chains showing complex feeding relationships', 'Biology', 'Ecology'),
+('What is biomass?', 'The total mass of living material in a trophic level', 'Biology', 'Ecology'),
+('What is the carbon cycle?', 'The movement of carbon between living organisms and the environment', 'Biology', 'Ecology'),
+
+-- BIOLOGY: Evolution
+('What is natural selection?', 'The process where organisms with advantageous traits survive and reproduce', 'Biology', 'Evolution'),
+('What is evolution?', 'The gradual change in species over time through natural selection', 'Biology', 'Evolution'),
+('What is variation?', 'Differences between individuals of the same species', 'Biology', 'Evolution'),
+('What is adaptation?', 'A feature that helps an organism survive in its environment', 'Biology', 'Evolution'),
+
+-- CHEMISTRY: Electrolysis
+('What is electrolysis?', 'The breakdown of a compound using electricity', 'Chemistry', 'Electrolysis'),
+('What happens at the anode?', 'Oxidation - negative ions lose electrons', 'Chemistry', 'Electrolysis'),
+('What happens at the cathode?', 'Reduction - positive ions gain electrons', 'Chemistry', 'Electrolysis'),
+('What is an electrolyte?', 'A substance that conducts electricity when molten or dissolved', 'Chemistry', 'Electrolysis'),
+
+-- CHEMISTRY: Energy Changes
+('What is an exothermic reaction?', 'A reaction that releases energy to surroundings (temperature increases)', 'Chemistry', 'Energy Changes'),
+('What is an endothermic reaction?', 'A reaction that takes in energy from surroundings (temperature decreases)', 'Chemistry', 'Energy Changes'),
+('What is activation energy?', 'The minimum energy needed for a reaction to start', 'Chemistry', 'Energy Changes'),
+
+-- PHYSICS: Magnetism
+('What is a magnetic field?', 'The region around a magnet where magnetic forces act', 'Physics', 'Magnetism'),
+('What are the poles of a magnet?', 'North and South - like poles repel, opposite poles attract', 'Physics', 'Magnetism'),
+('What is an electromagnet?', 'A magnet created by passing current through a coil of wire', 'Physics', 'Magnetism'),
+
+-- PHYSICS: Particle Model
+('What are the three states of matter?', 'Solid, liquid, and gas', 'Physics', 'Particle Model'),
+('What is density?', 'Mass per unit volume (ρ = m/V)', 'Physics', 'Particle Model'),
+('What is specific heat capacity?', 'Energy needed to raise 1kg of a substance by 1°C', 'Physics', 'Particle Model'),
+
+-- MATHEMATICS: Fractions & Decimals
+('How do you add fractions?', 'Find common denominator, add numerators, simplify', 'Mathematics', 'Number'),
+('How do you multiply fractions?', 'Multiply numerators and denominators separately', 'Mathematics', 'Number'),
+('How do you convert a fraction to a decimal?', 'Divide numerator by denominator', 'Mathematics', 'Number'),
+('How do you convert a decimal to a percentage?', 'Multiply by 100 and add % sign', 'Mathematics', 'Number'),
+
+-- MATHEMATICS: Percentages
+('How do you find a percentage of an amount?', 'Divide by 100, then multiply by the percentage', 'Mathematics', 'Number'),
+('How do you increase by a percentage?', 'Multiply by (1 + percentage/100)', 'Mathematics', 'Number'),
+('How do you decrease by a percentage?', 'Multiply by (1 - percentage/100)', 'Mathematics', 'Number');
 
 -- ============================================
 -- 4. Backfill for Existing Users
