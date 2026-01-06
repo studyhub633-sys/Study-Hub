@@ -31,8 +31,10 @@ const HomeworkTracker = lazy(() => import("./pages/premium/HomeworkTracker"));
 const Leaderboard = lazy(() => import("./pages/premium/Leaderboard"));
 const NoteCondenser = lazy(() => import("./pages/premium/NoteCondenser"));
 const PredictedGrades = lazy(() => import("./pages/premium/PredictedGrades"));
+const PredictedPapers = lazy(() => import("./pages/premium/PredictedPapers"));
 const StudyPlans = lazy(() => import("./pages/premium/StudyPlans"));
 const VirtualSessions = lazy(() => import("./pages/premium/VirtualSessions"));
+const WorkExperience = lazy(() => import("./pages/premium/WorkExperience"));
 const PremiumDashboard = lazy(() => import("./pages/PremiumDashboard"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Returns = lazy(() => import("./pages/Returns"));
@@ -203,6 +205,22 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <VirtualSessions />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/premium/predicted-papers"
+                    element={
+                      <ProtectedRoute>
+                        <PredictedPapers />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/premium/work-experience"
+                    element={
+                      <ProtectedRoute>
+                        <WorkExperience />
                       </ProtectedRoute>
                     }
                   />

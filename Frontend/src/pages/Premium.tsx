@@ -447,27 +447,38 @@ export default function Premium() {
             <Rocket className="h-6 w-6 text-premium" />
             <h3 className="text-xl font-semibold text-foreground">Coming Soon - Premium Features</h3>
           </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            These features are available exclusively to premium members. Content will be added regularly.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-lg bg-premium/5 border border-premium/20">
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="h-5 w-5 text-premium" />
+            <Button
+              variant="ghost"
+              className="h-auto p-4 rounded-lg bg-premium/5 border border-premium/20 hover:bg-premium/10 hover:border-premium/30 text-left justify-start"
+              onClick={() => navigate("/premium/work-experience")}
+            >
+              <div className="flex items-center gap-2 mb-2 w-full">
+                <Users className="h-5 w-5 text-premium flex-shrink-0" />
                 <h4 className="font-semibold text-foreground">Scientia.ai Work Experience</h4>
-                <span className="ml-auto text-xs px-2 py-1 rounded-full bg-premium/20 text-premium">Coming Soon</span>
+                <span className="ml-auto text-xs px-2 py-1 rounded-full bg-premium/20 text-premium">Available</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Exclusive work experience opportunities specifically for Scientia.ai premium members
               </p>
-            </div>
-            <div className="p-4 rounded-lg bg-premium/5 border border-premium/20">
-              <div className="flex items-center gap-2 mb-2">
-                <FileText className="h-5 w-5 text-premium" />
+            </Button>
+            <Button
+              variant="ghost"
+              className="h-auto p-4 rounded-lg bg-premium/5 border border-premium/20 hover:bg-premium/10 hover:border-premium/30 text-left justify-start"
+              onClick={() => navigate("/premium/predicted-papers")}
+            >
+              <div className="flex items-center gap-2 mb-2 w-full">
+                <FileText className="h-5 w-5 text-premium flex-shrink-0" />
                 <h4 className="font-semibold text-foreground">2026 Predicted Papers</h4>
-                <span className="ml-auto text-xs px-2 py-1 rounded-full bg-premium/20 text-premium">Coming Soon</span>
+                <span className="ml-auto text-xs px-2 py-1 rounded-full bg-premium/20 text-premium">Available</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Access exclusive 2026 predicted exam papers before they're released publicly
               </p>
-            </div>
+            </Button>
           </div>
         </div>
 

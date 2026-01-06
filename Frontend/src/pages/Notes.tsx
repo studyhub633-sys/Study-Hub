@@ -39,7 +39,6 @@ import {
   Bold,
   BookOpen,
   Clock,
-  Crown,
   Download,
   Edit,
   Filter,
@@ -47,10 +46,9 @@ import {
   LayoutTemplate,
   Link as LinkIcon,
   Loader2,
-  Lock,
   Plus,
   Search,
-  Trash2,
+  Trash2
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -163,6 +161,8 @@ export default function Notes() {
 
       if (userError) throw userError;
 
+      let finalNotes: Note[] = userNotes || [];
+
       // If premium, also fetch Grade 9 premium notes
       if (isPremium) {
         const { data: premiumNotes, error: premiumError } = await supabase
@@ -185,17 +185,15 @@ export default function Notes() {
             created_at: note.created_at,
             updated_at: note.created_at,
           }));
-          setNotes([...userNotes, ...formattedPremiumNotes]);
-        } else {
-          setNotes(userNotes || []);
+          finalNotes = [...finalNotes, ...formattedPremiumNotes];
         }
-      } else {
-        setNotes(userNotes || []);
       }
 
+      setNotes(finalNotes);
+
       // Select the first note if none selected
-      if (!selectedNote && data && data.length > 0) {
-        setSelectedNote(data[0]);
+      if (!selectedNote && finalNotes.length > 0) {
+        setSelectedNote(finalNotes[0]);
       }
     } catch (error: any) {
       console.error("Error fetching notes:", error);
