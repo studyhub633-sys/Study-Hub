@@ -88,6 +88,34 @@ export default function PastPapers() {
   const [uploading, setUploading] = useState(false);
   const [studyTime, setStudyTime] = useState<number>(0); // Total study time in seconds
   const [currentSessionStart, setCurrentSessionStart] = useState<Date | null>(null);
+  const [validatingFile, setValidatingFile] = useState(false);
+  const [fileError, setFileError] = useState(false);
+
+  useEffect(() => {
+    if (reviewPaper?.file_url) {
+      setValidatingFile(true);
+      setFileError(false);
+
+      // Check if file exists before trying to display it
+      fetch(reviewPaper.file_url)
+        .then(res => {
+          if (!res.ok) {
+            console.error(`File validation failed: ${res.status}`);
+            setFileError(true);
+          }
+        })
+        .catch(err => {
+          console.error("File validation error:", err);
+          // Only set error if it's likely a network/access issue that implies missing file
+          // For now, we'll assume any error is problematic
+          setFileError(true);
+        })
+        .finally(() => setValidatingFile(false));
+    } else {
+      setValidatingFile(false);
+      setFileError(false);
+    }
+  }, [reviewPaper]);
 
   useEffect(() => {
     if (user) {
@@ -1003,24 +1031,65 @@ export default function PastPapers() {
             {/* Left: PDF Viewer (if link) or Instructions */}
             <div className="flex-1 bg-muted/30 relative min-h-[300px]">
               {reviewPaper?.file_url ? (
-                reviewPaper.file_url.startsWith('https://filestore.aqa.org.uk') ||
-                  reviewPaper.file_url.endsWith('.pdf') ? (
-                  <iframe
-                    src={reviewPaper.file_url}
-                    className="w-full h-full border-none"
-                    title="Paper Content"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                    <LinkIcon className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-                    <h4 className="font-semibold mb-2">External Content</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      This paper is hosted on an external site. Open it in a new tab to study.
-                    </p>
-                    <Button onClick={() => window.open(reviewPaper.file_url!, "_blank")}>
-                      Open Paper in New Tab
-                    </Button>
+                validatingFile ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground">Loading preview...</p>
+                    </div>
                   </div>
+                ) : fileError ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-background/50 backdrop-blur-sm">
+                    <div className="bg-destructive/10 p-4 rounded-full mb-4">
+                      <AlertCircle className="h-8 w-8 text-destructive" />
+                    </div>
+                    <h4 className="font-semibold mb-2 text-lg">File Not Found</h4>
+                    <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+                      The file for this past paper seems to be missing or deleted.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={() => setReviewPaper(null)}>
+                        Close
+                      </Button>
+                      <Button
+                        variant="default"
+                        onClick={() => {
+                          // Retry validation
+                          setValidatingFile(true);
+                          setFileError(false);
+                          fetch(reviewPaper.file_url!)
+                            .then(res => {
+                              if (!res.ok) throw new Error("Status " + res.status);
+                              setFileError(false);
+                            })
+                            .catch(() => setFileError(true))
+                            .finally(() => setValidatingFile(false));
+                        }}
+                      >
+                        Retry
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  reviewPaper.file_url.startsWith('https://filestore.aqa.org.uk') ||
+                    reviewPaper.file_url.endsWith('.pdf') ? (
+                    <iframe
+                      src={reviewPaper.file_url}
+                      className="w-full h-full border-none"
+                      title="Paper Content"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                      <LinkIcon className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+                      <h4 className="font-semibold mb-2">External Content</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        This paper is hosted on an external site. Open it in a new tab to study.
+                      </p>
+                      <Button onClick={() => window.open(reviewPaper.file_url!, "_blank")}>
+                        Open Paper in New Tab
+                      </Button>
+                    </div>
+                  )
                 )
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
