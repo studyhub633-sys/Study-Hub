@@ -153,7 +153,7 @@ export default function FAQ() {
       {/* Simple Footer */}
       <footer className="border-t border-border bg-background/80 backdrop-blur-xl mt-12">
         <div className="container mx-auto px-4 py-8 text-center">
-          <p className="text-sm text-muted-foreground">© 2025 Scientia.ai. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">© 2026 Scientia.ai. All rights reserved.</p>
         </div>
       </footer>
     </div>

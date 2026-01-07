@@ -397,7 +397,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">© 2025 Scientia.ai. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© 2026 Scientia.ai. All rights reserved.</p>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
               <Link to="/faq" className="hover:text-foreground transition-colors">FAQ</Link>

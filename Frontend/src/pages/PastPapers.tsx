@@ -217,7 +217,8 @@ export default function PastPapers() {
       setUploading(true);
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `past-papers/${fileName}`;
+      // Remove redundant 'past-papers/' prefix as we are already in the 'past-papers' bucket
+      const filePath = fileName;
 
       // Upload file to Supabase Storage
       const { error: uploadError, data } = await supabase.storage
@@ -420,6 +421,11 @@ export default function PastPapers() {
     if (paper.file_type === "upload" || (!paper.file_type && !paper.file_url.startsWith("http"))) {
       try {
         const response = await fetch(paper.file_url);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
+        }
+
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -430,8 +436,15 @@ export default function PastPapers() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } catch (error) {
-        // Fallback to opening in new tab
-        window.open(paper.file_url, "_blank");
+        console.error("Download error:", error);
+        toast({
+          title: "Download failed",
+          description: "Could not download the file. It may have been deleted or moved.",
+          variant: "destructive",
+        });
+
+        // Optional: Still try to open in new tab as a last resort, but warn user
+        // window.open(paper.file_url, "_blank");
       }
     } else {
       // For links, just open in new tab
