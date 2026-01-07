@@ -1,5 +1,6 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { TermsDialog } from "@/components/premium/TermsDialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -478,77 +479,121 @@ export default function Premium() {
         )}
 
         {/* Coming Soon Features */}
-        <div className="glass-card p-6 md:p-8 animate-slide-up mb-8" style={{ animationDelay: "0.5s", opacity: 0 }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Rocket className="h-6 w-6 text-premium" />
-            <h3 className="text-xl font-semibold text-foreground">
-              {hasPredictedPapers || hasWorkExperience
-                ? "Premium Features"
-                : "Coming Soon - Premium Features"}
-            </h3>
+        <div className="mb-12 animate-slide-up" style={{ animationDelay: "0.5s", opacity: 0 }}>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-xl bg-premium/10">
+              <Rocket className="h-6 w-6 text-premium" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-foreground">
+                {hasPredictedPapers || hasWorkExperience
+                  ? "Premium Features"
+                  : "Coming Soon - Premium Features"}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {hasPredictedPapers || hasWorkExperience
+                  ? "Exclusive features available to premium members"
+                  : "Exciting new features launching soon"}
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            {hasPredictedPapers || hasWorkExperience
-              ? "These features are available exclusively to premium members. Content will be added regularly."
-              : "These features are currently in development and will be available exclusively to premium members upon release."}
-          </p>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Button
-              variant="ghost"
-              className="h-auto p-4 rounded-lg bg-premium/5 border border-premium/20 hover:bg-premium/10 hover:border-premium/30 text-left justify-start"
-              onClick={() => navigate("/premium/work-experience")}
-              disabled={checkingContent}
+            {/* Work Experience Card */}
+            <div
+              className={cn(
+                "glass-card p-6 hover-lift cursor-pointer group relative overflow-hidden transition-all duration-300",
+                checkingContent && "opacity-60 cursor-not-allowed"
+              )}
+              onClick={() => !checkingContent && navigate("/premium/work-experience")}
             >
-              <div className="flex items-center gap-2 mb-2 w-full">
-                <Users className="h-5 w-5 text-premium flex-shrink-0" />
-                <h4 className="font-semibold text-foreground">Scientia.ai Work Experience</h4>
+              <div className="absolute top-0 left-0 w-1 h-full bg-premium opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 rounded-xl bg-premium/10 group-hover:bg-premium/20 transition-colors">
+                  <Users className="h-6 w-6 text-premium" />
+                </div>
                 {checkingContent ? (
-                  <Loader2 className="ml-auto h-4 w-4 animate-spin text-muted-foreground" />
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 ) : (
-                  <span
+                  <Badge
+                    variant={hasWorkExperience ? "default" : "secondary"}
                     className={cn(
-                      "ml-auto text-xs px-2 py-1 rounded-full",
+                      "text-xs font-semibold",
                       hasWorkExperience
-                        ? "bg-premium/20 text-premium"
-                        : "bg-muted text-muted-foreground"
+                        ? "bg-premium/20 text-premium border-premium/30"
+                        : "bg-muted/50 text-muted-foreground"
                     )}
                   >
                     {hasWorkExperience ? "Available" : "Coming Soon"}
-                  </span>
+                  </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">
+              
+              <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
+                Scientia.ai Work Experience
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 Exclusive work experience opportunities specifically for Scientia.ai premium members
               </p>
-            </Button>
-            <Button
-              variant="ghost"
-              className="h-auto p-4 rounded-lg bg-premium/5 border border-premium/20 hover:bg-premium/10 hover:border-premium/30 text-left justify-start"
-              onClick={() => navigate("/premium/predicted-papers")}
-              disabled={checkingContent}
+              
+              {hasWorkExperience && (
+                <div className="mt-4 pt-4 border-t border-border/50">
+                  <span className="text-xs text-premium font-medium flex items-center gap-1">
+                    View Opportunities
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Predicted Papers Card */}
+            <div
+              className={cn(
+                "glass-card p-6 hover-lift cursor-pointer group relative overflow-hidden transition-all duration-300",
+                checkingContent && "opacity-60 cursor-not-allowed"
+              )}
+              onClick={() => !checkingContent && navigate("/premium/predicted-papers")}
             >
-              <div className="flex items-center gap-2 mb-2 w-full">
-                <FileText className="h-5 w-5 text-premium flex-shrink-0" />
-                <h4 className="font-semibold text-foreground">2026 Predicted Papers</h4>
+              <div className="absolute top-0 left-0 w-1 h-full bg-premium opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 rounded-xl bg-premium/10 group-hover:bg-premium/20 transition-colors">
+                  <FileText className="h-6 w-6 text-premium" />
+                </div>
                 {checkingContent ? (
-                  <Loader2 className="ml-auto h-4 w-4 animate-spin text-muted-foreground" />
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 ) : (
-                  <span
+                  <Badge
+                    variant={hasPredictedPapers ? "default" : "secondary"}
                     className={cn(
-                      "ml-auto text-xs px-2 py-1 rounded-full",
+                      "text-xs font-semibold",
                       hasPredictedPapers
-                        ? "bg-premium/20 text-premium"
-                        : "bg-muted text-muted-foreground"
+                        ? "bg-premium/20 text-premium border-premium/30"
+                        : "bg-muted/50 text-muted-foreground"
                     )}
                   >
                     {hasPredictedPapers ? "Available" : "Coming Soon"}
-                  </span>
+                  </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">
+              
+              <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
+                2026 Predicted Papers
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 Access exclusive 2026 predicted exam papers before they're released publicly
               </p>
-            </Button>
+              
+              {hasPredictedPapers && (
+                <div className="mt-4 pt-4 border-t border-border/50">
+                  <span className="text-xs text-premium font-medium flex items-center gap-1">
+                    Browse Papers
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
