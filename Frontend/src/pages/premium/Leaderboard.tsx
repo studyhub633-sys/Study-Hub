@@ -30,65 +30,33 @@ export default function Leaderboard() {
     const fetchLeaderboard = async () => {
         try {
             setLoading(true);
-            // Calculate XP and streaks from user activity
-            // For now, we'll use a combination of study sessions, completed papers, etc.
-            const { data: profiles } = await supabase
-                .from("profiles")
-                .select("id, full_name, email, avatar_url")
-                .limit(20);
 
-            if (!profiles) {
-                // Fallback to sample data
-                setUsers([
-                    { rank: 1, name: "Sarah J.", xp: 12450, streak: 45, avatar: null, user_id: "1", isUser: false },
-                    { rank: 2, name: "Mike T.", xp: 11200, streak: 32, avatar: null, user_id: "2", isUser: false },
-                    { rank: 3, name: "Alex R.", xp: 10890, streak: 28, avatar: null, user_id: "3", isUser: false },
-                    { rank: 4, name: user?.email?.split("@")[0] || "You", xp: 8450, streak: 12, avatar: null, user_id: user?.id || "4", isUser: true },
-                    { rank: 5, name: "Emily W.", xp: 8120, streak: 15, avatar: null, user_id: "5", isUser: false },
-                ]);
+            // Try to fetch from secure RPC function first
+            const { data: leaderboardData, error } = await supabase
+                .rpc('get_leaderboard', { limit_count: 50 });
+
+            if (error) throw error;
+
+            if (leaderboardData && leaderboardData.length > 0) {
+                const formattedUsers: LeaderboardUser[] = leaderboardData.map((u: any) => ({
+                    rank: u.rank,
+                    name: u.name,
+                    xp: u.xp,
+                    streak: u.streak,
+                    avatar: u.avatar_url,
+                    user_id: u.user_id,
+                    isUser: u.user_id === user?.id
+                }));
+                setUsers(formattedUsers);
                 return;
             }
 
-            // Calculate scores for each user
-            const userScores = await Promise.all(
-                profiles.map(async (profile) => {
-                    const [papersResult, flashcardsResult, notesResult] = await Promise.all([
-                        supabase.from("past_papers").select("id", { count: "exact", head: true }).eq("user_id", profile.id),
-                        supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("user_id", profile.id),
-                        supabase.from("notes").select("id", { count: "exact", head: true }).eq("user_id", profile.id),
-                    ]);
+            // If empty, show some empty state or fallback (omitted for now to rely on real data)
+            setUsers([]);
 
-                    const xp = (papersResult.count || 0) * 50 + (flashcardsResult.count || 0) * 10 + (notesResult.count || 0) * 20;
-                    // Simple streak calculation (would need proper tracking in real implementation)
-                    const streak = Math.floor(Math.random() * 50) + 1;
-
-                    return {
-                        user_id: profile.id,
-                        name: profile.full_name || profile.email?.split("@")[0] || "User",
-                        xp,
-                        streak,
-                        avatar: profile.avatar_url,
-                        isUser: profile.id === user?.id,
-                    };
-                })
-            );
-
-            // Sort by XP and assign ranks
-            userScores.sort((a, b) => b.xp - a.xp);
-            const rankedUsers = userScores.map((u, index) => ({
-                ...u,
-                rank: index + 1,
-            }));
-
-            setUsers(rankedUsers.slice(0, 10));
         } catch (error: any) {
             console.error("Error fetching leaderboard:", error);
-            toast({
-                title: "Error",
-                description: "Failed to load leaderboard. Using sample data.",
-                variant: "destructive",
-            });
-            // Fallback
+            // Fallback for demo/dev if RPC not exists yet
             setUsers([
                 { rank: 1, name: "Sarah J.", xp: 12450, streak: 45, avatar: null, user_id: "1", isUser: false },
                 { rank: 2, name: "Mike T.", xp: 11200, streak: 32, avatar: null, user_id: "2", isUser: false },
@@ -96,6 +64,11 @@ export default function Leaderboard() {
                 { rank: 4, name: user?.email?.split("@")[0] || "You", xp: 8450, streak: 12, avatar: null, user_id: user?.id || "4", isUser: true },
                 { rank: 5, name: "Emily W.", xp: 8120, streak: 15, avatar: null, user_id: "5", isUser: false },
             ]);
+
+            toast({
+                title: "Notice",
+                description: "Leaderboard running in demo mode. Run migration to see real data.",
+            });
         } finally {
             setLoading(false);
         }

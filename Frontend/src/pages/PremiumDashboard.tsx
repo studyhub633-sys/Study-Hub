@@ -5,11 +5,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { hasPremium } from "@/lib/premium";
 import {
+    BarChart3,
     Brain,
     Calculator,
     Calendar,
     FileText,
+    GraduationCap,
     Lock,
+    Network,
     Sparkles,
     Timer,
     Trophy,
@@ -107,6 +110,30 @@ export default function PremiumDashboard() {
             path: "/premium/study-plans",
             color: "text-cyan-500",
             bg: "bg-cyan-500/10",
+        },
+        {
+            title: "AI Mind Map Generator",
+            description: "Transform your notes into visual mind maps instantly with AI.",
+            icon: Network,
+            path: "/premium/mind-map-generator",
+            color: "text-purple-500",
+            bg: "bg-purple-500/10",
+        },
+        {
+            title: "AI Examiner",
+            description: "Upload completed past papers for instant AI marking and grading.",
+            icon: GraduationCap,
+            path: "/premium/ai-examiner",
+            color: "text-blue-500",
+            bg: "bg-blue-500/10",
+        },
+        {
+            title: "Performance Heat Map",
+            description: "Visual red/amber/green analytics showing your strengths and weaknesses.",
+            icon: BarChart3,
+            path: "/premium/performance-heatmap",
+            color: "text-orange-500",
+            bg: "bg-orange-500/10",
         },
     ];
 
