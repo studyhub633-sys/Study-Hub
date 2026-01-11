@@ -46,11 +46,13 @@ import {
   LayoutTemplate,
   Link as LinkIcon,
   Loader2,
+  Network,
   Plus,
   Search,
   Trash2
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Note {
   id: string;
@@ -83,6 +85,7 @@ const NOTE_TEMPLATES = {
 export default function Notes() {
   const { supabase, user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
@@ -401,6 +404,16 @@ export default function Notes() {
     }
   };
 
+  const handleConvertToMindMap = (note: Note) => {
+    navigate("/premium/mind-map-generator", {
+      state: {
+        noteContent: note.content,
+        noteTitle: note.title,
+        noteSubject: note.subject
+      }
+    });
+  };
+
   const filteredNotes = notes.filter((note) => {
     const matchesSubject =
       selectedSubject === "All Subjects" || note.subject === selectedSubject;
@@ -620,6 +633,14 @@ export default function Notes() {
                     )}
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleConvertToMindMap(selectedNote)}
+                      title="Generate Mind Map"
+                    >
+                      <Network className="h-4 w-4 text-purple-600" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="icon"

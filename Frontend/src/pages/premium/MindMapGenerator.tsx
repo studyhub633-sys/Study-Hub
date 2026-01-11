@@ -15,15 +15,32 @@ interface MindMapNode {
     children: MindMapNode[];
 }
 
+import { useLocation } from "react-router-dom";
+
 export default function MindMapGenerator() {
     const { supabase, user } = useAuth();
     const { toast } = useToast();
+    const location = useLocation();
     const [isPremium, setIsPremium] = useState(false);
     const [loading, setLoading] = useState(false);
     const [notesContent, setNotesContent] = useState("");
     const [title, setTitle] = useState("");
     const [subject, setSubject] = useState("");
     const [mindMapData, setMindMapData] = useState<MindMapNode | null>(null);
+    const [uploadingFile, setUploadingFile] = useState(false);
+
+    // Initial load from navigation state (if coming from Notes page)
+    useEffect(() => {
+        if (location.state) {
+            const { noteContent, noteTitle, noteSubject } = location.state as any;
+            if (noteContent) setNotesContent(noteContent);
+            if (noteTitle) setTitle(noteTitle);
+            if (noteSubject) setSubject(noteSubject);
+
+            // Clear state to prevent reapplying on refresh if desired, 
+            // but keeping it is usually fine for this use case.
+        }
+    }, [location]);
 
     useEffect(() => {
         checkPremiumStatus();
@@ -33,6 +50,63 @@ export default function MindMapGenerator() {
         if (!user || !supabase) return;
         const premium = await hasPremium(supabase);
         setIsPremium(premium);
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Check file type
+        const validTypes = ['text/plain', 'application/pdf'];
+        if (!validTypes.includes(file.type) && !file.name.endsWith('.txt') && !file.name.endsWith('.pdf')) {
+            toast({
+                title: "Invalid file type",
+                description: "Please upload a TXT or PDF file",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast({
+                title: "File too large",
+                description: "Please upload a file smaller than 5MB",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setUploadingFile(true);
+        try {
+            if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+                // Read text file directly
+                const text = await file.text();
+                setNotesContent(text);
+                setTitle(file.name.replace('.txt', ''));
+                toast({
+                    title: "File uploaded!",
+                    description: "Text extracted successfully",
+                });
+            } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+                // For PDF, we'll just inform the user to use text for now
+                toast({
+                    title: "PDF Support Coming Soon",
+                    description: "Please copy and paste the text from your PDF for now",
+                    variant: "destructive",
+                });
+            }
+        } catch (error: any) {
+            toast({
+                title: "Error reading file",
+                description: error.message,
+                variant: "destructive",
+            });
+        } finally {
+            setUploadingFile(false);
+            // Reset file input
+            e.target.value = '';
+        }
     };
 
     const handleGenerate = async () => {
@@ -184,6 +258,27 @@ export default function MindMapGenerator() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="notes">Notes Content</Label>
+                                <div className="mb-2">
+                                    <label htmlFor="file-upload" className="cursor-pointer">
+                                        <div className="inline-flex items-center gap-2 px-3 py-2 border border-dashed border-purple-300 dark:border-purple-700 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors">
+                                            <BookOpen className="w-4 h-4 text-purple-500" />
+                                            <span className="text-sm text-purple-600 dark:text-purple-400">
+                                                {uploadingFile ? "Uploading..." : "Upload TXT file"}
+                                            </span>
+                                        </div>
+                                    </label>
+                                    <input
+                                        id="file-upload"
+                                        type="file"
+                                        accept=".txt,text/plain"
+                                        onChange={handleFileUpload}
+                                        className="hidden"
+                                        disabled={uploadingFile}
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                        Upload a text file or paste your notes below
+                                    </p>
+                                </div>
                                 <Textarea
                                     id="notes"
                                     placeholder="Paste your notes here... (e.g., 'Photosynthesis is the process by which plants convert light energy into chemical energy. It occurs in chloroplasts...')"
