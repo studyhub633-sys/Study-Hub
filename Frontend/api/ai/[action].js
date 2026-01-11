@@ -810,34 +810,34 @@ async function handleGenerateSimpleQuestion(req, res) {
 
     } catch (error) {
         console.error("Simple question generation error:", error);
-        return res.status(500).json({
-            error: error.message || "Internal server error"
-        });
+        return res.status(500).json({ error: error.message || "Internal server error" });
     }
 }
 
-async function handleGenerateMindMap(req, res) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+// Initialize Groq client
+import Groq from "groq-sdk";
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    if (req.method === 'OPTIONS') return res.status(200).end();
+async function handleGenerateMindMap(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    if (!HF_API_KEY) return res.status(503).json({ error: "Hugging Face API key not configured." });
+
+    // Check for GROQ API Key
+    if (!process.env.GROQ_API_KEY) {
+        return res.status(503).json({ error: "GROQ API key not configured." });
+    }
 
     try {
         const user = await verifyAuth(req);
         const { content, subject, title } = req.body;
 
-        if (!content) {
+        if (!content || !content.trim()) {
             return res.status(400).json({ error: "Content is required" });
         }
 
         // Check premium and record usage
         let usageData;
         try {
-            usageData = await checkAndRecordUsage(user, "generate-mindmap", content.substring(0, 100), subject, title);
+            usageData = await checkAndRecordUsage(user, "mind-map", content, subject, title);
         } catch (error) {
             if (error.status === 429) {
                 return res.status(429).json({ error: error.message, usageCount: error.usageCount, limit: error.limit });
@@ -845,105 +845,47 @@ async function handleGenerateMindMap(req, res) {
             throw error;
         }
 
-        const systemPrompt = `You are an expert at creating structured mind maps from study notes. 
-Analyze the provided content and create a clear hierarchical mind map structure.
-Return ONLY a valid JSON object with this exact structure:
-{
-  "title": "Main topic from the notes",
-  "children": [
-    {
-      "title": "Subtopic 1",
-      "children": [
-        {"title": "Key point 1", "children": []},
-        {"title": "Key point 2", "children": []}
-      ]
-    },
-    {
-      "title": "Subtopic 2",
-      "children": []
-    }
-  ]
-}
-
-Rules:
-- Keep hierarchy organized and clear
+        const systemPrompt = `You are an expert mind map generator. 
+Create a hierarchical JSON mind map from the provided text.
+Structure must be: { "title": "Main Topic", "children": [ { "title": "Subtopic", "children": [...] } ] }
+- Extract key concepts as branches
 - Limit depth to 3-4 levels maximum
 - Each node must have "title" and "children" properties
 - Return ONLY the JSON, no explanations`;
 
-        const userPrompt = `Create a mind map structure from these study notes:\n\n${content.substring(0, 2000)}`;
+        const userPrompt = `Create a mind map structure from these study notes:\n\n${content.substring(0, 5000)}`;
 
-        const response = await fetch(HF_CHAT_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${HF_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userPrompt }
-                ],
-                max_tokens: 2000,
-                temperature: 0.7,
-            }),
+        const completion = await groq.chat.completions.create({
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+            ],
+            model: "llama-3.3-70b-versatile",
+            temperature: 0.5,
+            max_tokens: 4000,
+            response_format: { type: "json_object" }
         });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            if (response.status === 503) {
-                return res.status(503).json({ error: "Model is loading.", retryAfter: 30 });
-            }
-            return res.status(response.status).json({ error: errorData.error || "Failed to generate mind map" });
-        }
-
-        const data = await response.json();
-        let generatedText = "";
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            generatedText = data.choices[0].message.content.trim();
-        } else if (data.generated_text) {
-            generatedText = data.generated_text.trim();
-        }
-
-        // Parse JSON from response
-        const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+        const generatedText = completion.choices[0]?.message?.content || "{}";
         let mindMapData;
 
-        if (jsonMatch) {
-            try {
-                mindMapData = JSON.parse(jsonMatch[0]);
-                // Validate structure
-                if (!mindMapData.title || !Array.isArray(mindMapData.children)) {
-                    throw new Error('Invalid structure');
-                }
-            } catch (e) {
-                console.error('JSON parse error:', e);
-                // Fallback structure
-                mindMapData = {
-                    title: title || subject || "Mind Map",
-                    children: [
-                        {
-                            title: "Generated Content",
-                            children: [
-                                { title: content.substring(0, 100), children: [] }
-                            ]
-                        }
-                    ]
-                };
+        try {
+            mindMapData = JSON.parse(generatedText);
+            // Validate structure
+            if (!mindMapData.title || !Array.isArray(mindMapData.children)) {
+                throw new Error('Invalid structure');
             }
-        } else {
-            // No JSON found, create simple structure
+        } catch (e) {
+            console.error('JSON parse error:', e);
+            // Fallback structure
             mindMapData = {
                 title: title || subject || "Mind Map",
                 children: [
                     {
-                        title: "Key Points",
-                        children: content.split('\n').filter(l => l.trim()).slice(0, 5).map(line => ({
-                            title: line.substring(0, 100),
-                            children: []
-                        }))
+                        title: "Generated Content",
+                        children: [
+                            { title: content.substring(0, 100) + "...", children: [] }
+                        ]
                     }
                 ]
             };
@@ -962,14 +904,12 @@ Rules:
 }
 
 async function handleGradeExam(req, res) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    if (!HF_API_KEY) return res.status(503).json({ error: "Hugging Face API key not configured." });
+
+    // Check for GROQ API Key
+    if (!process.env.GROQ_API_KEY) {
+        return res.status(503).json({ error: "GROQ API key not configured." });
+    }
 
     try {
         const user = await verifyAuth(req);
@@ -1023,81 +963,51 @@ Return your response as a JSON object with this structure:
 }`;
 
             const userPrompt = `Mark this answer for Question ${questionNumber}, worth ${maxMarks} marks.
-
-${markScheme ? `Mark Scheme: ${markScheme}\n\n` : ''}Student Answer: "${studentAnswer}"
-
-Provide marks (0-${maxMarks}), feedback, strengths, and improvements as JSON.`;
+Student Answer: "${studentAnswer}"
+${markScheme ? `Mark Scheme: ${markScheme}\n` : ''}
+Provide marks (0-${maxMarks}), feedback, strengths, and improvements in strict JSON format.`;
 
             try {
-                const response = await fetch(HF_CHAT_URL, {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${HF_API_KEY}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        model: "llama-3.3-70b-versatile",
-                        messages: [
-                            { role: "system", content: systemPrompt },
-                            { role: "user", content: userPrompt }
-                        ],
-                        max_tokens: 500,
-                        temperature: 0.3,
-                    }),
+                const completion = await groq.chat.completions.create({
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: userPrompt }
+                    ],
+                    model: "llama-3.3-70b-versatile",
+                    temperature: 0.3,
+                    max_tokens: 500,
+                    response_format: { type: "json_object" }
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    const resultText = data.choices?.[0]?.message?.content?.trim() || "";
-                    const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+                const resultText = completion.choices[0]?.message?.content || "{}";
+                let result;
 
-                    let result;
-                    if (jsonMatch) {
-                        try {
-                            result = JSON.parse(jsonMatch[0]);
-                            // Ensure marks are within bounds
-                            result.marksAwarded = Math.min(Math.max(0, result.marksAwarded || 0), maxMarks);
-                        } catch (e) {
-                            console.error('JSON parse error for question', questionNumber, e);
-                            result = {
-                                marksAwarded: Math.floor(maxMarks * 0.5), // Default to 50%
-                                feedback: resultText.substring(0, 200),
-                                strengths: ["See feedback above"],
-                                improvements: ["See feedback above"]
-                            };
-                        }
-                    } else {
-                        result = {
-                            marksAwarded: Math.floor(maxMarks * 0.5),
-                            feedback: resultText || "Unable to parse marking",
-                            strengths: [],
-                            improvements: []
-                        };
-                    }
-
-                    gradedAnswers.push({
-                        questionNumber,
-                        studentAnswer,
-                        maxMarks,
-                        marksAwarded: result.marksAwarded,
-                        feedback: result.feedback || "Marked",
-                        strengths: result.strengths || [],
-                        improvements: result.improvements || []
-                    });
-
-                    achievedMarks += result.marksAwarded || 0;
-                } else {
-                    // API error - give neutral marks
-                    gradedAnswers.push({
-                        questionNumber,
-                        studentAnswer,
-                        maxMarks,
+                try {
+                    result = JSON.parse(resultText);
+                    // Ensure marks are within bounds
+                    result.marksAwarded = Math.min(Math.max(0, result.marksAwarded || 0), maxMarks);
+                } catch (e) {
+                    console.error('JSON parse error for question', questionNumber, e);
+                    result = {
                         marksAwarded: 0,
-                        feedback: "Unable to mark this answer automatically",
+                        feedback: "Error parsing AI response",
                         strengths: [],
                         improvements: []
-                    });
+                    };
                 }
+
+                gradedAnswers.push({
+                    questionNumber,
+                    studentAnswer,
+                    maxMarks,
+                    marksAwarded: result.marksAwarded,
+                    feedback: result.feedback || "Marked",
+                    strengths: result.strengths || [],
+                    improvements: result.improvements || []
+                });
+
+                achievedMarks += result.marksAwarded || 0;
+
             } catch (error) {
                 console.error('Error marking question', questionNumber, error);
                 gradedAnswers.push({
