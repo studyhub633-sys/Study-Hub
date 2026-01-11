@@ -1,4 +1,3 @@
-import Groq from "groq-sdk";
 import { checkAndRecordUsage, updateAiResponse } from '../_utils/ai-usage.js';
 import { verifyAuth } from '../_utils/auth.js';
 
@@ -6,8 +5,47 @@ const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || 
 const HF_CHAT_URL = "https://router.huggingface.co/v1/chat/completions";
 const HF_EMBEDDINGS_URL = "https://router.huggingface.co/hf-inference/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2";
 
-// Initialize Groq client
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Initialize Groq config
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+async function callGroqAPI(messages, temperature = 0.5, max_tokens = 4000, jsonMode = false) {
+    if (!GROQ_API_KEY) {
+        throw new Error("GROQ API key not configured");
+    }
+
+    const body = {
+        model: "llama-3.3-70b-versatile",
+        messages: messages,
+        temperature: temperature,
+        max_tokens: max_tokens,
+    };
+
+    if (jsonMode) {
+        body.response_format = { type: "json_object" };
+    }
+
+    const response = await fetch(GROQ_API_URL, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${GROQ_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Groq API Error:", response.status, errorData);
+        if (response.status === 429) {
+            throw new Error("Rate limit exceeded. Please try again later.");
+        }
+        throw new Error(`AI Provider Error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || "";
+}
 
 export default async function handler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
@@ -855,18 +893,17 @@ Structure must be: { "title": "Main Topic", "children": [ { "title": "Subtopic",
 
         const userPrompt = `Create a mind map structure from these study notes:\n\n${content.substring(0, 5000)}`;
 
-        const completion = await groq.chat.completions.create({
-            messages: [
+        let generatedText;
+        try {
+            generatedText = await callGroqAPI([
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
-            ],
-            model: "llama-3.3-70b-versatile",
-            temperature: 0.5,
-            max_tokens: 4000,
-            response_format: { type: "json_object" }
-        });
+            ], 0.5, 4000, true);
+        } catch (apiError) {
+            return res.status(503).json({ error: apiError.message });
+        }
 
-        const generatedText = completion.choices[0]?.message?.content || "{}";
+
         let mindMapData;
 
         try {
