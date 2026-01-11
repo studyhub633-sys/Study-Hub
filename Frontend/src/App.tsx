@@ -35,6 +35,9 @@ const PredictedPapers = lazy(() => import("./pages/premium/PredictedPapers"));
 const StudyPlans = lazy(() => import("./pages/premium/StudyPlans"));
 const VirtualSessions = lazy(() => import("./pages/premium/VirtualSessions"));
 const WorkExperience = lazy(() => import("./pages/premium/WorkExperience"));
+const MindMapGenerator = lazy(() => import("./pages/premium/MindMapGenerator"));
+const AIExaminer = lazy(() => import("./pages/premium/AIExaminer"));
+const PerformanceHeatMap = lazy(() => import("./pages/premium/PerformanceHeatMap"));
 const PremiumDashboard = lazy(() => import("./pages/PremiumDashboard"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Returns = lazy(() => import("./pages/Returns"));
@@ -221,6 +224,30 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <WorkExperience />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/premium/mind-map-generator"
+                    element={
+                      <ProtectedRoute>
+                        <MindMapGenerator />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/premium/ai-examiner"
+                    element={
+                      <ProtectedRoute>
+                        <AIExaminer />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/premium/performance-heatmap"
+                    element={
+                      <ProtectedRoute>
+                        <PerformanceHeatMap />
                       </ProtectedRoute>
                     }
                   />

@@ -9,12 +9,14 @@ import { getSubscription as getPaymentSubscription } from "@/lib/payment-client"
 import { grantBetaAccessWithBackend, hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
+  BarChart3,
   Brain,
   Check,
   CheckCircle,
   Clock,
   Crown,
   FileText,
+  GraduationCap,
   Loader2,
   Rocket,
   Shield,
@@ -23,7 +25,7 @@ import {
   Ticket,
   Users,
   X,
-  Zap,
+  Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -74,6 +76,21 @@ const features = [
     icon: Sparkles,
     title: "AI-Powered Study Plans",
     description: "Get personalized study schedules based on your exam dates",
+  },
+  {
+    icon: Brain,
+    title: "AI Mind Map Generator",
+    description: "Transform your notes into visual mind maps instantly with AI",
+  },
+  {
+    icon: GraduationCap,
+    title: "AI Examiner",
+    description: "Upload completed past papers for instant AI marking and grading",
+  },
+  {
+    icon: BarChart3,
+    title: "Performance Heat Map",
+    description: "Visual red/amber/green analytics showing your strengths and weaknesses",
   },
 ];
 
@@ -497,7 +514,7 @@ export default function Premium() {
               </p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Work Experience Card */}
             <div
@@ -508,7 +525,7 @@ export default function Premium() {
               onClick={() => !checkingContent && navigate("/premium/work-experience")}
             >
               <div className="absolute top-0 left-0 w-1 h-full bg-premium opacity-0 group-hover:opacity-100 transition-opacity" />
-              
+
               <div className="flex items-start justify-between mb-4">
                 <div className="p-3 rounded-xl bg-premium/10 group-hover:bg-premium/20 transition-colors">
                   <Users className="h-6 w-6 text-premium" />
@@ -529,14 +546,14 @@ export default function Premium() {
                   </Badge>
                 )}
               </div>
-              
+
               <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
                 Scientia.ai Work Experience
               </h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Exclusive work experience opportunities specifically for Scientia.ai premium members
               </p>
-              
+
               {hasWorkExperience && (
                 <div className="mt-4 pt-4 border-t border-border/50">
                   <span className="text-xs text-premium font-medium flex items-center gap-1">
@@ -556,7 +573,7 @@ export default function Premium() {
               onClick={() => !checkingContent && navigate("/premium/predicted-papers")}
             >
               <div className="absolute top-0 left-0 w-1 h-full bg-premium opacity-0 group-hover:opacity-100 transition-opacity" />
-              
+
               <div className="flex items-start justify-between mb-4">
                 <div className="p-3 rounded-xl bg-premium/10 group-hover:bg-premium/20 transition-colors">
                   <FileText className="h-6 w-6 text-premium" />
@@ -577,14 +594,14 @@ export default function Premium() {
                   </Badge>
                 )}
               </div>
-              
+
               <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
                 2026 Predicted Papers
               </h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Access exclusive 2026 predicted exam papers before they're released publicly
               </p>
-              
+
               {hasPredictedPapers && (
                 <div className="mt-4 pt-4 border-t border-border/50">
                   <span className="text-xs text-premium font-medium flex items-center gap-1">

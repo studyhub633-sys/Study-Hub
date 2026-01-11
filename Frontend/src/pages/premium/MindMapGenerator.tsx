@@ -1,0 +1,301 @@
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { hasPremium } from "@/lib/premium";
+import { BookOpen, Loader2, Network, Save, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+
+interface MindMapNode {
+    title: string;
+    children: MindMapNode[];
+}
+
+export default function MindMapGenerator() {
+    const { supabase, user } = useAuth();
+    const { toast } = useToast();
+    const [isPremium, setIsPremium] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [notesContent, setNotesContent] = useState("");
+    const [title, setTitle] = useState("");
+    const [subject, setSubject] = useState("");
+    const [mindMapData, setMindMapData] = useState<MindMapNode | null>(null);
+
+    useEffect(() => {
+        checkPremiumStatus();
+    }, [user]);
+
+    const checkPremiumStatus = async () => {
+        if (!user || !supabase) return;
+        const premium = await hasPremium(supabase);
+        setIsPremium(premium);
+    };
+
+    const handleGenerate = async () => {
+        if (!notesContent.trim()) {
+            toast({
+                title: "Error",
+                description: "Please enter some notes to convert",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const session = await supabase.auth.getSession();
+            const response = await fetch('/api/ai/generate-mindmap', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.data.session?.access_token}`
+                },
+                body: JSON.stringify({
+                    content: notesContent,
+                    subject,
+                    title: title || 'Mind Map',
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to generate mind map');
+            }
+
+            setMindMapData(data.mindMapData);
+            toast({
+                title: "Success!",
+                description: "Mind map generated successfully",
+            });
+
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error.message,
+                variant: "destructive",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        if (!mindMapData) return;
+
+        try {
+            const { error } = await supabase.from('mind_maps').insert({
+                user_id: user?.id,
+                title: title || 'Untitled Mind Map',
+                subject: subject || null,
+                source_content: notesContent,
+                mind_map_data: mindMapData,
+            });
+
+            if (error) throw error;
+
+            toast({
+                title: "Saved!",
+                description: "Mind map saved to your library",
+            });
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: "Failed to save mind map",
+                variant: "destructive",
+            });
+        }
+    };
+
+    if (!isPremium) {
+        return (
+            <AppLayout>
+                <div className="max-w-4xl mx-auto py-12">
+                    <Card className="border-amber-500/20 bg-amber-500/5">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Network className="w-6 h-6 text-amber-500" />
+                                Premium Feature
+                            </CardTitle>
+                            <CardDescription>
+                                AI Mind Map Generator is a premium feature
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground mb-4">
+                                Upgrade to premium to transform your notes into interactive mind maps instantly.
+                            </p>
+                            <Button
+                                onClick={() => window.location.href = '/premium'}
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                            >
+                                View Premium Plans
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </AppLayout>
+        );
+    }
+
+    return (
+        <AppLayout>
+            <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-fade-in">
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+                        <Network className="w-8 h-8 text-purple-500" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-bold">AI Mind Map Generator</h1>
+                        <p className="text-muted-foreground">Transform your notes into visual mind maps instantly</p>
+                    </div>
+                </div>
+
+                {/* Input Section */}
+                <div className="grid gap-6 md:grid-cols-2">
+                    <Card className="animate-slide-up">
+                        <CardHeader>
+                            <CardTitle>Your Notes</CardTitle>
+                            <CardDescription>Paste or type your study notes</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="title">Title (Optional)</Label>
+                                <Input
+                                    id="title"
+                                    placeholder="e.g., Cell Biology Summary"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="subject">Subject (Optional)</Label>
+                                <Input
+                                    id="subject"
+                                    placeholder="e.g., Biology"
+                                    value={subject}
+                                    onChange={(e) => setSubject(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="notes">Notes Content</Label>
+                                <Textarea
+                                    id="notes"
+                                    placeholder="Paste your notes here... (e.g., 'Photosynthesis is the process by which plants convert light energy into chemical energy. It occurs in chloroplasts...')"
+                                    className="min-h-[300px] resize-none font-mono text-sm"
+                                    value={notesContent}
+                                    onChange={(e) => setNotesContent(e.target.value)}
+                                />
+                            </div>
+                            <Button
+                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                                onClick={handleGenerate}
+                                disabled={loading || !notesContent.trim()}
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="w-4 h-4 mr-2" />
+                                        Generate Mind Map
+                                    </>
+                                )}
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    {/* Mind Map Display */}
+                    <Card className={`animate-slide-up ${mindMapData ? 'border-purple-500/20 bg-purple-500/5' : ''}`} style={{ animationDelay: '0.1s', opacity: 0 }}>
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>Generated Mind Map</CardTitle>
+                                    <CardDescription>
+                                        {mindMapData ? "Ready to save" : "Mind map will appear here"}
+                                    </CardDescription>
+                                </div>
+                                {mindMapData && (
+                                    <Button variant="outline" size="sm" onClick={handleSave}>
+                                        <Save className="w-4 h-4 mr-2" />
+                                        Save
+                                    </Button>
+                                )}
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            {mindMapData ? (
+                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg p-6 min-h-[400px] overflow-auto">
+                                    <MindMapVisualization data={mindMapData} />
+                                </div>
+                            ) : (
+                                <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground opacity-50">
+                                    <Network className="w-16 h-16 mb-4" />
+                                    <p>Your mind map will appear here</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Info Card */}
+                <Card className="border-blue-500/20 bg-blue-500/5 animate-slide-up" style={{ animationDelay: '0.2s', opacity: 0 }}>
+                    <CardContent className="pt-6">
+                        <div className="flex items-start gap-3">
+                            <BookOpen className="w-5 h-5 text-blue-500 mt-0.5" />
+                            <div>
+                                <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-1">How it works</h4>
+                                <p className="text-sm text-muted-foreground">
+                                    The AI analyzes your notes and automatically creates a hierarchical mind map structure,
+                                    organizing key concepts, subtopics, and details into an easy-to-understand visual format.
+                                    Perfect for revision and understanding complex topics!
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </AppLayout>
+    );
+}
+
+// Simple tree-based mind map visualization
+function MindMapVisualization({ data }: { data: MindMapNode }) {
+    const renderNode = (node: MindMapNode, level: number = 0): JSX.Element => {
+        const colors = [
+            'bg-purple-500 text-white border-purple-600',
+            'bg-pink-100 dark:bg-pink-900/50 text-pink-900 dark:text-pink-100 border-pink-300 dark:border-pink-700',
+            'bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 border-blue-200 dark:border-blue-700',
+            'bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-200 dark:border-green-700'
+        ];
+
+        const colorClass = colors[Math.min(level, colors.length - 1)];
+        const fontSize = level === 0 ? 'text-lg font-bold' : level === 1 ? 'text-base font-semibold' : 'text-sm';
+
+        return (
+            <div key={node.title + level} className="mb-3">
+                <div className={`p-3 rounded-lg border-2 inline-block ${colorClass} ${fontSize} shadow-sm`}>
+                    {node.title}
+                </div>
+                {node.children && node.children.length > 0 && (
+                    <div className="ml-6 mt-2 border-l-2 border-purple-200 dark:border-purple-800 pl-4 space-y-2">
+                        {node.children.map((child, idx) => renderNode(child, level + 1))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    return (
+        <div className="overflow-auto max-h-[500px]">
+            {renderNode(data)}
+        </div>
+    );
+}

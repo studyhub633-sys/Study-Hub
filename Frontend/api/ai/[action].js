@@ -24,6 +24,10 @@ export default async function handler(req, res) {
             return handleProbe(req, res);
         case 'generate-simple-question':
             return handleGenerateSimpleQuestion(req, res);
+        case 'generate-mindmap':
+            return handleGenerateMindMap(req, res);
+        case 'grade-exam':
+            return handleGradeExam(req, res);
         default:
             return res.status(404).json({ error: 'Action not found' });
     }
@@ -810,4 +814,339 @@ async function handleGenerateSimpleQuestion(req, res) {
             error: error.message || "Internal server error"
         });
     }
+}
+
+async function handleGenerateMindMap(req, res) {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    if (!HF_API_KEY) return res.status(503).json({ error: "Hugging Face API key not configured." });
+
+    try {
+        const user = await verifyAuth(req);
+        const { content, subject, title } = req.body;
+
+        if (!content) {
+            return res.status(400).json({ error: "Content is required" });
+        }
+
+        // Check premium and record usage
+        let usageData;
+        try {
+            usageData = await checkAndRecordUsage(user, "generate-mindmap", content.substring(0, 100), subject, title);
+        } catch (error) {
+            if (error.status === 429) {
+                return res.status(429).json({ error: error.message, usageCount: error.usageCount, limit: error.limit });
+            }
+            throw error;
+        }
+
+        const systemPrompt = `You are an expert at creating structured mind maps from study notes. 
+Analyze the provided content and create a clear hierarchical mind map structure.
+Return ONLY a valid JSON object with this exact structure:
+{
+  "title": "Main topic from the notes",
+  "children": [
+    {
+      "title": "Subtopic 1",
+      "children": [
+        {"title": "Key point 1", "children": []},
+        {"title": "Key point 2", "children": []}
+      ]
+    },
+    {
+      "title": "Subtopic 2",
+      "children": []
+    }
+  ]
+}
+
+Rules:
+- Keep hierarchy organized and clear
+- Limit depth to 3-4 levels maximum
+- Each node must have "title" and "children" properties
+- Return ONLY the JSON, no explanations`;
+
+        const userPrompt = `Create a mind map structure from these study notes:\n\n${content.substring(0, 2000)}`;
+
+        const response = await fetch(HF_CHAT_URL, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${HF_API_KEY}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ],
+                max_tokens: 2000,
+                temperature: 0.7,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            if (response.status === 503) {
+                return res.status(503).json({ error: "Model is loading.", retryAfter: 30 });
+            }
+            return res.status(response.status).json({ error: errorData.error || "Failed to generate mind map" });
+        }
+
+        const data = await response.json();
+        let generatedText = "";
+
+        if (data.choices && data.choices[0]?.message?.content) {
+            generatedText = data.choices[0].message.content.trim();
+        } else if (data.generated_text) {
+            generatedText = data.generated_text.trim();
+        }
+
+        // Parse JSON from response
+        const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+        let mindMapData;
+
+        if (jsonMatch) {
+            try {
+                mindMapData = JSON.parse(jsonMatch[0]);
+                // Validate structure
+                if (!mindMapData.title || !Array.isArray(mindMapData.children)) {
+                    throw new Error('Invalid structure');
+                }
+            } catch (e) {
+                console.error('JSON parse error:', e);
+                // Fallback structure
+                mindMapData = {
+                    title: title || subject || "Mind Map",
+                    children: [
+                        {
+                            title: "Generated Content",
+                            children: [
+                                { title: content.substring(0, 100), children: [] }
+                            ]
+                        }
+                    ]
+                };
+            }
+        } else {
+            // No JSON found, create simple structure
+            mindMapData = {
+                title: title || subject || "Mind Map",
+                children: [
+                    {
+                        title: "Key Points",
+                        children: content.split('\n').filter(l => l.trim()).slice(0, 5).map(line => ({
+                            title: line.substring(0, 100),
+                            children: []
+                        }))
+                    }
+                ]
+            };
+        }
+
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, mindMapData);
+        }
+
+        return res.status(200).json({ mindMapData });
+
+    } catch (error) {
+        console.error("Mind map generation error:", error);
+        return res.status(500).json({ error: error.message || "Internal server error" });
+    }
+}
+
+async function handleGradeExam(req, res) {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    if (!HF_API_KEY) return res.status(503).json({ error: "Hugging Face API key not configured." });
+
+    try {
+        const user = await verifyAuth(req);
+        const { paperTitle, subject, examBoard, year, answers } = req.body;
+
+        if (!paperTitle || !answers || !Array.isArray(answers) || answers.length === 0) {
+            return res.status(400).json({ error: "Paper title and answers array are required" });
+        }
+
+        // Check premium and record usage
+        let usageData;
+        try {
+            usageData = await checkAndRecordUsage(user, "grade-exam", paperTitle, subject, null);
+        } catch (error) {
+            if (error.status === 429) {
+                return res.status(429).json({ error: error.message, usageCount: error.usageCount, limit: error.limit });
+            }
+            throw error;
+        }
+
+        // Grade each answer
+        const gradedAnswers = [];
+        let totalMarks = 0;
+        let achievedMarks = 0;
+
+        for (const answer of answers) {
+            const { questionNumber, studentAnswer, maxMarks, markScheme } = answer;
+            totalMarks += maxMarks || 0;
+
+            if (!studentAnswer || !studentAnswer.trim()) {
+                gradedAnswers.push({
+                    questionNumber,
+                    studentAnswer: studentAnswer || "",
+                    maxMarks: maxMarks || 0,
+                    marksAwarded: 0,
+                    feedback: "No answer provided",
+                    strengths: [],
+                    improvements: ["Provide an answer to receive marks"]
+                });
+                continue;
+            }
+
+            const systemPrompt = `You are an expert GCSE ${subject || ''} examiner for ${examBoard || 'UK exam boards'}.
+You must mark answers fairly and provide constructive feedback.
+Return your response as a JSON object with this structure:
+{
+  "marksAwarded": <number between 0 and ${maxMarks}>,
+  "feedback": "<brief overall comment>",
+  "strengths": ["<strength 1>", "<strength 2>"],
+  "improvements": ["<improvement 1>", "<improvement 2>"]
+}`;
+
+            const userPrompt = `Mark this answer for Question ${questionNumber}, worth ${maxMarks} marks.
+
+${markScheme ? `Mark Scheme: ${markScheme}\n\n` : ''}Student Answer: "${studentAnswer}"
+
+Provide marks (0-${maxMarks}), feedback, strengths, and improvements as JSON.`;
+
+            try {
+                const response = await fetch(HF_CHAT_URL, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${HF_API_KEY}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: userPrompt }
+                        ],
+                        max_tokens: 500,
+                        temperature: 0.3,
+                    }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const resultText = data.choices?.[0]?.message?.content?.trim() || "";
+                    const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+
+                    let result;
+                    if (jsonMatch) {
+                        try {
+                            result = JSON.parse(jsonMatch[0]);
+                            // Ensure marks are within bounds
+                            result.marksAwarded = Math.min(Math.max(0, result.marksAwarded || 0), maxMarks);
+                        } catch (e) {
+                            console.error('JSON parse error for question', questionNumber, e);
+                            result = {
+                                marksAwarded: Math.floor(maxMarks * 0.5), // Default to 50%
+                                feedback: resultText.substring(0, 200),
+                                strengths: ["See feedback above"],
+                                improvements: ["See feedback above"]
+                            };
+                        }
+                    } else {
+                        result = {
+                            marksAwarded: Math.floor(maxMarks * 0.5),
+                            feedback: resultText || "Unable to parse marking",
+                            strengths: [],
+                            improvements: []
+                        };
+                    }
+
+                    gradedAnswers.push({
+                        questionNumber,
+                        studentAnswer,
+                        maxMarks,
+                        marksAwarded: result.marksAwarded,
+                        feedback: result.feedback || "Marked",
+                        strengths: result.strengths || [],
+                        improvements: result.improvements || []
+                    });
+
+                    achievedMarks += result.marksAwarded || 0;
+                } else {
+                    // API error - give neutral marks
+                    gradedAnswers.push({
+                        questionNumber,
+                        studentAnswer,
+                        maxMarks,
+                        marksAwarded: 0,
+                        feedback: "Unable to mark this answer automatically",
+                        strengths: [],
+                        improvements: []
+                    });
+                }
+            } catch (error) {
+                console.error('Error marking question', questionNumber, error);
+                gradedAnswers.push({
+                    questionNumber,
+                    studentAnswer,
+                    maxMarks,
+                    marksAwarded: 0,
+                    feedback: "Error during marking",
+                    strengths: [],
+                    improvements: []
+                });
+            }
+        }
+
+        const percentage = totalMarks > 0 ? Math.round((achievedMarks / totalMarks) * 100) : 0;
+        const grade = getGradeFromPercentage(percentage);
+
+        const result = {
+            paperTitle,
+            subject: subject || "General",
+            examBoard: examBoard || "GCSE",
+            year: year || new Date().getFullYear(),
+            totalMarks,
+            achievedMarks,
+            percentage,
+            grade,
+            gradedAnswers
+        };
+
+        if (usageData?.usageId) {
+            await updateAiResponse(usageData.usageId, result);
+        }
+
+        return res.status(200).json(result);
+
+    } catch (error) {
+        console.error("Exam grading error:", error);
+        return res.status(500).json({ error: error.message || "Internal server error" });
+    }
+}
+
+function getGradeFromPercentage(percentage) {
+    if (percentage >= 90) return '9';
+    if (percentage >= 80) return '8';
+    if (percentage >= 70) return '7';
+    if (percentage >= 60) return '6';
+    if (percentage >= 50) return '5';
+    if (percentage >= 40) return '4';
+    if (percentage >= 30) return '3';
+    if (percentage >= 20) return '2';
+    return '1';
 }
