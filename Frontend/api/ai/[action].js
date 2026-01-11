@@ -1005,22 +1005,15 @@ ${markScheme ? `Mark Scheme: ${markScheme}\n` : ''}
 Provide marks (0-${maxMarks}), feedback, strengths, and improvements in strict JSON format.`;
 
             try {
-                const completion = await groq.chat.completions.create({
-                    messages: [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: userPrompt }
-                    ],
-                    model: "llama-3.3-70b-versatile",
-                    temperature: 0.3,
-                    max_tokens: 500,
-                    response_format: { type: "json_object" }
-                });
+                const resultJSON = await callGroqAPI([
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ], 0.3, 500, true);
 
-                const resultText = completion.choices[0]?.message?.content || "{}";
                 let result;
 
                 try {
-                    result = JSON.parse(resultText);
+                    result = JSON.parse(resultJSON);
                     // Ensure marks are within bounds
                     result.marksAwarded = Math.min(Math.max(0, result.marksAwarded || 0), maxMarks);
                 } catch (e) {

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
-import { BookOpen, Loader2, Network, Save, Sparkles } from "lucide-react";
+import { BookOpen, Download, Loader2, Network, Save, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface MindMapNode {
@@ -185,6 +185,38 @@ export default function MindMapGenerator() {
         }
     };
 
+    const handleDownload = () => {
+        if (!mindMapData) return;
+
+        // Convert mind map to indented text format
+        const generateText = (node: MindMapNode, level: number = 0): string => {
+            const indent = "  ".repeat(level);
+            let text = `${indent}- ${node.title}\n`;
+            if (node.children) {
+                node.children.forEach(child => {
+                    text += generateText(child, level + 1);
+                });
+            }
+            return text;
+        };
+
+        const textContent = generateText(mindMapData);
+        const blob = new Blob([textContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${title || 'mind-map'}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast({
+            title: "Downloaded",
+            description: "Mind map saved to your downloads",
+        });
+    };
+
     if (!isPremium) {
         return (
             <AppLayout>
@@ -318,10 +350,16 @@ export default function MindMapGenerator() {
                                     </CardDescription>
                                 </div>
                                 {mindMapData && (
-                                    <Button variant="outline" size="sm" onClick={handleSave}>
-                                        <Save className="w-4 h-4 mr-2" />
-                                        Save
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button variant="outline" size="sm" onClick={handleDownload}>
+                                            <Download className="w-4 h-4 mr-2" />
+                                            Download
+                                        </Button>
+                                        <Button variant="outline" size="sm" onClick={handleSave}>
+                                            <Save className="w-4 h-4 mr-2" />
+                                            Save to Library
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
                         </CardHeader>
