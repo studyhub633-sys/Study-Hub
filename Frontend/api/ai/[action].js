@@ -1,9 +1,13 @@
+import Groq from "groq-sdk";
 import { checkAndRecordUsage, updateAiResponse } from '../_utils/ai-usage.js';
 import { verifyAuth } from '../_utils/auth.js';
 
 const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.HUGGING_FACE_API_KEY;
 const HF_CHAT_URL = "https://router.huggingface.co/v1/chat/completions";
 const HF_EMBEDDINGS_URL = "https://router.huggingface.co/hf-inference/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2";
+
+// Initialize Groq client
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export default async function handler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
@@ -813,10 +817,6 @@ async function handleGenerateSimpleQuestion(req, res) {
         return res.status(500).json({ error: error.message || "Internal server error" });
     }
 }
-
-// Initialize Groq client
-import Groq from "groq-sdk";
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 async function handleGenerateMindMap(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
