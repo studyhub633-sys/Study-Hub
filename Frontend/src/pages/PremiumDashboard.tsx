@@ -29,7 +29,8 @@ import {
     Timer,
     Trophy,
     Users,
-    X
+    X,
+    Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -167,6 +168,70 @@ export default function PremiumDashboard() {
             path: "/premium/performance-heatmap",
             color: "text-orange-500",
             bg: "bg-orange-500/10",
+        },
+    ];
+
+    // Feature Benefits list (Image 2 content)
+    const benefitFeatures = [
+        {
+            icon: Brain,
+            title: "Unlimited AI Question Generation",
+            description: "Generate unlimited AI questions tailored to your exam board and subjects (50/day for free users)",
+        },
+        {
+            icon: Sparkles,
+            title: "Groq AI Study Suggestions",
+            description: "Get personalized study recommendations based on your progress and weak areas",
+        },
+        {
+            icon: Zap,
+            title: "Instant Feedback",
+            description: "Receive detailed explanations and mark scheme breakdowns for every answer",
+        },
+        {
+            icon: Timer,
+            title: "Progress Analytics",
+            description: "Advanced insights into your study patterns and performance trends",
+        },
+        {
+            icon: Shield,
+            title: "Fully Ad-Free Experience",
+            description: "Study without distractions with a completely ad-free interface",
+        },
+        {
+            icon: Users,
+            title: "Priority Support",
+            description: "Get help faster with dedicated premium customer support",
+        },
+        {
+            icon: Brain,
+            title: "Grade 9 Premium Notes",
+            description: "Access exclusive Grade 9 notes and study materials",
+        },
+        {
+            icon: Timer,
+            title: "Homework Tracker",
+            description: "Track assignments with smart notifications when they're due",
+        },
+        {
+            icon: Sparkles,
+            title: "AI-Powered Study Plans",
+            description: "Get personalized study schedules based on your exam dates",
+        },
+        {
+            icon: Brain,
+            title: "AI Mind Map Generator",
+            description: "Transform your notes into visual mind maps instantly with AI",
+        },
+        {
+            icon: GraduationCap,
+            title: "AI Examiner",
+            description: "Upload completed past papers for instant AI marking and grading",
+        },
+        {
+            icon: BarChart3,
+            title: "Performance Heat Map",
+            description: "Visual red/amber/green analytics showing your strengths and weaknesses",
         },
     ];
 
@@ -364,6 +429,36 @@ export default function PremiumDashboard() {
                             </CardFooter>
                         </Card>
                     ))}
+                </div>
+
+                {/* Feature Benefits Grid (Image 2) */}
+                <div className="space-y-6">
+                    <div className="text-center">
+                        <h2 className="text-3xl font-bold text-foreground">
+                            {isPremium ? "Your Premium Benefits" : "Premium Features"}
+                        </h2>
+                        <p className="text-muted-foreground mt-2">
+                            {isPremium
+                                ? "You have full access to these exclusive features"
+                                : "Everything you get when you upgrade to Scientia.ai Premium"}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {benefitFeatures.map((feature, index) => (
+                            <div
+                                key={index}
+                                className="glass-card p-5 hover-lift animate-slide-up"
+                                style={{ animationDelay: `${0.1 * index}s`, opacity: 0 }}
+                            >
+                                <div className="p-2.5 rounded-xl bg-premium/10 w-fit mb-3">
+                                    <feature.icon className="h-5 w-5 text-premium" />
+                                </div>
+                                <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
+                                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Sales Content (Only for non-premium users) */}
