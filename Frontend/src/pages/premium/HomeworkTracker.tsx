@@ -1,7 +1,7 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -25,15 +25,14 @@ import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
   Bell,
-  BellOff,
   Calendar,
   CheckCircle2,
   Clock,
   Crown,
+  Edit,
   Loader2,
   Plus,
-  Trash2,
-  X,
+  Trash2
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -84,7 +83,7 @@ export default function HomeworkTracker() {
       setIsPremium(premium);
       if (!premium) {
         toast.error("This is a premium feature. Please upgrade to access.");
-        navigate("/premium");
+        navigate("/premium-dashboard");
       }
     } catch (error) {
       console.error("Error checking premium status:", error);
@@ -141,7 +140,7 @@ export default function HomeworkTracker() {
     upcoming.forEach((hw) => {
       const dueDate = new Date(hw.due_date);
       const hoursUntilDue = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-      
+
       if (hoursUntilDue <= 1 && hoursUntilDue > 0) {
         toast.warning(`⏰ "${hw.title}" is due in less than 1 hour!`, {
           duration: 10000,
@@ -303,7 +302,7 @@ export default function HomeworkTracker() {
           <Crown className="h-16 w-16 text-premium" />
           <h2 className="text-2xl font-bold">Premium Feature</h2>
           <p className="text-muted-foreground">This feature is available for premium members only.</p>
-          <Button onClick={() => navigate("/premium")}>Upgrade to Premium</Button>
+          <Button onClick={() => navigate("/premium-dashboard")}>Upgrade to Premium</Button>
         </div>
       </AppLayout>
     );
@@ -546,8 +545,8 @@ function HomeworkCard({
         homework.completed
           ? "bg-muted/50 opacity-75"
           : isOverdue
-          ? "bg-destructive/5 border-destructive/20"
-          : "bg-card hover:bg-muted/50"
+            ? "bg-destructive/5 border-destructive/20"
+            : "bg-card hover:bg-muted/50"
       )}
     >
       <div className="flex items-start gap-3 flex-1">
@@ -596,10 +595,10 @@ function HomeworkCard({
                 {isOverdue
                   ? `Overdue by ${Math.abs(daysUntil)} day${Math.abs(daysUntil) !== 1 ? "s" : ""}`
                   : daysUntil === 0
-                  ? "Due today"
-                  : daysUntil === 1
-                  ? "Due tomorrow"
-                  : `Due in ${daysUntil} days`}
+                    ? "Due today"
+                    : daysUntil === 1
+                      ? "Due tomorrow"
+                      : `Due in ${daysUntil} days`}
               </span>
             </div>
             <div className="flex items-center gap-1">

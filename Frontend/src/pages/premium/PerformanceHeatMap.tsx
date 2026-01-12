@@ -142,7 +142,7 @@ export default function PerformanceHeatMap() {
                                 Upgrade to premium to see visual analytics of your performance across all subjects.
                             </p>
                             <Button
-                                onClick={() => window.location.href = '/premium'}
+                                onClick={() => window.location.href = '/premium-dashboard'}
                                 className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
                             >
                                 View Premium Plans

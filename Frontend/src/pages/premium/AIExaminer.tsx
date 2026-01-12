@@ -169,7 +169,7 @@ export default function AIExaminer() {
                                 Upgrade to premium to get your past papers marked and graded by AI instantly.
                             </p>
                             <Button
-                                onClick={() => window.location.href = '/premium'}
+                                onClick={() => window.location.href = '/premium-dashboard'}
                                 className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
                             >
                                 View Premium Plans
@@ -340,8 +340,8 @@ export default function AIExaminer() {
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="font-semibold">Question {answer.questionNumber}</span>
                                         <span className={`text-sm font-medium px-2 py-1 rounded ${(answer.marksAwarded / answer.maxMarks) >= 0.7 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                                                (answer.marksAwarded / answer.maxMarks) >= 0.5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                                                    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                            (answer.marksAwarded / answer.maxMarks) >= 0.5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                             }`}>
                                             {answer.marksAwarded}/{answer.maxMarks} marks
                                         </span>

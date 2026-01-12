@@ -1,52 +1,85 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { TermsDialog } from "@/components/premium/TermsDialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { hasPremium } from "@/lib/premium";
+import { validateDiscountCode } from "@/lib/discount";
+import { getSubscription as getPaymentSubscription } from "@/lib/payment-client";
+import { grantBetaAccessWithBackend, hasPremium } from "@/lib/premium";
+import { cn } from "@/lib/utils";
 import {
     BarChart3,
     Brain,
     Calculator,
     Calendar,
+    Check,
+    CheckCircle,
     FileText,
     GraduationCap,
+    Loader2,
     Lock,
     Network,
+    Rocket,
+    Shield,
     Sparkles,
+    Star,
+    Ticket,
     Timer,
     Trophy,
-    Users
+    Users,
+    X
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
+
+const plans = [
+    {
+        name: "Monthly",
+        price: "£4.99",
+        period: "/month",
+        description: "Perfect for trying out premium features",
+        features: [
+            "All premium features",
+            "Cancel anytime",
+            "Monthly billing",
+        ],
+        popular: false,
+    },
+    {
+        name: "Yearly",
+        price: "£39.99",
+        period: "/year",
+        description: "Our best value - save over £19 annually!",
+        features: [
+            "All premium features",
+            "4 months free",
+            "Priority new features",
+            "Exclusive content",
+        ],
+        popular: true,
+        savings: "Save £19.89",
+    },
+];
 
 export default function PremiumDashboard() {
     const { user, supabase } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { theme } = useTheme();
     const [isPremium, setIsPremium] = useState(false);
     const [checking, setChecking] = useState(true);
+    const [subscription, setSubscription] = useState<any>(null);
+    const [discountCode, setDiscountCode] = useState("");
+    const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+    const [showTerms, setShowTerms] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | null>(null);
 
-    useEffect(() => {
-        const checkPremium = async () => {
-            if (user && supabase) {
-                try {
-                    const premium = await hasPremium(supabase);
-                    setIsPremium(premium);
-                } catch (error) {
-                    console.error("Error checking premium status:", error);
-                } finally {
-                    setChecking(false);
-                }
-            } else {
-                setChecking(false);
-            }
-        };
-        checkPremium();
-    }, [user, supabase]);
-
-    const features = [
+    // Dashboard-specific feature list (Tools)
+    const dashboardFeatures = [
         {
             title: "AI Homework Solver",
             description: "Get instant step-by-step solutions for any subject question.",
@@ -137,6 +170,96 @@ export default function PremiumDashboard() {
         },
     ];
 
+    // Check for Stripe redirect
+    useEffect(() => {
+        const success = searchParams.get("success");
+        const canceled = searchParams.get("canceled");
+        const sessionId = searchParams.get("session_id");
+
+        if (success && sessionId) {
+            toast.success("Payment successful! Your premium subscription is now active.");
+            checkPremiumStatus();
+            navigate("/premium-dashboard", { replace: true });
+        } else if (canceled) {
+            toast.info("Payment canceled. You can try again anytime.");
+            navigate("/premium-dashboard", { replace: true });
+        }
+    }, [searchParams, navigate]);
+
+    useEffect(() => {
+        if (user) {
+            checkPremiumStatus();
+        } else {
+            setChecking(false);
+        }
+    }, [user]);
+
+    const checkPremiumStatus = async () => {
+        if (!user || !supabase) return;
+
+        setChecking(true);
+        try {
+            const premium = await hasPremium(supabase);
+            setIsPremium(premium);
+
+            if (premium) {
+                const sub = await getPaymentSubscription(supabase);
+                if (sub && !sub.error) {
+                    setSubscription(sub.subscription);
+                }
+            }
+        } catch (error) {
+            console.error("Error checking premium status:", error);
+        } finally {
+            setChecking(false);
+        }
+    };
+
+    const handleSubscribe = async (planType: "monthly" | "yearly") => {
+        setSelectedPlan(planType);
+        setShowTerms(true);
+    };
+
+    const handleConfirmTerms = async () => {
+        setShowTerms(false);
+        if (!user || !supabase) return;
+
+        setLoading(true);
+        try {
+            const result = await grantBetaAccessWithBackend(supabase);
+            if (result.success) {
+                setIsPremium(true);
+                await checkPremiumStatus();
+                toast.success("Lifetime beta access granted!");
+            } else {
+                toast.error(`Failed: ${result.error || "Please try again."}`);
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleApplyCode = () => {
+        if (!discountCode) return;
+
+        const discount = validateDiscountCode(discountCode);
+        if (discount) {
+            setAppliedDiscount(discount);
+            toast.success(`Discount code applied: ${discount.description} `);
+            if (discount.type === "free_lifetime") {
+                toast.info("This code provides lifetime free access!");
+            }
+        } else {
+            toast.error("Invalid discount code");
+        }
+    };
+
+    const handleCancel = async () => {
+        toast.info("Subscriptions are currently disabled during beta testing.");
+    };
+
     return (
         <AppLayout>
             <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-10">
@@ -161,7 +284,7 @@ export default function PremiumDashboard() {
                             <Button
                                 size="lg"
                                 className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white shadow-lg border-0 text-lg px-8 py-6 h-auto"
-                                onClick={() => navigate("/premium")}
+                                onClick={() => document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
                             >
                                 <Sparkles className="w-5 h-5 mr-2" />
                                 Upgrade to Premium
@@ -170,9 +293,48 @@ export default function PremiumDashboard() {
                     </div>
                 </div>
 
-                {/* Features Grid */}
+                {/* Current Subscription Status */}
+                {isPremium && subscription && (
+                    <div className="glass-card p-6 mb-8 animate-slide-up">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Check className="h-5 w-5 text-secondary" />
+                                    <h3 className="text-lg font-semibold text-foreground">Active Premium Subscription</h3>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    Plan: <span className="font-medium text-foreground capitalize">{subscription.plan_type}</span>
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                </p>
+                                {subscription.cancel_at_period_end && (
+                                    <p className="text-sm text-destructive mt-2">
+                                        ⚠️ Subscription will cancel at the end of the billing period
+                                    </p>
+                                )}
+                            </div>
+                            {!subscription.cancel_at_period_end && (
+                                <Button
+                                    variant="outline"
+                                    onClick={handleCancel}
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <X className="h-4 w-4 mr-2" />
+                                    )}
+                                    Cancel Subscription
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Features Grid (Dashboard Tools) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {features.map((feature, index) => (
+                    {dashboardFeatures.map((feature, index) => (
                         <Card
                             key={index}
                             className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-primary/10 bg-card/50 backdrop-blur-sm cursor-pointer"
@@ -190,12 +352,6 @@ export default function PremiumDashboard() {
                                 </CardDescription>
                             </CardHeader>
 
-                            <CardContent>
-                                {/* <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary w-0 group-hover:w-full transition-all duration-700 ease-out" />
-                </div> */}
-                            </CardContent>
-
                             <CardFooter className="pt-0 flex justify-between items-center text-sm text-muted-foreground">
                                 <span className="group-hover:text-primary transition-colors">
                                     {!isPremium ? "Premium Only" : "Launch Tool"}
@@ -209,7 +365,139 @@ export default function PremiumDashboard() {
                         </Card>
                     ))}
                 </div>
+
+                {/* Sales Content (Only for non-premium users) */}
+                {!isPremium && (
+                    <div id="pricing-section" className="space-y-12 pt-12 border-t border-border/50">
+                        {/* Pricing Cards */}
+                        <div className="text-center mb-8">
+                            <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
+                            <p className="text-muted-foreground">Unlock unlimited access to all AI tools and features</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                            {plans.map((plan, index) => (
+                                <div
+                                    key={plan.name}
+                                    className={cn(
+                                        "relative rounded-2xl p-6 md:p-8 transition-all duration-300 animate-scale-in",
+                                        plan.popular
+                                            ? "border-2 border-premium shadow-lg"
+                                            : "glass-card"
+                                    )}
+                                    style={{ animationDelay: `${0.3 + 0.1 * index} s`, opacity: 0 }}
+                                >
+                                    {plan.popular && (
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                            <span className="premium-badge">
+                                                <Star className="h-3 w-3 fill-current" />
+                                                Most Popular
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    <div className="text-center mb-6">
+                                        <h3 className="text-lg font-semibold text-foreground mb-2">{plan.name}</h3>
+                                        <div className="flex items-baseline justify-center gap-1">
+                                            <span className="text-4xl font-bold text-foreground">{plan.price}</span>
+                                            <span className="text-muted-foreground">{plan.period}</span>
+                                        </div>
+                                        {plan.savings && (
+                                            <span className="inline-block mt-2 text-sm font-medium text-secondary px-2 py-0.5 bg-secondary/10 rounded-full">
+                                                {plan.savings}
+                                            </span>
+                                        )}
+                                        <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
+                                    </div>
+
+                                    <ul className="space-y-3 mb-6">
+                                        {plan.features.map((feature) => (
+                                            <li key={feature} className="flex items-center gap-2 text-sm text-foreground">
+                                                <CheckCircle className="h-4 w-4 text-secondary flex-shrink-0" />
+                                                {feature}
+                                            </li>
+                                        ))}
+                                    </ul>
+
+                                    <Button
+                                        className={cn(
+                                            "w-full",
+                                            plan.popular
+                                                ? "bg-premium hover:bg-premium/90 text-premium-foreground"
+                                                : ""
+                                        )}
+                                        variant={plan.popular ? "default" : "outline"}
+                                        onClick={() => handleSubscribe(plan.name.toLowerCase() as "monthly" | "yearly")}
+                                        disabled={loading || isPremium}
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                Processing...
+                                            </>
+                                        ) : isPremium ? (
+                                            <>
+                                                <Check className="h-4 w-4 mr-2" />
+                                                Already Premium
+                                            </>
+                                        ) : (
+                                            <>
+                                                {plan.popular && <Rocket className="h-4 w-4 mr-2" />}
+                                                Get Lifetime Access (Beta)
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Discount Code */}
+                        <div className="glass-card p-6 max-w-2xl mx-auto">
+                            <div className="flex flex-col md:flex-row items-center gap-4">
+                                <div className="flex-1 w-full">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Ticket className="h-5 w-5 text-premium" />
+                                        <h3 className="text-lg font-semibold text-foreground">Have a discount code?</h3>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            placeholder="Enter code (e.g., FREE_BETA)"
+                                            value={discountCode}
+                                            onChange={(e) => setDiscountCode(e.target.value)}
+                                            className="max-w-xs"
+                                        />
+                                        <Button variant="secondary" onClick={handleApplyCode}>
+                                            Apply
+                                        </Button>
+                                    </div>
+                                </div>
+                                {appliedDiscount && (
+                                    <div className="p-4 rounded-xl bg-premium/10 border border-premium/20 w-full md:w-auto">
+                                        <div className="text-sm font-semibold text-premium mb-1">Applied:</div>
+                                        <div className="text-lg font-bold text-foreground">{appliedDiscount.code}</div>
+                                        <div className="text-xs text-muted-foreground">{appliedDiscount.description}</div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Guarantee */}
+                        <div className="glass-card p-6 md:p-8 text-center max-w-2xl mx-auto">
+                            <Shield className="h-10 w-10 text-secondary mx-auto mb-4" />
+                            <h3 className="text-lg font-semibold text-foreground mb-2">30-Day Money-Back Guarantee</h3>
+                            <p className="text-muted-foreground">
+                                Not satisfied? Get a full refund within 30 days, no questions asked.
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
+
+            <TermsDialog
+                open={showTerms}
+                onOpenChange={setShowTerms}
+                onAccept={handleConfirmTerms}
+            />
         </AppLayout>
     );
 }

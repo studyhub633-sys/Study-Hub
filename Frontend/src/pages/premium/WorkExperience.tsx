@@ -59,7 +59,7 @@ export default function WorkExperience() {
       setIsPremium(premium);
       if (!premium) {
         toast.error("This is a premium feature. Please upgrade to access.");
-        navigate("/premium");
+        navigate("/premium-dashboard");
       }
     } catch (error) {
       console.error("Error checking premium status:", error);
@@ -135,7 +135,7 @@ export default function WorkExperience() {
           <p className="text-muted-foreground">
             This feature is available for premium members only.
           </p>
-          <Button onClick={() => navigate("/premium")}>
+          <Button onClick={() => navigate("/premium-dashboard")}>
             Upgrade to Premium
           </Button>
         </div>

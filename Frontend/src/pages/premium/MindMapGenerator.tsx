@@ -236,7 +236,7 @@ export default function MindMapGenerator() {
                                 Upgrade to premium to transform your notes into interactive mind maps instantly.
                             </p>
                             <Button
-                                onClick={() => window.location.href = '/premium'}
+                                onClick={() => window.location.href = '/premium-dashboard'}
                                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                             >
                                 View Premium Plans

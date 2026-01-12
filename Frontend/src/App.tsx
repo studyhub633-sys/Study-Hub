@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Suspense, lazy } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 // Lazy-loaded components
 const Admin = lazy(() => import("./pages/Admin"));
@@ -24,7 +24,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Notes = lazy(() => import("./pages/Notes"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PastPapers = lazy(() => import("./pages/PastPapers"));
-const Premium = lazy(() => import("./pages/Premium"));
+// const Premium = lazy(() => import("./pages/Premium"));
 const FocusMode = lazy(() => import("./pages/premium/FocusMode"));
 const HomeworkSolver = lazy(() => import("./pages/premium/HomeworkSolver"));
 const HomeworkTracker = lazy(() => import("./pages/premium/HomeworkTracker"));
@@ -133,11 +133,7 @@ const App = () => {
                   />
                   <Route
                     path="/premium"
-                    element={
-                      <ProtectedRoute>
-                        <Premium />
-                      </ProtectedRoute>
-                    }
+                    element={<Navigate to="/premium-dashboard" replace />}
                   />
                   <Route
                     path="/premium-dashboard"

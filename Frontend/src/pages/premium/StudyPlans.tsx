@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
@@ -72,7 +71,7 @@ export default function StudyPlans() {
       setIsPremium(premium);
       if (!premium) {
         toast.error("This is a premium feature. Please upgrade to access.");
-        navigate("/premium");
+        navigate("/premium-dashboard");
       }
     } catch (error) {
       console.error("Error checking premium status:", error);
@@ -151,7 +150,7 @@ export default function StudyPlans() {
 
     try {
       setGenerating(true);
-      
+
       // Call AI API to generate study plan
       const response = await fetch("/api/ai/generate-study-plan", {
         method: "POST",
@@ -278,7 +277,7 @@ export default function StudyPlans() {
           <Crown className="h-16 w-16 text-premium" />
           <h2 className="text-2xl font-bold">Premium Feature</h2>
           <p className="text-muted-foreground">This feature is available for premium members only.</p>
-          <Button onClick={() => navigate("/premium")}>Upgrade to Premium</Button>
+          <Button onClick={() => navigate("/premium-dashboard")}>Upgrade to Premium</Button>
         </div>
       </AppLayout>
     );
@@ -380,8 +379,8 @@ export default function StudyPlans() {
                           exam.priority === "high"
                             ? "bg-destructive/10 text-destructive"
                             : exam.priority === "medium"
-                            ? "bg-yellow-500/10 text-yellow-600"
-                            : "bg-green-500/10 text-green-600"
+                              ? "bg-yellow-500/10 text-yellow-600"
+                              : "bg-green-500/10 text-green-600"
                         )}
                       >
                         {exam.priority}
