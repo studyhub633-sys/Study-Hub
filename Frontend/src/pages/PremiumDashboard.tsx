@@ -1,5 +1,6 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { TermsDialog } from "@/components/premium/TermsDialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import {
     Calendar,
     Check,
     CheckCircle,
+    Crown,
     FileText,
     GraduationCap,
     Loader2,
@@ -78,6 +80,9 @@ export default function PremiumDashboard() {
     const [loading, setLoading] = useState(false);
     const [showTerms, setShowTerms] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | null>(null);
+    const [hasPredictedPapers, setHasPredictedPapers] = useState(false);
+    const [hasWorkExperience, setHasWorkExperience] = useState(false);
+    const [checkingContent, setCheckingContent] = useState(true);
 
     // Dashboard-specific feature list (Tools)
     const dashboardFeatures = [
@@ -254,10 +259,42 @@ export default function PremiumDashboard() {
     useEffect(() => {
         if (user) {
             checkPremiumStatus();
+            checkContentAvailability();
         } else {
             setChecking(false);
+            setCheckingContent(false);
         }
     }, [user]);
+
+    const checkContentAvailability = async () => {
+        if (!supabase) return;
+
+        setCheckingContent(true);
+        try {
+            // Check for predicted papers
+            const { count: papersCount } = await supabase
+                .from("premium_predicted_papers")
+                .select("*", { count: "exact", head: true })
+                .eq("is_premium", true);
+
+            setHasPredictedPapers((papersCount || 0) > 0);
+
+            // Check for work experience
+            const { count: workExpCount } = await supabase
+                .from("premium_work_experience")
+                .select("*", { count: "exact", head: true })
+                .eq("is_premium", true)
+                .eq("is_active", true);
+
+            setHasWorkExperience((workExpCount || 0) > 0);
+        } catch (error) {
+            console.error("Error checking content availability:", error);
+            setHasPredictedPapers(false);
+            setHasWorkExperience(false);
+        } finally {
+            setCheckingContent(false);
+        }
+    };
 
     const checkPremiumStatus = async () => {
         if (!user || !supabase) return;
@@ -459,6 +496,155 @@ export default function PremiumDashboard() {
                             </div>
                         ))}
                     </div>
+                </div>
+
+                {/* Coming Soon Features */}
+                <div className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-premium/10">
+                            <Rocket className="h-6 w-6 text-premium" />
+                        </div>
+                        <div>
+                            <h3 className="text-2xl font-bold text-foreground">
+                                {hasPredictedPapers || hasWorkExperience
+                                    ? "Premium Features"
+                                    : "Coming Soon - Premium Features"}
+                            </h3>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                {hasPredictedPapers || hasWorkExperience
+                                    ? "Exclusive features available to premium members"
+                                    : "Exciting new features launching soon"}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Work Experience Card */}
+                        <div
+                            className={cn(
+                                "glass-card p-6 hover-lift cursor-pointer group relative overflow-hidden transition-all duration-300",
+                                checkingContent && "opacity-60 cursor-not-allowed"
+                            )}
+                            onClick={() => !checkingContent && navigate("/premium/work-experience")}
+                        >
+                            <div className="absolute top-0 left-0 w-1 h-full bg-premium opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 rounded-xl bg-premium/10 group-hover:bg-premium/20 transition-colors">
+                                    <Users className="h-6 w-6 text-premium" />
+                                </div>
+                                {checkingContent ? (
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                ) : (
+                                    <Badge
+                                        variant={hasWorkExperience ? "default" : "secondary"}
+                                        className={cn(
+                                            "text-xs font-semibold",
+                                            hasWorkExperience
+                                                ? "bg-premium/20 text-premium border-premium/30"
+                                                : "bg-muted/50 text-muted-foreground"
+                                        )}
+                                    >
+                                        {hasWorkExperience ? "Available" : "Coming Soon"}
+                                    </Badge>
+                                )}
+                            </div>
+
+                            <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
+                                Scientia.ai Work Experience
+                            </h4>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Exclusive work experience opportunities specifically for Scientia.ai premium members
+                            </p>
+
+                            {hasWorkExperience && (
+                                <div className="mt-4 pt-4 border-t border-border/50">
+                                    <span className="text-xs text-premium font-medium flex items-center gap-1">
+                                        View Opportunities
+                                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Predicted Papers Card */}
+                        <div
+                            className={cn(
+                                "glass-card p-6 hover-lift cursor-pointer group relative overflow-hidden transition-all duration-300",
+                                checkingContent && "opacity-60 cursor-not-allowed"
+                            )}
+                            onClick={() => !checkingContent && navigate("/premium/predicted-papers")}
+                        >
+                            <div className="absolute top-0 left-0 w-1 h-full bg-premium opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 rounded-xl bg-premium/10 group-hover:bg-premium/20 transition-colors">
+                                    <FileText className="h-6 w-6 text-premium" />
+                                </div>
+                                {checkingContent ? (
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                ) : (
+                                    <Badge
+                                        variant={hasPredictedPapers ? "default" : "secondary"}
+                                        className={cn(
+                                            "text-xs font-semibold",
+                                            hasPredictedPapers
+                                                ? "bg-premium/20 text-premium border-premium/30"
+                                                : "bg-muted/50 text-muted-foreground"
+                                        )}
+                                    >
+                                        {hasPredictedPapers ? "Available" : "Coming Soon"}
+                                    </Badge>
+                                )}
+                            </div>
+
+                            <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
+                                2026 Predicted Papers
+                            </h4>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Access exclusive 2026 predicted exam papers before they're released publicly
+                            </p>
+
+                            {hasPredictedPapers && (
+                                <div className="mt-4 pt-4 border-t border-border/50">
+                                    <span className="text-xs text-premium font-medium flex items-center gap-1">
+                                        Browse Papers
+                                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Premium Status Indicator (Locked Feature Demo) */}
+                <div className="p-8 rounded-2xl border-2 border-dashed border-border bg-muted/30 text-center animate-slide-up">
+                    <div className="relative inline-block mb-4">
+                        <Brain className="h-16 w-16 text-muted-foreground/50" />
+                        <div className="absolute -top-1 -right-1 p-1.5 rounded-full bg-premium">
+                            <Crown className="h-4 w-4 text-premium-foreground" />
+                        </div>
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Unlimited AI Content Generation</h3>
+                    <p className="text-muted-foreground mb-4">
+                        This feature is available for Premium members only.
+                        Upgrade to access unlimited AI-generated questions, flashcards, and study materials.
+                        Free users get 50 AI requests per day.
+                    </p>
+                    {isPremium ? (
+                        <div className="flex items-center justify-center gap-2 text-secondary">
+                            <Check className="h-5 w-5" />
+                            <span className="font-medium">You have access to this feature!</span>
+                        </div>
+                    ) : (
+                        <Button
+                            className="bg-premium hover:bg-premium/90 text-premium-foreground mx-auto"
+                            onClick={() => document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
+                        >
+                            <Crown className="h-4 w-4 mr-2" />
+                            Unlock Premium
+                        </Button>
+                    )}
                 </div>
 
                 {/* Sales Content (Only for non-premium users) */}
