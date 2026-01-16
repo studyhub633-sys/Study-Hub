@@ -174,6 +174,14 @@ export default function PremiumDashboard() {
             color: "text-orange-500",
             bg: "bg-orange-500/10",
         },
+        {
+            title: "Grade 9 Premium Notes",
+            description: "Access exclusive Grade 9 notes and study materials for top marks.",
+            icon: FileText,
+            path: "/notes?premium=true",
+            color: "text-emerald-500",
+            bg: "bg-emerald-500/10",
+        },
     ];
 
     // Feature Benefits list (Image 2 content)

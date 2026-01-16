@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { SimpleMarkdown } from "@/components/SimpleMarkdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -362,7 +363,11 @@ export default function AITutor() {
                                                             : "bg-muted text-foreground"
                                                     )}
                                                 >
-                                                    <p className="whitespace-pre-wrap text-sm break-words">{message.content}</p>
+                                                    {message.role === "assistant" ? (
+                                                        <SimpleMarkdown content={message.content} className="text-sm" />
+                                                    ) : (
+                                                        <p className="whitespace-pre-wrap text-sm break-words">{message.content}</p>
+                                                    )}
                                                     <p className="text-xs opacity-70 mt-2">
                                                         {message.timestamp.toLocaleTimeString()}
                                                     </p>

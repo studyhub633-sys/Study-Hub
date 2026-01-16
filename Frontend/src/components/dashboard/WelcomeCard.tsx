@@ -97,11 +97,11 @@ export function WelcomeCard() {
             {aiUsage && (
               <div className="flex flex-wrap gap-2 mt-4">
                 <button
-                  onClick={() => window.location.href = '/knowledge'}
+                  onClick={() => window.location.href = '/ai-tutor'}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white transition-colors text-sm font-medium backdrop-blur-md"
                 >
                   <Brain className="h-4 w-4" />
-                  Generate with AI
+                  Chat with AI Tutor
                   <span className="text-xs opacity-80 ml-1">
                     {aiUsage.isPremium ? "(Lifetime Access)" : `(${aiUsage.limit - aiUsage.count} left)`}
                   </span>

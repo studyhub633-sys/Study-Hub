@@ -7,8 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
-import { BookOpen, Download, Loader2, Network, Save, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { BookOpen, FileImage, FileText, Loader2, Network, Save, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface MindMapNode {
     title: string;
@@ -28,6 +30,8 @@ export default function MindMapGenerator() {
     const [subject, setSubject] = useState("");
     const [mindMapData, setMindMapData] = useState<MindMapNode | null>(null);
     const [uploadingFile, setUploadingFile] = useState(false);
+    const [downloading, setDownloading] = useState(false);
+    const mindMapRef = useRef<HTMLDivElement>(null);
 
     // Initial load from navigation state (if coming from Notes page)
     useEffect(() => {
@@ -185,36 +189,46 @@ export default function MindMapGenerator() {
         }
     };
 
-    const handleDownload = () => {
-        if (!mindMapData) return;
+    const handleDownload = async (format: 'png' | 'pdf' = 'png') => {
+        if (!mindMapData || !mindMapRef.current) return;
 
-        // Convert mind map to indented text format
-        const generateText = (node: MindMapNode, level: number = 0): string => {
-            const indent = "  ".repeat(level);
-            let text = `${indent}- ${node.title}\n`;
-            if (node.children) {
-                node.children.forEach(child => {
-                    text += generateText(child, level + 1);
+        setDownloading(true);
+        try {
+            const canvas = await html2canvas(mindMapRef.current, {
+                backgroundColor: null,
+                scale: 2,
+                useCORS: true,
+            });
+
+            if (format === 'png') {
+                const link = document.createElement('a');
+                link.download = `${title || 'mind-map'}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } else {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+                    unit: 'px',
+                    format: [canvas.width, canvas.height]
                 });
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                pdf.save(`${title || 'mind-map'}.pdf`);
             }
-            return text;
-        };
 
-        const textContent = generateText(mindMapData);
-        const blob = new Blob([textContent], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${title || 'mind-map'}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        toast({
-            title: "Downloaded",
-            description: "Mind map saved to your downloads",
-        });
+            toast({
+                title: "Downloaded!",
+                description: `Mind map saved as ${format.toUpperCase()}`,
+            });
+        } catch (error: any) {
+            toast({
+                title: "Download failed",
+                description: error.message || "Failed to download mind map",
+                variant: "destructive",
+            });
+        } finally {
+            setDownloading(false);
+        }
     };
 
     if (!isPremium) {
@@ -351,13 +365,17 @@ export default function MindMapGenerator() {
                                 </div>
                                 {mindMapData && (
                                     <div className="flex gap-2">
-                                        <Button variant="outline" size="sm" onClick={handleDownload}>
-                                            <Download className="w-4 h-4 mr-2" />
-                                            Download
+                                        <Button variant="outline" size="sm" onClick={() => handleDownload('png')} disabled={downloading}>
+                                            {downloading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileImage className="w-4 h-4 mr-2" />}
+                                            PNG
+                                        </Button>
+                                        <Button variant="outline" size="sm" onClick={() => handleDownload('pdf')} disabled={downloading}>
+                                            {downloading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+                                            PDF
                                         </Button>
                                         <Button variant="outline" size="sm" onClick={handleSave}>
                                             <Save className="w-4 h-4 mr-2" />
-                                            Save to Library
+                                            Save
                                         </Button>
                                     </div>
                                 )}
@@ -365,7 +383,7 @@ export default function MindMapGenerator() {
                         </CardHeader>
                         <CardContent>
                             {mindMapData ? (
-                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg p-6 min-h-[400px] overflow-auto">
+                                <div ref={mindMapRef} className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg p-6 min-h-[400px] overflow-auto">
                                     <MindMapVisualization data={mindMapData} />
                                 </div>
                             ) : (
