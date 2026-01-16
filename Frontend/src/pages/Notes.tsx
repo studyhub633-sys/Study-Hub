@@ -697,8 +697,7 @@ export default function Notes() {
                     ))}
                   </Accordion>
                 </div>
-              ))
-                )}
+              ))}
               </>
             )}
           </div>
