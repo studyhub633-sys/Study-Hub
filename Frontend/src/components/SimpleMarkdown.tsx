@@ -140,18 +140,117 @@ export const SimpleMarkdown: React.FC<SimpleMarkdownProps> = ({ content, classNa
         return result;
     };
 
+    // Process content line by line to handle headers and lists better
+    const processContent = (content: string) => {
+        const lines = content.split('\n');
+        const elements: React.ReactNode[] = [];
+        let currentParagraph: string[] = [];
+        let currentList: string[] = [];
+
+        const flushParagraph = () => {
+            if (currentParagraph.length > 0) {
+                const paraText = currentParagraph.join('\n');
+                if (paraText.trim()) {
+                    elements.push(
+                        <p key={`para-${elements.length}`}>
+                            {renderText(paraText)}
+                        </p>
+                    );
+                }
+                currentParagraph = [];
+            }
+        };
+
+        const flushList = () => {
+            if (currentList.length > 0) {
+                elements.push(
+                    <ul key={`list-${elements.length}`} className="list-disc pl-6 space-y-1 my-2">
+                        {currentList.map((item, i) => (
+                            <li key={i}>{renderText(item.replace(/^[-*]\s+/, ''))}</li>
+                        ))}
+                    </ul>
+                );
+                currentList = [];
+            }
+        };
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const trimmed = line.trim();
+
+            // Check for headers (with or without space after #)
+            if (trimmed.match(/^#{1,6}\s/)) {
+                flushParagraph();
+                flushList();
+                const match = trimmed.match(/^(#{1,6})\s+(.+)$/);
+                if (match) {
+                    const level = match[1].length;
+                    const text = match[2];
+                    const HeadingTag = `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
+                    const headingClasses = {
+                        1: "text-2xl font-bold mt-6 mb-4",
+                        2: "text-xl font-bold mt-5 mb-3",
+                        3: "text-lg font-bold mt-4 mb-2",
+                        4: "text-base font-bold mt-3 mb-2",
+                        5: "text-sm font-bold mt-2 mb-1",
+                        6: "text-xs font-bold mt-2 mb-1",
+                    };
+                    elements.push(
+                        <HeadingTag key={`h-${elements.length}`} className={headingClasses[level as keyof typeof headingClasses] || headingClasses[3]}>
+                            {renderText(text)}
+                        </HeadingTag>
+                    );
+                    continue;
+                }
+            }
+
+            // Check for list items
+            if (trimmed.match(/^[-*]\s/)) {
+                flushParagraph();
+                currentList.push(trimmed);
+                continue;
+            }
+
+            // Check for numbered lists
+            if (trimmed.match(/^\d+\.\s/)) {
+                flushParagraph();
+                flushList();
+                const items = [trimmed];
+                // Collect consecutive numbered list items
+                while (i + 1 < lines.length && lines[i + 1].trim().match(/^\d+\.\s/)) {
+                    i++;
+                    items.push(lines[i].trim());
+                }
+                elements.push(
+                    <ol key={`ol-${elements.length}`} className="list-decimal pl-6 space-y-1 my-2">
+                        {items.map((item, idx) => (
+                            <li key={idx}>{renderText(item.replace(/^\d+\.\s+/, ''))}</li>
+                        ))}
+                    </ol>
+                );
+                continue;
+            }
+
+            // Regular line - add to current paragraph
+            if (trimmed) {
+                flushList();
+                currentParagraph.push(line);
+            } else {
+                // Empty line - flush current paragraph
+                flushParagraph();
+                flushList();
+            }
+        }
+
+        flushParagraph();
+        flushList();
+
+        return elements.length > 0 ? elements : [<p key="empty">{renderText(content)}</p>];
+    };
+
     return (
         <div className={cn("space-y-4 text-foreground leading-relaxed", className)}>
-            {paragraphs.map((paragraph, index) => {
-                // Check if paragraph is just an image to center/style it properly
-                const isImage = /^!\[.*\]\(.+\)$/g.test(paragraph.trim());
-
-                return (
-                    <p key={index} className={cn(isImage && "flex justify-center")}>
-                        {renderText(paragraph)}
-                    </p>
-                );
-            })}
+            {processContent(content)}
         </div>
     );
 };

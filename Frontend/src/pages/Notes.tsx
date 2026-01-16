@@ -39,6 +39,7 @@ import {
   Bold,
   BookOpen,
   Clock,
+  Crown,
   Download,
   Edit,
   Filter,
@@ -414,6 +415,10 @@ export default function Notes() {
     });
   };
 
+  // Separate premium notes from regular notes
+  const premiumNotes = notes.filter(note => note.is_premium === true);
+  const regularNotes = notes.filter(note => !note.is_premium);
+
   const filteredNotes = notes.filter((note) => {
     const matchesSubject =
       selectedSubject === "All Subjects" || note.subject === selectedSubject;
@@ -424,8 +429,44 @@ export default function Notes() {
     return matchesSubject && matchesSearch;
   });
 
+  const filteredPremiumNotes = premiumNotes.filter((note) => {
+    const matchesSubject =
+      selectedSubject === "All Subjects" || note.subject === selectedSubject;
+    const matchesSearch =
+      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.topic?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSubject && matchesSearch;
+  });
+
+  const filteredRegularNotes = regularNotes.filter((note) => {
+    const matchesSubject =
+      selectedSubject === "All Subjects" || note.subject === selectedSubject;
+    const matchesSearch =
+      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.topic?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSubject && matchesSearch;
+  });
+
   // Group notes by subject and topic
-  const groupedNotes = filteredNotes.reduce((acc, note) => {
+  const groupedNotes = filteredRegularNotes.reduce((acc, note) => {
+    const subject = note.subject || "Uncategorized";
+    const topic = note.topic || "General";
+
+    if (!acc[subject]) {
+      acc[subject] = {};
+    }
+    if (!acc[subject][topic]) {
+      acc[subject][topic] = [];
+    }
+    acc[subject][topic].push(note);
+
+    return acc;
+  }, {} as Record<string, Record<string, Note[]>>);
+
+  // Group premium notes by subject and topic
+  const groupedPremiumNotes = filteredPremiumNotes.reduce((acc, note) => {
     const subject = note.subject || "Uncategorized";
     const topic = note.topic || "General";
 
@@ -522,7 +563,66 @@ export default function Notes() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Notes List (Accordion Style) */}
           <div className="lg:col-span-1 space-y-4 animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
-            {Object.keys(groupedNotes).length === 0 ? (
+            {/* Premium Grade 9 Notes Section */}
+            {isPremium && filteredPremiumNotes.length > 0 && (
+              <div className="glass-card p-4 border-2 border-premium/30 bg-premium/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Crown className="h-5 w-5 text-premium" />
+                  <h3 className="font-semibold text-foreground">Premium Grade 9 Notes</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Exclusive Grade 9 notes available to premium members
+                </p>
+                {Object.entries(groupedPremiumNotes).map(([subject, topics]) => (
+                  <div key={`premium-${subject}`} className="mb-3 last:mb-0">
+                    <h4 className="text-sm font-medium text-foreground mb-2">{subject}</h4>
+                    <Accordion type="multiple" className="space-y-1">
+                      {Object.entries(topics).map(([topic, topicNotes]) => (
+                        <AccordionItem key={topic} value={topic} className="border-none">
+                          <AccordionTrigger className="py-1.5 px-2 rounded-lg bg-premium/10 hover:bg-premium/20 text-xs font-medium hover:no-underline">
+                            {topic}
+                            <span className="ml-auto mr-2 text-xs text-premium">
+                              {topicNotes.length}
+                            </span>
+                          </AccordionTrigger>
+                          <AccordionContent className="pt-1 pb-0">
+                            <div className="space-y-1 pl-1">
+                              {topicNotes.map((note) => (
+                                <button
+                                  key={note.id}
+                                  onClick={() => setSelectedNote(note)}
+                                  className={cn(
+                                    "w-full text-left p-2 rounded-lg transition-all duration-200 group border text-xs",
+                                    selectedNote?.id === note.id
+                                      ? "bg-premium/20 border-premium/50 shadow-sm"
+                                      : "bg-card hover:bg-premium/10 border-transparent hover:border-premium/30"
+                                  )}
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                      <p className={cn("font-medium truncate", selectedNote?.id === note.id ? "text-premium" : "text-foreground")}>
+                                        {note.title}
+                                      </p>
+                                      <div className="flex items-center gap-1 mt-0.5">
+                                        <Crown className="h-2.5 w-2.5 text-premium" />
+                                        <span className="text-[10px] text-premium">Premium</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Regular Notes Section */}
+            {Object.keys(groupedNotes).length === 0 && filteredPremiumNotes.length === 0 ? (
               <div className="glass-card p-8 text-center">
                 <BookOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-foreground mb-2">No notes yet</h3>
@@ -535,7 +635,13 @@ export default function Notes() {
                 </Button>
               </div>
             ) : (
-              Object.entries(groupedNotes).map(([subject, topics]) => (
+              <>
+                {Object.keys(groupedNotes).length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Your Notes</h3>
+                  </div>
+                )}
+                {Object.entries(groupedNotes).map(([subject, topics]) => (
                 <div key={subject} className="glass-card p-4">
                   <h3 className="font-semibold text-foreground mb-3">{subject}</h3>
                   <Accordion type="multiple" className="space-y-2" defaultValue={Object.keys(topics)}>
@@ -592,6 +698,8 @@ export default function Notes() {
                   </Accordion>
                 </div>
               ))
+                )}
+              </>
             )}
           </div>
 
@@ -601,7 +709,13 @@ export default function Notes() {
               <div className="glass-card p-6 md:p-8 sticky top-4">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      {selectedNote.is_premium && (
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-premium/20 text-premium border border-premium/30 flex items-center gap-1">
+                          <Crown className="h-3 w-3" />
+                          Premium Grade 9
+                        </span>
+                      )}
                       {selectedNote.subject && (
                         <>
                           <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">

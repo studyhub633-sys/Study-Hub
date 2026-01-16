@@ -320,11 +320,22 @@ export default function Premium() {
               </>
             )}
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
             {isPremium
               ? "You have lifetime access to all premium features during our beta testing phase."
               : "During beta, premium features are reserved for authorized tester accounts."}
           </p>
+
+          {!isPremium && (
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white shadow-lg shadow-amber-500/20 animate-pulse-subtle"
+              onClick={() => handleSubscribe("yearly")}
+            >
+              <Rocket className="mr-2 h-5 w-5" />
+              UPGRADE NOW
+            </Button>
+          )}
         </div>
 
         {/* Current Subscription Status */}

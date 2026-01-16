@@ -222,19 +222,17 @@ export default function Settings() {
         if (emailError) throw emailError;
       }
 
-      // Build update object with only fields that exist
+      // Build update object with all fields
       const updateData: any = {
         id: user.id,
         email: profileData.email || user.email,
         full_name: fullName,
         avatar_url: profileData.avatar_url || null,
+        // Always include these fields (even if empty) to ensure they're saved
+        school: profileData.school || null,
+        year_group: profileData.year_group || null,
+        subjects: profileData.subjects || null,
       };
-
-      // Try to include additional fields (they may not exist in the table yet)
-      // These will be ignored if the columns don't exist
-      if (profileData.school) updateData.school = profileData.school;
-      if (profileData.year_group) updateData.year_group = profileData.year_group;
-      if (profileData.subjects) updateData.subjects = profileData.subjects;
 
       const { error } = await supabase
         .from("profiles")
@@ -242,7 +240,14 @@ export default function Settings() {
           onConflict: "id"
         });
 
-      if (error) throw error;
+      if (error) {
+        // If columns don't exist, provide helpful error message
+        if (error.message?.includes("column") || error.code === "42703") {
+          console.error("Profile fields may not exist in database. Run the migration:", error);
+          throw new Error("School, year group, and subjects fields are not available. Please run the database migration (add_profile_fields.sql) first.");
+        }
+        throw error;
+      }
 
       toast({
         title: "Profile updated",

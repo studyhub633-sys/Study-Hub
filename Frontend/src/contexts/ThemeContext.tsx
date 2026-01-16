@@ -12,16 +12,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    // Check localStorage first
+    // Always default to dark mode for new users
+    // Only use saved preference if user has explicitly changed it
     const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme) {
+    if (savedTheme && localStorage.getItem("theme_manually_set") === "true") {
       return savedTheme;
     }
-    // Check system preference
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      return "dark";
-    }
-    // Default to dark mode
+    // Force dark mode as automatic theme
     return "dark";
   });
 
@@ -33,6 +30,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       root.classList.remove("dark");
     }
     localStorage.setItem("theme", theme);
+    // Mark that theme was manually set if user changes it
+    if (localStorage.getItem("theme_manually_set") !== "true") {
+      localStorage.setItem("theme_manually_set", "true");
+    }
   }, [theme]);
 
   const toggleTheme = () => {

@@ -1,4 +1,3 @@
-
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { SmartPaperParser } from "@/lib/paper-parser";
-import { Brain, Calendar, ExternalLink, FileText, Filter, Globe, Info, Library, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { Brain, Calendar, ExternalLink, FileText, Filter, Globe, Info, Layers, Library, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 interface GlobalPaper {
@@ -30,10 +29,19 @@ interface GlobalOrganizer {
     content: any;
 }
 
+interface GlobalFlashcard {
+    id: string;
+    front: string;
+    back: string;
+    subject: string;
+    topic: string;
+}
+
 export default function GlobalLibrary() {
     const { supabase, user } = useAuth();
     const [papers, setPapers] = useState<GlobalPaper[]>([]);
     const [organizers, setOrganizers] = useState<GlobalOrganizer[]>([]);
+    const [flashcards, setFlashcards] = useState<GlobalFlashcard[]>([]);
     const [search, setSearch] = useState("");
     const [yearFilter, setYearFilter] = useState<string>("all");
     const [subjectFilter, setSubjectFilter] = useState<string>("all");
@@ -51,13 +59,15 @@ export default function GlobalLibrary() {
     const availableSubjects = useMemo(() => {
         const pSubjects = papers.map(p => p.subject);
         const oSubjects = organizers.map(o => o.subject);
-        const subjects = [...new Set([...pSubjects, ...oSubjects])].filter(Boolean).sort();
+        const fSubjects = flashcards.map(f => f.subject);
+        const subjects = [...new Set([...pSubjects, ...oSubjects, ...fSubjects])].filter(Boolean).sort();
         return subjects;
-    }, [papers, organizers]);
+    }, [papers, organizers, flashcards]);
 
     useEffect(() => {
         fetchGlobalPapers();
         fetchGlobalOrganizers();
+        fetchGlobalFlashcards();
     }, []);
 
     const fetchGlobalPapers = async () => {
@@ -67,11 +77,7 @@ export default function GlobalLibrary() {
             .order("created_at", { ascending: false });
 
         if (error) {
-            toast({
-                title: "Error",
-                description: "Failed to fetch global papers.",
-                variant: "destructive",
-            });
+            console.error("Error fetching global papers:", error);
         } else {
             setPapers(data || []);
         }
@@ -87,6 +93,19 @@ export default function GlobalLibrary() {
             console.error("Error fetching global organizers:", error);
         } else {
             setOrganizers(data || []);
+        }
+    };
+
+    const fetchGlobalFlashcards = async () => {
+        const { data, error } = await supabase
+            .from("global_flashcards")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("Error fetching global flashcards:", error);
+        } else {
+            setFlashcards(data || []);
         }
     };
 
@@ -225,6 +244,58 @@ export default function GlobalLibrary() {
         }
     };
 
+    const handleAddFlashcard = async (card: GlobalFlashcard) => {
+        if (!user) {
+            toast({
+                title: "Login Required",
+                description: "You must be logged in to add flashcards.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            // Check for duplicates
+            const { data: existing } = await supabase
+                .from("flashcards")
+                .select("id")
+                .eq("user_id", user.id)
+                .eq("front", card.front)
+                .maybeSingle();
+
+            if (existing) {
+                toast({
+                    title: "Already Added",
+                    description: "This flashcard is already in your collection.",
+                });
+                return;
+            }
+
+            const { error } = await supabase.from("flashcards").insert({
+                user_id: user.id,
+                front: card.front,
+                back: card.back,
+                subject: card.subject,
+                topic: card.topic,
+                difficulty: 1,
+                review_count: 0
+            });
+
+            if (error) throw error;
+
+            toast({
+                title: "Added to Flashcards",
+                description: "Flashcard added successfully.",
+            });
+        } catch (e: any) {
+            toast({
+                title: "Error",
+                description: e.message,
+                variant: "destructive",
+            });
+        }
+    };
+
     const filteredPapers = papers.filter((paper) => {
         const matchesSearch = paper.title.toLowerCase().includes(search.toLowerCase()) ||
             paper.subject?.toLowerCase().includes(search.toLowerCase()) ||
@@ -242,6 +313,15 @@ export default function GlobalLibrary() {
         return matchesSearch && matchesSubject;
     });
 
+    const filteredFlashcards = flashcards.filter((card) => {
+        const matchesSearch = card.front.toLowerCase().includes(search.toLowerCase()) ||
+            card.back.toLowerCase().includes(search.toLowerCase()) ||
+            card.topic?.toLowerCase().includes(search.toLowerCase()) ||
+            card.subject?.toLowerCase().includes(search.toLowerCase());
+        const matchesSubject = subjectFilter === "all" || card.subject === subjectFilter;
+        return matchesSearch && matchesSubject;
+    });
+
     return (
         <AppLayout>
             <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-20">
@@ -253,7 +333,7 @@ export default function GlobalLibrary() {
                             <h1 className="text-4xl font-extrabold tracking-tight">Global Library</h1>
                         </div>
                         <p className="text-muted-foreground text-lg">
-                            Discover verified past papers and pre-made knowledge organizers.
+                            Discover verified past papers, knowledge organizers, and flashcards.
                         </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
@@ -313,12 +393,15 @@ export default function GlobalLibrary() {
                 </div>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 mb-8 h-12 p-1 bg-muted/50 backdrop-blur-sm rounded-xl">
+                    <TabsList className="grid w-full grid-cols-4 mb-8 h-12 p-1 bg-muted/50 backdrop-blur-sm rounded-xl">
                         <TabsTrigger value="papers" className="rounded-lg font-bold text-base flex gap-2">
                             <FileText className="h-4 w-4" /> Past Papers
                         </TabsTrigger>
                         <TabsTrigger value="organizers" className="rounded-lg font-bold text-base flex gap-2">
-                            <Brain className="h-4 w-4" /> Knowledge Organizers
+                            <Brain className="h-4 w-4" /> Organizers
+                        </TabsTrigger>
+                        <TabsTrigger value="flashcards" className="rounded-lg font-bold text-base flex gap-2">
+                            <Layers className="h-4 w-4" /> Flashcards
                         </TabsTrigger>
                         <TabsTrigger value="search" className="rounded-lg font-bold text-base flex gap-2">
                             <Globe className="h-4 w-4" /> Resource Center
@@ -366,7 +449,7 @@ export default function GlobalLibrary() {
                                                 <Sparkles className="h-5 w-5" /> Smart Link Importer
                                             </CardTitle>
                                             <CardDescription>
-                                                Found a paper link on PMT or PapaCambridge? Paste it below and we''ll auto-format it for you.
+                                                Found a paper link on PMT or PapaCambridge? Paste it below and we'll auto-format it for you.
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent className="p-6 space-y-4">
@@ -435,7 +518,43 @@ export default function GlobalLibrary() {
                         </div>
                     </TabsContent>
 
-                    {/* Tab 3: External Resources */}
+                    {/* Tab 3: Flashcards */}
+                    <TabsContent value="flashcards" className="space-y-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredFlashcards.map((card) => (
+                                <Card key={card.id} className="hover:shadow-xl transition-all border-primary/5 group relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-3">
+                                        <Button size="icon" variant="secondary" onClick={() => handleAddFlashcard(card)} className="h-10 w-10 shadow-lg">
+                                            <Plus className="h-6 w-6" />
+                                        </Button>
+                                    </div>
+                                    <CardHeader>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Badge variant="outline" className="text-muted-foreground">
+                                                {card.subject}
+                                            </Badge>
+                                            <Badge className="bg-primary/10 text-primary border-none">
+                                                {card.topic}
+                                            </Badge>
+                                        </div>
+                                        <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">{card.front}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-muted-foreground line-clamp-3">
+                                            {card.back}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                            {filteredFlashcards.length === 0 && (
+                                <div className="col-span-full py-20 text-center text-muted-foreground">
+                                    No flashcards found matching your criteria.
+                                </div>
+                            )}
+                        </div>
+                    </TabsContent>
+
+                    {/* Tab 4: External Resources */}
                     <TabsContent value="search" className="space-y-6">
                         <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-2xl">
                             <div className="flex items-center gap-3 mb-4">
@@ -463,7 +582,7 @@ export default function GlobalLibrary() {
                                     </div>
                                     <CardTitle className="text-2xl mt-4">Physics & Maths Tutor</CardTitle>
                                     <CardDescription className="text-base">
-                                        The UK''s most trusted student resource for Science, Maths, and English past papers.
+                                        The UK's most trusted student resource for Science, Maths, and English past papers.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">

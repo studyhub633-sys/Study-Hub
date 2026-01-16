@@ -190,29 +190,79 @@ export default function MindMapGenerator() {
     };
 
     const handleDownload = async (format: 'png' | 'pdf' = 'png') => {
-        if (!mindMapData || !mindMapRef.current) return;
+        if (!mindMapData || !mindMapRef.current) {
+            toast({
+                title: "Error",
+                description: "Please generate a mind map first",
+                variant: "destructive",
+            });
+            return;
+        }
 
         setDownloading(true);
         try {
+            // Wait a bit to ensure the mind map is fully rendered
+            await new Promise(resolve => setTimeout(resolve, 100));
+
             const canvas = await html2canvas(mindMapRef.current, {
-                backgroundColor: null,
+                backgroundColor: '#ffffff',
                 scale: 2,
                 useCORS: true,
+                logging: false,
+                width: mindMapRef.current.scrollWidth,
+                height: mindMapRef.current.scrollHeight,
             });
 
             if (format === 'png') {
+                // Download as PNG
                 const link = document.createElement('a');
                 link.download = `${title || 'mind-map'}.png`;
-                link.href = canvas.toDataURL('image/png');
+                link.href = canvas.toDataURL('image/png', 1.0);
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
             } else {
-                const imgData = canvas.toDataURL('image/png');
+                // Download as PDF
+                const imgData = canvas.toDataURL('image/png', 1.0);
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                
+                // Convert pixels to mm (1px = 0.264583mm at 96 DPI)
+                const mmWidth = imgWidth * 0.264583;
+                const mmHeight = imgHeight * 0.264583;
+                
+                // Use A4 dimensions as max, scale if needed
+                const a4Width = 210; // mm
+                const a4Height = 297; // mm
+                
+                let pdfWidth = mmWidth;
+                let pdfHeight = mmHeight;
+                let orientation: 'portrait' | 'landscape' = 'portrait';
+                
+                // If image is larger than A4, scale it down
+                if (mmWidth > a4Width || mmHeight > a4Height) {
+                    const scaleX = a4Width / mmWidth;
+                    const scaleY = a4Height / mmHeight;
+                    const scale = Math.min(scaleX, scaleY);
+                    pdfWidth = mmWidth * scale;
+                    pdfHeight = mmHeight * scale;
+                }
+                
+                // Determine orientation
+                if (pdfWidth > pdfHeight) {
+                    orientation = 'landscape';
+                    // Swap dimensions for landscape
+                    [pdfWidth, pdfHeight] = [pdfHeight, pdfWidth];
+                }
+                
                 const pdf = new jsPDF({
-                    orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-                    unit: 'px',
-                    format: [canvas.width, canvas.height]
+                    orientation: orientation,
+                    unit: 'mm',
+                    format: [pdfWidth, pdfHeight]
                 });
-                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                
+                // Add image, scaling to fit
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
                 pdf.save(`${title || 'mind-map'}.pdf`);
             }
 
@@ -221,9 +271,10 @@ export default function MindMapGenerator() {
                 description: `Mind map saved as ${format.toUpperCase()}`,
             });
         } catch (error: any) {
+            console.error("Download error:", error);
             toast({
                 title: "Download failed",
-                description: error.message || "Failed to download mind map",
+                description: error.message || "Failed to download mind map. Please try again.",
                 variant: "destructive",
             });
         } finally {

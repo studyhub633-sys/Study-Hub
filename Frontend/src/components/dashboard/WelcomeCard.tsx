@@ -4,8 +4,11 @@ import { hasPremium } from "@/lib/premium";
 import { Brain, Sparkles, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 export function WelcomeCard() {
   const { supabase, user } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<{ full_name?: string; email?: string } | null>(null);
   const [stats, setStats] = useState({
     notesCount: 0,
@@ -97,7 +100,7 @@ export function WelcomeCard() {
             {aiUsage && (
               <div className="flex flex-wrap gap-2 mt-4">
                 <button
-                  onClick={() => window.location.href = '/ai-tutor'}
+                  onClick={() => navigate('/ai-tutor')}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white transition-colors text-sm font-medium backdrop-blur-md"
                 >
                   <Brain className="h-4 w-4" />
@@ -109,7 +112,7 @@ export function WelcomeCard() {
 
                 {!aiUsage.isPremium && (
                   <button
-                    onClick={() => window.location.href = '/premium-dashboard'}
+                    onClick={() => navigate('/premium-dashboard')}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-premium hover:bg-premium/90 text-premium-foreground transition-all shadow-lg shadow-premium/20 text-sm font-bold border border-premium-foreground/20 animate-pulse-subtle"
                   >
                     <Sparkles className="h-4 w-4" />

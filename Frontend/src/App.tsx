@@ -38,6 +38,7 @@ const WorkExperience = lazy(() => import("./pages/premium/WorkExperience"));
 const MindMapGenerator = lazy(() => import("./pages/premium/MindMapGenerator"));
 const AIExaminer = lazy(() => import("./pages/premium/AIExaminer"));
 const PerformanceHeatMap = lazy(() => import("./pages/premium/PerformanceHeatMap"));
+const Grade9Notes = lazy(() => import("./pages/premium/Grade9Notes"));
 const PremiumDashboard = lazy(() => import("./pages/PremiumDashboard"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Returns = lazy(() => import("./pages/Returns"));
@@ -244,6 +245,14 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <PerformanceHeatMap />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/premium/grade-9-notes"
+                    element={
+                      <ProtectedRoute>
+                        <Grade9Notes />
                       </ProtectedRoute>
                     }
                   />

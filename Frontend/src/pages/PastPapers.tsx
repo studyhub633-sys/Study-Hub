@@ -97,6 +97,13 @@ export default function PastPapers() {
       setFileError(false);
 
       // Check if file exists before trying to display it
+      // For external links, we skip (or simplified) validation to avoid CORS errors
+      if (reviewPaper.file_url.startsWith("http")) {
+        setValidatingFile(false);
+        setFileError(false);
+        return;
+      }
+
       fetch(reviewPaper.file_url)
         .then(res => {
           if (!res.ok) {

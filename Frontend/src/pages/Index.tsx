@@ -60,9 +60,9 @@ const modules = [
     description: "AI-generated questions tailored to your subjects",
     count: 500,
     countLabel: "questions",
-    path: "https://scientia-ai.vercel.app/premium-dashboard",
+    path: "/ai-tutor",
     color: "premium" as const,
-    isPremium: true,
+    isPremium: false, // Available to all users
   },
 ];
 

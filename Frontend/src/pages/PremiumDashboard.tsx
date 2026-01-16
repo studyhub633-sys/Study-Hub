@@ -178,7 +178,7 @@ export default function PremiumDashboard() {
             title: "Grade 9 Premium Notes",
             description: "Access exclusive Grade 9 notes and study materials for top marks.",
             icon: FileText,
-            path: "/notes?premium=true",
+            path: "/premium/grade-9-notes",
             color: "text-emerald-500",
             bg: "bg-emerald-500/10",
         },
