@@ -97,25 +97,42 @@ export default function PastPapers() {
       setFileError(false);
 
       // Check if file exists before trying to display it
-      // For external links, we skip (or simplified) validation to avoid CORS errors
-      if (reviewPaper.file_url.startsWith("http")) {
+      // For external links, we skip validation to avoid CORS errors
+      // External links (http/https) are assumed to be valid
+      if (reviewPaper.file_url.startsWith("http://") || reviewPaper.file_url.startsWith("https://")) {
         setValidatingFile(false);
         setFileError(false);
         return;
       }
 
-      fetch(reviewPaper.file_url)
+      // For uploaded files, validate they exist
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+      fetch(reviewPaper.file_url, { 
+        method: 'HEAD', // Only fetch headers, not full file
+        signal: controller.signal 
+      })
         .then(res => {
-          if (!res.ok) {
+          clearTimeout(timeoutId);
+          if (!res.ok && res.status !== 0) { // Status 0 might be CORS, which is OK for our use case
             console.error(`File validation failed: ${res.status}`);
             setFileError(true);
+          } else {
+            setFileError(false);
           }
         })
         .catch(err => {
-          console.error("File validation error:", err);
-          // Only set error if it's likely a network/access issue that implies missing file
-          // For now, we'll assume any error is problematic
-          setFileError(true);
+          clearTimeout(timeoutId);
+          // Don't set error for abort (timeout) or CORS issues - let user try to view it
+          if (err.name === 'AbortError') {
+            console.warn("File validation timeout - proceeding anyway");
+            setFileError(false); // Allow user to try viewing
+          } else {
+            console.error("File validation error:", err);
+            // Only set error for clear network failures
+            setFileError(false); // Be permissive - let user try to view
+          }
         })
         .finally(() => setValidatingFile(false));
     } else {

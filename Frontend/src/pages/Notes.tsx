@@ -527,10 +527,32 @@ export default function Notes() {
               {subjects.length || 1} subject{subjects.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <Button onClick={handleCreateNote} title="Create New Note (Ctrl+N)">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Note
-          </Button>
+          <div className="flex items-center gap-2">
+            {isPremium && (
+              <Button
+                variant="outline"
+                onClick={() => navigate("/premium/grade-9-notes")}
+                className="border-premium/30 bg-premium/5 hover:bg-premium/10"
+              >
+                <Crown className="h-4 w-4 mr-2 text-premium" />
+                Grade 9 Notes
+              </Button>
+            )}
+            {!isPremium && !checkingPremium && (
+              <Button
+                variant="outline"
+                onClick={() => navigate("/premium-dashboard")}
+                className="border-premium/30 bg-premium/5 hover:bg-premium/10"
+              >
+                <Crown className="h-4 w-4 mr-2 text-premium" />
+                Access Grade 9 Notes
+              </Button>
+            )}
+            <Button onClick={handleCreateNote} title="Create New Note (Ctrl+N)">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Note
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -566,9 +588,19 @@ export default function Notes() {
             {/* Premium Grade 9 Notes Section */}
             {isPremium && filteredPremiumNotes.length > 0 && (
               <div className="glass-card p-4 border-2 border-premium/30 bg-premium/5">
-                <div className="flex items-center gap-2 mb-3">
-                  <Crown className="h-5 w-5 text-premium" />
-                  <h3 className="font-semibold text-foreground">Premium Grade 9 Notes</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-premium" />
+                    <h3 className="font-semibold text-foreground">Premium Grade 9 Notes</h3>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate("/premium/grade-9-notes")}
+                    className="h-7 text-xs text-premium hover:text-premium hover:bg-premium/10"
+                  >
+                    View All →
+                  </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
                   Exclusive Grade 9 notes available to premium members
@@ -618,6 +650,31 @@ export default function Notes() {
                     </Accordion>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Non-Premium Grade 9 Notes Prompt */}
+            {!isPremium && !checkingPremium && (
+              <div className="glass-card p-4 border-2 border-dashed border-premium/30 bg-premium/5 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-premium/10">
+                    <Crown className="h-5 w-5 text-premium" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground mb-1">Grade 9 Premium Notes</h3>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Access exclusive Grade 9 study notes designed for top marks. Upgrade to premium to unlock.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => navigate("/premium-dashboard")}
+                      className="bg-premium hover:bg-premium/90 text-premium-foreground"
+                    >
+                      <Crown className="h-3 w-3 mr-1" />
+                      Upgrade to Access
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
 

@@ -34,7 +34,7 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1))
   );
 
-  INSERT INTO public.past_papers (user_id, title, subject, year, exam_board, file_url, file_type)
+  INSERT INTO public.past_papers (user_id, title, subject, year, exam_board, file_url, file_type, tier)
   SELECT 
     NEW.id, 
     title, 
@@ -42,7 +42,8 @@ BEGIN
     year, 
     exam_board, 
     file_url, 
-    file_type
+    file_type,
+    tier
   FROM public.global_past_papers;
 
   RETURN NEW;
@@ -438,7 +439,7 @@ VALUES
 -- This section copies all global papers to existing users
 -- who don't already have them (avoids duplicates)
 -- ============================================
-INSERT INTO public.past_papers (user_id, title, subject, year, exam_board, file_url, file_type)
+INSERT INTO public.past_papers (user_id, title, subject, year, exam_board, file_url, file_type, tier)
 SELECT 
   p.id AS user_id,
   g.title,
@@ -446,7 +447,8 @@ SELECT
   g.year,
   g.exam_board,
   g.file_url,
-  g.file_type
+  g.file_type,
+  g.tier
 FROM public.profiles p
 CROSS JOIN public.global_past_papers g
 WHERE NOT EXISTS (
