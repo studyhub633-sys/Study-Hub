@@ -28,7 +28,7 @@ const navItems = [
   { icon: BookOpen, label: "Exam Notes", path: "/notes" },
   { icon: Layers, label: "Flashcards", path: "/flashcards" },
   { icon: FileText, label: "Past Papers", path: "/past-papers" },
-  { icon: Brain, label: "Knowledge Organizers", path: "/knowledge" },
+  { icon: Brain, label: "Knowledge Organisers", path: "/knowledge" },
   { icon: Library, label: "Global Library", path: "/library" },
   { icon: Award, label: "Extracurriculars", path: "/extracurricular" },
 ];

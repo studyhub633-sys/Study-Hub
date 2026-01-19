@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { SmartPaperParser } from "@/lib/paper-parser";
-import { Brain, Calendar, ExternalLink, FileText, Filter, Globe, Info, Layers, Library, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { Brain, Calendar, FileText, Filter, Globe, Info, Layers, Library, Plus, Search, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 interface GlobalPaper {
@@ -393,18 +393,15 @@ export default function GlobalLibrary() {
                 </div>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-4 mb-8 h-12 p-1 bg-muted/50 backdrop-blur-sm rounded-xl">
+                    <TabsList className="grid w-full grid-cols-3 mb-8 h-12 p-1 bg-muted/50 backdrop-blur-sm rounded-xl">
                         <TabsTrigger value="papers" className="rounded-lg font-bold text-base flex gap-2">
                             <FileText className="h-4 w-4" /> Past Papers
                         </TabsTrigger>
                         <TabsTrigger value="organizers" className="rounded-lg font-bold text-base flex gap-2">
-                            <Brain className="h-4 w-4" /> Organizers
+                            <Brain className="h-4 w-4" /> Organisers
                         </TabsTrigger>
                         <TabsTrigger value="flashcards" className="rounded-lg font-bold text-base flex gap-2">
                             <Layers className="h-4 w-4" /> Flashcards
-                        </TabsTrigger>
-                        <TabsTrigger value="search" className="rounded-lg font-bold text-base flex gap-2">
-                            <Globe className="h-4 w-4" /> Resource Center
                         </TabsTrigger>
                     </TabsList>
 
@@ -554,98 +551,6 @@ export default function GlobalLibrary() {
                         </div>
                     </TabsContent>
 
-                    {/* Tab 4: External Resources */}
-                    <TabsContent value="search" className="space-y-6">
-                        <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-2xl">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 rounded-lg bg-amber-500/20">
-                                    <ShieldCheck className="h-6 w-6 text-amber-600" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg">100% Legal & Safe</h3>
-                                    <p className="text-sm text-muted-foreground">
-                                        These links open official third-party resources in a <strong>new tab</strong>.
-                                        Scientia.ai does not host, frame, or redistribute any copyrighted materials.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Card className="border-2 border-blue-500/20 hover:border-blue-500/40 transition-all hover:shadow-xl group">
-                                <CardHeader className="pb-4">
-                                    <div className="flex items-center justify-between">
-                                        <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">
-                                            Recommended
-                                        </Badge>
-                                        <div className="text-xs text-muted-foreground">STEM & Core Subjects</div>
-                                    </div>
-                                    <CardTitle className="text-2xl mt-4">Physics & Maths Tutor</CardTitle>
-                                    <CardDescription className="text-base">
-                                        The UK's most trusted student resource for Science, Maths, and English past papers.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex flex-wrap gap-2">
-                                        <Badge variant="outline">Biology</Badge>
-                                        <Badge variant="outline">Chemistry</Badge>
-                                        <Badge variant="outline">Physics</Badge>
-                                        <Badge variant="outline">Maths</Badge>
-                                        <Badge variant="outline">English</Badge>
-                                        <Badge variant="outline">History</Badge>
-                                        <Badge variant="outline">Geography</Badge>
-                                    </div>
-                                    <Button
-                                        className="w-full h-14 text-lg font-bold gap-3 bg-blue-600 hover:bg-blue-700"
-                                        asChild
-                                    >
-                                        <a href="https://www.physicsandmathstutor.com/past-papers/" target="_blank" rel="noopener noreferrer">
-                                            Open PMT Past Papers <ExternalLink className="h-5 w-5" />
-                                        </a>
-                                    </Button>
-                                    <p className="text-xs text-center text-muted-foreground">
-                                        Opens in a new tab • physicsandmathstutor.com
-                                    </p>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="border-2 border-purple-500/20 hover:border-purple-500/40 transition-all hover:shadow-xl group">
-                                <CardHeader className="pb-4">
-                                    <div className="flex items-center justify-between">
-                                        <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20">
-                                            Full Coverage
-                                        </Badge>
-                                        <div className="text-xs text-muted-foreground">All AQA Subjects</div>
-                                    </div>
-                                    <CardTitle className="text-2xl mt-4">PapaCambridge</CardTitle>
-                                    <CardDescription className="text-base">
-                                        Comprehensive archive covering every AQA subject including Business & Languages.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex flex-wrap gap-2">
-                                        <Badge variant="outline">Business</Badge>
-                                        <Badge variant="outline">French</Badge>
-                                        <Badge variant="outline">Spanish</Badge>
-                                        <Badge variant="outline">German</Badge>
-                                        <Badge variant="outline">PE</Badge>
-                                        <Badge variant="outline">+ All Others</Badge>
-                                    </div>
-                                    <Button
-                                        className="w-full h-14 text-lg font-bold gap-3 bg-purple-600 hover:bg-purple-700"
-                                        asChild
-                                    >
-                                        <a href="https://pastpapers.papacambridge.com/papers/aqa/gcse" target="_blank" rel="noopener noreferrer">
-                                            Open PapaCambridge <ExternalLink className="h-5 w-5" />
-                                        </a>
-                                    </Button>
-                                    <p className="text-xs text-center text-muted-foreground">
-                                        Opens in a new tab • papacambridge.com
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </TabsContent>
                 </Tabs>
             </div>
         </AppLayout>

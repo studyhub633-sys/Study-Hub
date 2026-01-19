@@ -166,7 +166,7 @@ export const SimpleMarkdown: React.FC<SimpleMarkdownProps> = ({ content, classNa
                 elements.push(
                     <ul key={`list-${elements.length}`} className="list-disc pl-6 space-y-1 my-2">
                         {currentList.map((item, i) => (
-                            <li key={i}>{renderText(item.replace(/^[-*]\s+/, ''))}</li>
+                            <li key={i}>{renderText(item.replace(/^[-*•]\s+/, ''))}</li>
                         ))}
                     </ul>
                 );
@@ -204,8 +204,16 @@ export const SimpleMarkdown: React.FC<SimpleMarkdownProps> = ({ content, classNa
                 }
             }
 
-            // Check for list items
-            if (trimmed.match(/^[-*]\s/)) {
+            // Check for horizontal rule ---
+            if (trimmed === "---" || /^---+$/.test(trimmed)) {
+                flushParagraph();
+                flushList();
+                elements.push(<hr key={`hr-${elements.length}`} className="my-4 border-border" />);
+                continue;
+            }
+
+            // Check for list items (including • bullet)
+            if (trimmed.match(/^[-*•]\s/) || trimmed.match(/^[−–—]\s/)) {
                 flushParagraph();
                 currentList.push(trimmed);
                 continue;

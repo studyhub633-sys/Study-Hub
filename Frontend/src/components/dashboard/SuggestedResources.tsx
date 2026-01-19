@@ -45,7 +45,7 @@ export function SuggestedResources() {
         if (notesCount === 0) {
           newSuggestions.push({
             title: "Create your first note",
-            description: "Start organizing your studies by creating exam notes.",
+            description: "Start organising your studies by creating exam notes.",
             action: "Get Started",
             path: "/notes",
           });

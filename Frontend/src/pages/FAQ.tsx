@@ -13,11 +13,11 @@ import { Link } from "react-router-dom";
 export const faqs = [
   {
     question: "What is Scientia.ai?",
-    answer: "Scientia.ai is an all-in-one study companion platform that helps students organize notes, create flashcards, practice with past papers, and track their academic progress. It's designed to make studying more efficient and effective.",
+    answer: "Scientia.ai is an all-in-one study companion platform that helps students organise notes, create flashcards, practice with past papers, and track their academic progress. It's designed to make studying more efficient and effective.",
   },
   {
     question: "Where do the past papers come from?",
-    answer: "All past papers are accessed via direct links to verified third-party educational repositories like Physics & Maths Tutor (PMT). Study Spark Hub acts as a search engine and organizer—we do not host, store, or modify any exam content ourselves. All papers open in a new tab on the original source website, ensuring full compliance with copyright and 'no framing' policies.",
+    answer: "All past papers are accessed via direct links to verified third-party educational repositories like Physics & Maths Tutor (PMT). Study Spark Hub acts as a search engine and organiser—we do not host, store, or modify any exam content ourselves. All papers open in a new tab on the original source website, ensuring full compliance with copyright and 'no framing' policies.",
   },
   {
     question: "Is Scientia.ai free?",
@@ -25,7 +25,7 @@ export const faqs = [
   },
   {
     question: "How do I create notes?",
-    answer: "Navigate to the Notes page from your dashboard. Click the 'Add Note' button to create a new note. You can organize notes by subject and topic, add tags, and highlight key points.",
+    answer: "Navigate to the Notes page from your dashboard. Click the 'Add Note' button to create a new note. You can organise notes by subject and topic, add tags, and highlight key points.",
   },
   {
     question: "Can I use flashcards offline?",
@@ -33,7 +33,7 @@ export const faqs = [
   },
   {
     question: "What subjects are supported?",
-    answer: "Study Spark Hub supports all subjects! You can create notes, flashcards, and organize materials for any subject you're studying. Popular subjects include Biology, Chemistry, Physics, Mathematics, and more.",
+    answer: "Study Spark Hub supports all subjects! You can create notes, flashcards, and organise materials for any subject you're studying. Popular subjects include Biology, Chemistry, Physics, Mathematics, and more.",
   },
   {
     question: "How does the AI tutoring feature work?",

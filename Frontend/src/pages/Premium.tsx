@@ -34,8 +34,8 @@ import { toast } from "sonner";
 const features = [
   {
     icon: Brain,
-    title: "Unlimited AI Question Generation",
-    description: "Generate unlimited AI questions tailored to your exam board and subjects (50/day for free users)",
+    title: "Unlimited AI Generated Questions",
+    description: "Generate unlimited AI questions tailored to your exam board and subjects (10/day for free users)",
   },
   {
     icon: Sparkles,
@@ -647,7 +647,7 @@ export default function Premium() {
           <p className="text-muted-foreground mb-4">
             This feature is available for Premium members only.
             Upgrade to access unlimited AI-generated questions, flashcards, and study materials.
-            Free users get 50 AI requests per day.
+            Free users get 10 AI requests per day.
           </p>
           {isPremium ? (
             <div className="flex items-center gap-2 text-secondary">

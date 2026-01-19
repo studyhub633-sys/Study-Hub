@@ -12,7 +12,7 @@ const modules = [
   {
     icon: BookOpen,
     title: "Exam Notes",
-    description: "Organized notes by subject and topic with highlights",
+    description: "Organised notes by subject and topic with highlights",
     countLabel: "notes",
     path: "/notes",
     color: "primary" as const,
@@ -38,7 +38,7 @@ const modules = [
   },
   {
     icon: Brain,
-    title: "Knowledge Organizers",
+    title: "Knowledge Organisers",
     description: "Visual summaries with collapsible sections",
     countLabel: "organizers",
     path: "/knowledge",
@@ -56,8 +56,8 @@ const modules = [
   },
   {
     icon: Sparkles,
-    title: "AI Question Bank",
-    description: "AI-generated questions tailored to your subjects",
+    title: "Unlimited AI Generated Questions",
+    description: "AI-generated questions, tutor support, and practice (10/day for free users)",
     count: 500,
     countLabel: "questions",
     path: "/ai-tutor",

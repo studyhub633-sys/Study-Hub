@@ -38,18 +38,47 @@ export function WelcomeCard() {
           setProfile(profileData);
         }
 
-        // Fetch counts
-        const [notesResult, flashcardsResult, papersResult] = await Promise.all([
+        // Fetch counts and activity for streak (study_sessions, notes, flashcards)
+        const [notesResult, flashcardsResult, papersResult, sessionsResult, notesDates, flashcardsDates] = await Promise.all([
           supabase.from("notes").select("*", { count: "exact", head: true }).eq("user_id", user.id),
           supabase.from("flashcards").select("*", { count: "exact", head: true }).eq("user_id", user.id),
           supabase.from("past_papers").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+          supabase.from("study_sessions").select("date").eq("user_id", user.id),
+          supabase.from("notes").select("updated_at").eq("user_id", user.id),
+          supabase.from("flashcards").select("updated_at").eq("user_id", user.id),
         ]);
+
+        const toYMD = (d: Date) =>
+          `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        const dates = new Set<string>();
+        (sessionsResult.data || []).forEach((r) => dates.add(toYMD(new Date((r as { date: string }).date))));
+        (notesDates.data || []).forEach((r) => dates.add(toYMD(new Date((r as { updated_at: string }).updated_at))));
+        (flashcardsDates.data || []).forEach((r) => dates.add(toYMD(new Date((r as { updated_at: string }).updated_at))));
+
+        const streak = (() => {
+          if (dates.size === 0) return 0;
+          const today = toYMD(new Date());
+          const yesterday = toYMD(new Date(Date.now() - 864e5));
+          let ref: string;
+          if (dates.has(today)) ref = today;
+          else if (dates.has(yesterday)) ref = yesterday;
+          else return 0;
+          let count = 0;
+          let d = ref;
+          while (dates.has(d)) {
+            count++;
+            const [y, m, day] = d.split("-").map(Number);
+            const next = new Date(y, m - 1, day - 1);
+            d = toYMD(next);
+          }
+          return count;
+        })();
 
         setStats({
           notesCount: notesResult.count || 0,
           flashcardsCount: flashcardsResult.count || 0,
           papersCount: papersResult.count || 0,
-          streak: 0, // TODO: Calculate streak from activity data
+          streak,
         });
 
         // Fetch AI usage

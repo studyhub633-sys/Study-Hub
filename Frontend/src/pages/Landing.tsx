@@ -98,7 +98,7 @@ export default function Landing() {
     {
       icon: BookOpen,
       title: "Exam Notes",
-      description: "Organized notes by subject and topic with highlights",
+      description: "Organised notes by subject and topic with highlights",
       link: "/notes",
     },
     {
@@ -115,7 +115,7 @@ export default function Landing() {
     },
     {
       icon: Brain,
-      title: "Knowledge Organizers",
+      title: "Knowledge Organisers",
       description: "Visual summaries with collapsible sections",
       link: "/knowledge",
     },
@@ -127,14 +127,14 @@ export default function Landing() {
     },
     {
       icon: Sparkles,
-      title: "AI Question Bank",
-      description: "AI-generated questions tailored to your subjects",
+      title: "Unlimited AI Generated Questions",
+      description: "AI-generated questions, tutor support, and practice",
       link: "/ai-tutor",
     },
   ];
 
   const benefits = [
-    "Organize all your study materials in one place",
+    "Organise all your study materials in one place",
     "Track your progress across all subjects",
     "Access past papers and practice questions",
     "Create and review flashcards efficiently",
@@ -234,7 +234,7 @@ export default function Landing() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0">
-              Organize notes, practice with flashcards, review past papers, and track your progress—all in one powerful platform designed for students.
+              Organise notes, practice with flashcards, review past papers, and track your progress—all in one powerful platform designed for students.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
               <Button size="lg" asChild className="text-lg px-8">

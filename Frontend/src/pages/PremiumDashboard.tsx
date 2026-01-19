@@ -12,6 +12,7 @@ import { grantBetaAccessWithBackend, hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
     BarChart3,
+    Bot,
     Brain,
     Calculator,
     Calendar,
@@ -86,6 +87,14 @@ export default function PremiumDashboard() {
 
     // Dashboard-specific feature list (Tools)
     const dashboardFeatures = [
+        {
+            title: "AI Tutor",
+            description: "1-to-1 AI tutoring, unlimited practice questions, and answer evaluation.",
+            icon: Bot,
+            path: "/ai-tutor",
+            color: "text-amber-500",
+            bg: "bg-amber-500/10",
+        },
         {
             title: "AI Homework Solver",
             description: "Get instant step-by-step solutions for any subject question.",
@@ -184,12 +193,20 @@ export default function PremiumDashboard() {
         },
     ];
 
-    // Feature Benefits list (Image 2 content)
+    // Feature Benefits list (merged; highlight Unlimited AI Questions + AI Tutor)
     const benefitFeatures = [
         {
             icon: Brain,
-            title: "Unlimited AI Question Generation",
-            description: "Generate unlimited AI questions tailored to your exam board and subjects (50/day for free users)",
+            title: "Unlimited AI Generated Questions",
+            description: "Generate unlimited AI questions tailored to your exam board and subjects (10/day for free users).",
+            highlight: true,
+        },
+        {
+            icon: Bot,
+            title: "AI Tutor",
+            description: "1-to-1 AI tutoring, practice questions, answer evaluation, and study support.",
+            highlight: true,
+            path: "/ai-tutor",
         },
         {
             icon: Sparkles,
@@ -245,6 +262,20 @@ export default function PremiumDashboard() {
             icon: BarChart3,
             title: "Performance Heat Map",
             description: "Visual red/amber/green analytics showing your strengths and weaknesses",
+        },
+        {
+            icon: Users,
+            title: "Scientia.ai Work Experience",
+            description: "Exclusive work experience opportunities for premium members",
+            path: "/premium/work-experience",
+            badgeKey: "workExperience" as const,
+        },
+        {
+            icon: FileText,
+            title: "2026 Predicted Papers",
+            description: "Access exclusive 2026 predicted exam papers before they're released publicly",
+            path: "/premium/predicted-papers",
+            badgeKey: "predictedPapers" as const,
         },
     ];
 
@@ -490,138 +521,36 @@ export default function PremiumDashboard() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {benefitFeatures.map((feature, index) => (
-                            <div
-                                key={index}
-                                className="glass-card p-5 hover-lift animate-slide-up"
-                                style={{ animationDelay: `${0.1 * index}s`, opacity: 0 }}
-                            >
-                                <div className="p-2.5 rounded-xl bg-premium/10 w-fit mb-3">
-                                    <feature.icon className="h-5 w-5 text-premium" />
-                                </div>
-                                <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
-                                <p className="text-sm text-muted-foreground">{feature.description}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Coming Soon Features */}
-                <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-premium/10">
-                            <Rocket className="h-6 w-6 text-premium" />
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-bold text-foreground">
-                                {hasPredictedPapers || hasWorkExperience
-                                    ? "Premium Features"
-                                    : "Coming Soon - Premium Features"}
-                            </h3>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                {hasPredictedPapers || hasWorkExperience
-                                    ? "Exclusive features available to premium members"
-                                    : "Exciting new features launching soon"}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Work Experience Card */}
-                        <div
-                            className={cn(
-                                "glass-card p-6 hover-lift cursor-pointer group relative overflow-hidden transition-all duration-300",
-                                checkingContent && "opacity-60 cursor-not-allowed"
-                            )}
-                            onClick={() => !checkingContent && navigate("/premium/work-experience")}
-                        >
-                            <div className="absolute top-0 left-0 w-1 h-full bg-premium opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="p-3 rounded-xl bg-premium/10 group-hover:bg-premium/20 transition-colors">
-                                    <Users className="h-6 w-6 text-premium" />
-                                </div>
-                                {checkingContent ? (
-                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                ) : (
-                                    <Badge
-                                        variant={hasWorkExperience ? "default" : "secondary"}
-                                        className={cn(
-                                            "text-xs font-semibold",
-                                            hasWorkExperience
-                                                ? "bg-premium/20 text-premium border-premium/30"
-                                                : "bg-muted/50 text-muted-foreground"
+                        {benefitFeatures.map((feature, index) => {
+                            const f = feature as typeof feature & { highlight?: boolean; path?: string; badgeKey?: "workExperience" | "predictedPapers" };
+                            const badge = f.badgeKey === "workExperience" ? (hasWorkExperience ? "Available" : "Coming Soon") : f.badgeKey === "predictedPapers" ? (hasPredictedPapers ? "Available" : "Coming Soon") : null;
+                            return (
+                                <div
+                                    key={index}
+                                    className={cn(
+                                        "glass-card p-5 hover-lift animate-slide-up",
+                                        f.highlight && "ring-2 ring-premium/60 border-2 border-premium/30 bg-premium/5",
+                                        f.path && "cursor-pointer"
+                                    )}
+                                    style={{ animationDelay: `${0.1 * index}s`, opacity: 0 }}
+                                    onClick={() => f.path && navigate(f.path)}
+                                    role={f.path ? "button" : undefined}
+                                >
+                                    <div className="flex items-start justify-between gap-2 mb-3">
+                                        <div className="p-2.5 rounded-xl bg-premium/10 w-fit">
+                                            <feature.icon className="h-5 w-5 text-premium" />
+                                        </div>
+                                        {badge && (
+                                            <Badge variant="secondary" className={cn("text-xs", (hasWorkExperience && f.badgeKey === "workExperience") || (hasPredictedPapers && f.badgeKey === "predictedPapers") ? "bg-premium/20 text-premium border-premium/30" : "bg-muted/50 text-muted-foreground")}>
+                                                {badge}
+                                            </Badge>
                                         )}
-                                    >
-                                        {hasWorkExperience ? "Available" : "Coming Soon"}
-                                    </Badge>
-                                )}
-                            </div>
-
-                            <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
-                                Scientia.ai Work Experience
-                            </h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                                Exclusive work experience opportunities specifically for Scientia.ai premium members
-                            </p>
-
-                            {hasWorkExperience && (
-                                <div className="mt-4 pt-4 border-t border-border/50">
-                                    <span className="text-xs text-premium font-medium flex items-center gap-1">
-                                        View Opportunities
-                                        <span className="group-hover:translate-x-1 transition-transform">→</span>
-                                    </span>
+                                    </div>
+                                    <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
+                                    <p className="text-sm text-muted-foreground">{feature.description}</p>
                                 </div>
-                            )}
-                        </div>
-
-                        {/* Predicted Papers Card */}
-                        <div
-                            className={cn(
-                                "glass-card p-6 hover-lift cursor-pointer group relative overflow-hidden transition-all duration-300",
-                                checkingContent && "opacity-60 cursor-not-allowed"
-                            )}
-                            onClick={() => !checkingContent && navigate("/premium/predicted-papers")}
-                        >
-                            <div className="absolute top-0 left-0 w-1 h-full bg-premium opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="p-3 rounded-xl bg-premium/10 group-hover:bg-premium/20 transition-colors">
-                                    <FileText className="h-6 w-6 text-premium" />
-                                </div>
-                                {checkingContent ? (
-                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                ) : (
-                                    <Badge
-                                        variant={hasPredictedPapers ? "default" : "secondary"}
-                                        className={cn(
-                                            "text-xs font-semibold",
-                                            hasPredictedPapers
-                                                ? "bg-premium/20 text-premium border-premium/30"
-                                                : "bg-muted/50 text-muted-foreground"
-                                        )}
-                                    >
-                                        {hasPredictedPapers ? "Available" : "Coming Soon"}
-                                    </Badge>
-                                )}
-                            </div>
-
-                            <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
-                                2026 Predicted Papers
-                            </h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                                Access exclusive 2026 predicted exam papers before they're released publicly
-                            </p>
-
-                            {hasPredictedPapers && (
-                                <div className="mt-4 pt-4 border-t border-border/50">
-                                    <span className="text-xs text-premium font-medium flex items-center gap-1">
-                                        Browse Papers
-                                        <span className="group-hover:translate-x-1 transition-transform">→</span>
-                                    </span>
-                                </div>
-                            )}
-                        </div>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -637,7 +566,7 @@ export default function PremiumDashboard() {
                     <p className="text-muted-foreground mb-4">
                         This feature is available for Premium members only.
                         Upgrade to access unlimited AI-generated questions, flashcards, and study materials.
-                        Free users get 50 AI requests per day.
+                        Free users get 10 AI requests per day.
                     </p>
                     {isPremium ? (
                         <div className="flex items-center justify-center gap-2 text-secondary">
