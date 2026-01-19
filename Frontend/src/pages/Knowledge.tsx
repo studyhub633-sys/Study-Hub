@@ -827,14 +827,27 @@ export default function Knowledge() {
             {organizers.length === 0 ? (
               <div className="glass-card p-8 text-center">
                 <Brain className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No organizers yet</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">No organisers yet</h3>
                 <p className="text-muted-foreground mb-4">
-                  Create your first knowledge organizer to get started
+                  Create your first knowledge organiser, generate one with AI, or add from the{" "}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/library")}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Global Library
+                  </button>{" "}
+                  (Organisers tab).
                 </p>
-                <Button onClick={handleCreateOrganizer}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Organizer
-                </Button>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <Button onClick={handleCreateOrganizer}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Organiser
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate("/library")}>
+                    Browse Global Library
+                  </Button>
+                </div>
               </div>
             ) : filteredOrganizers.length === 0 ? (
               <div className="glass-card p-8 text-center">
