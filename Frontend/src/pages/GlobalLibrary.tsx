@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { SmartPaperParser } from "@/lib/paper-parser";
-import { Brain, Calendar, FileText, Filter, Globe, Info, Layers, Library, Plus, Search, Sparkles } from "lucide-react";
+import { Brain, Calendar, FileText, Filter, Globe, Info, Layers, Library, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 interface GlobalPaper {
@@ -65,10 +65,11 @@ export default function GlobalLibrary() {
     }, [papers, organizers, flashcards]);
 
     useEffect(() => {
+        if (!supabase) return;
         fetchGlobalPapers();
         fetchGlobalOrganizers();
         fetchGlobalFlashcards();
-    }, []);
+    }, [supabase]);
 
     const fetchGlobalPapers = async () => {
         const { data, error } = await supabase

@@ -189,7 +189,7 @@ export default function AITutor() {
                             context: questionContext,
                         });
 
-                        responseContent = `Here's a practice question based on your context:\n\n**Question:** ${result.data.question}\n\nType your answer below, and I'll evaluate it!`;
+                        responseContent = `Here's a practice question based on your context:\n\n**Question:**\n\n${result.data.question}\n\n---\n\nType your answer below, and I'll evaluate it!`;
                     } else {
                         responseContent = "I couldn't generate a question. Please try again.";
                     }
