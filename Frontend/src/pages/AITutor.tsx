@@ -83,35 +83,37 @@ export default function AITutor() {
 
     // Flag to prevent double session creation
     const sessionCreatedRef = useRef(false);
-    // Flag to skip syncing when we just created a session locally
-    const skipNextSyncRef = useRef(false);
+
+    // Track which session is currently loaded in the UI to prevent overwriting local state on updates
+    const [loadedSessionId, setLoadedSessionId] = useState<string | null>(null);
 
     // Load session from URL parameter
     useEffect(() => {
         const sessionId = searchParams.get("session");
-        if (sessionId && !currentSession) {
+        if (sessionId && (!currentSession || currentSession.id !== sessionId)) {
             loadSession(sessionId);
         }
     }, [searchParams, currentSession, loadSession]);
 
-    // Sync messages when session changes (but skip if we just created it locally)
+    // Sync messages only when switching to a different session
     useEffect(() => {
         if (currentSession) {
-            // Skip sync if we just created this session locally
-            if (skipNextSyncRef.current) {
-                skipNextSyncRef.current = false;
-                // Still update URL
+            // Only update state if we're switching to a new session
+            if (currentSession.id !== loadedSessionId) {
+                const loadedMessages = currentSession.messages.map(toMessage);
+                setMessages(loadedMessages.length > 0 ? loadedMessages : [defaultWelcomeMessage]);
+                setContext(currentSession.context || "");
+                setMode(currentSession.mode || "chat");
+                setLoadedSessionId(currentSession.id);
+
+                // Update URL
                 setSearchParams({ session: currentSession.id }, { replace: true });
-                return;
             }
-            const loadedMessages = currentSession.messages.map(toMessage);
-            setMessages(loadedMessages.length > 0 ? loadedMessages : [defaultWelcomeMessage]);
-            setContext(currentSession.context || "");
-            setMode(currentSession.mode || "chat");
-            // Update URL
-            setSearchParams({ session: currentSession.id }, { replace: true });
+        } else {
+            // No current session (cleared)
+            setLoadedSessionId(null);
         }
-    }, [currentSession, setSearchParams]);
+    }, [currentSession, loadedSessionId, setSearchParams]);
 
     // Handle navigation state from Knowledge page
     useEffect(() => {
@@ -341,23 +343,22 @@ export default function AITutor() {
             // Create or update session
             if (!currentSession && !sessionCreatedRef.current) {
                 sessionCreatedRef.current = true;
-                // Skip the sync effect so it doesn't overwrite our messages
-                skipNextSyncRef.current = true;
                 const session = await createSession(
                     toChatMessage(userMessage),
                     context || undefined,
                     mode
                 );
                 if (session) {
+                    // Manually mark this session as loaded so the sync effect doesn't overwrite our local state
+                    setLoadedSessionId(session.id);
+
                     // Update with assistant response
-                    skipNextSyncRef.current = true;
                     await updateSession(session.id, {
                         messages: finalMessages.map(toChatMessage),
                         title: userInput.slice(0, 50) + (userInput.length > 50 ? "..." : ""),
                     });
                 }
             } else if (currentSession) {
-                skipNextSyncRef.current = true;
                 await saveMessages(finalMessages);
             }
         } catch (error: any) {
