@@ -1,3 +1,4 @@
+import { ChatHistorySidebar } from "@/components/ChatHistorySidebar";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SimpleMarkdown } from "@/components/SimpleMarkdown";
 import { Button } from "@/components/ui/button";
@@ -7,11 +8,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useChatSessions, type ChatMessage } from "@/hooks/useChatSessions";
 import { chatWithAI, evaluateAnswer, generateQuestion, generateSimpleQuestion } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Bot, Brain, Loader2, Send, Sparkles, User } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 interface Message {
     id: string;
@@ -25,18 +27,50 @@ interface PendingQuestion {
     context: string;
 }
 
+// Convert internal Message to ChatMessage for storage
+const toChatMessage = (msg: Message): ChatMessage => ({
+    id: msg.id,
+    role: msg.role,
+    content: msg.content,
+    timestamp: msg.timestamp.toISOString(),
+});
+
+// Convert stored ChatMessage to internal Message
+const toMessage = (msg: ChatMessage): Message => ({
+    id: msg.id,
+    role: msg.role,
+    content: msg.content,
+    timestamp: new Date(msg.timestamp),
+});
+
+const defaultWelcomeMessage: Message = {
+    id: "1",
+    role: "assistant",
+    content: "Hello! I'm your AI tutoring assistant. I can help you with:\n\n• Explaining concepts from your notes\n• Generating practice questions\n• Evaluating your answers\n• Providing study tips\n\nWhat would you like to learn today?",
+    timestamp: new Date(),
+};
+
 export default function AITutor() {
     const { supabase, user } = useAuth();
     const { toast } = useToast();
     const location = useLocation();
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: "1",
-            role: "assistant",
-            content: "Hello! I'm your AI tutoring assistant. I can help you with:\n\n• Explaining concepts from your notes\n• Generating practice questions\n• Evaluating your answers\n• Providing study tips\n\nWhat would you like to learn today?",
-            timestamp: new Date(),
-        },
-    ]);
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Chat sessions hook
+    const {
+        sessions,
+        currentSession,
+        loading: sessionsLoading,
+        createSession,
+        loadSession,
+        updateSession,
+        deleteSession,
+        renameSession,
+        clearCurrentSession,
+    } = useChatSessions();
+
+    const [messages, setMessages] = useState<Message[]>([defaultWelcomeMessage]);
     const [input, setInput] = useState("");
     const [context, setContext] = useState("");
     const [loading, setLoading] = useState(false);
@@ -47,9 +81,32 @@ export default function AITutor() {
     const [pendingQuestion, setPendingQuestion] = useState<PendingQuestion | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    // Flag to prevent double session creation
+    const sessionCreatedRef = useRef(false);
+
+    // Load session from URL parameter
+    useEffect(() => {
+        const sessionId = searchParams.get("session");
+        if (sessionId && !currentSession) {
+            loadSession(sessionId);
+        }
+    }, [searchParams, currentSession, loadSession]);
+
+    // Sync messages when session changes
+    useEffect(() => {
+        if (currentSession) {
+            const loadedMessages = currentSession.messages.map(toMessage);
+            setMessages(loadedMessages.length > 0 ? loadedMessages : [defaultWelcomeMessage]);
+            setContext(currentSession.context || "");
+            setMode(currentSession.mode || "chat");
+            // Update URL
+            setSearchParams({ session: currentSession.id }, { replace: true });
+        }
+    }, [currentSession, setSearchParams]);
+
     // Handle navigation state from Knowledge page
     useEffect(() => {
-        if (location.state?.context) {
+        if (location.state?.context && !currentSession) {
             setContext(location.state.context);
             if (location.state.mode) {
                 setMode(location.state.mode);
@@ -65,7 +122,7 @@ export default function AITutor() {
                 ]);
             }
         }
-    }, [location.state]);
+    }, [location.state, currentSession]);
 
     // Fetch AI usage
     const fetchAiUsage = async () => {
@@ -103,6 +160,36 @@ export default function AITutor() {
         }
     }, [messages]);
 
+    // Save messages to session
+    const saveMessages = useCallback(
+        async (newMessages: Message[]) => {
+            if (!currentSession) return;
+            await updateSession(currentSession.id, {
+                messages: newMessages.map(toChatMessage),
+            });
+        },
+        [currentSession, updateSession]
+    );
+
+    // Handle starting a new chat
+    const handleNewChat = useCallback(() => {
+        clearCurrentSession();
+        setMessages([defaultWelcomeMessage]);
+        setContext("");
+        setMode("chat");
+        setPendingQuestion(null);
+        sessionCreatedRef.current = false;
+        setSearchParams({}, { replace: true });
+    }, [clearCurrentSession, setSearchParams]);
+
+    // Handle selecting a session
+    const handleSelectSession = useCallback(
+        (id: string) => {
+            loadSession(id);
+        },
+        [loadSession]
+    );
+
     const handleSend = async () => {
         if (!input.trim() || loading) return;
 
@@ -113,7 +200,8 @@ export default function AITutor() {
             timestamp: new Date(),
         };
 
-        setMessages((prev) => [...prev, userMessage]);
+        const newMessages = [...messages, userMessage];
+        setMessages(newMessages);
         const userInput = input;
         setInput("");
         setLoading(true);
@@ -238,7 +326,27 @@ export default function AITutor() {
                 timestamp: new Date(),
             };
 
-            setMessages((prev) => [...prev, assistantMessage]);
+            const finalMessages = [...newMessages, assistantMessage];
+            setMessages(finalMessages);
+
+            // Create or update session
+            if (!currentSession && !sessionCreatedRef.current) {
+                sessionCreatedRef.current = true;
+                const session = await createSession(
+                    toChatMessage(userMessage),
+                    context || undefined,
+                    mode
+                );
+                if (session) {
+                    // Update with assistant response
+                    await updateSession(session.id, {
+                        messages: finalMessages.map(toChatMessage),
+                        title: userInput.slice(0, 50) + (userInput.length > 50 ? "..." : ""),
+                    });
+                }
+            } else if (currentSession) {
+                await saveMessages(finalMessages);
+            }
         } catch (error: any) {
             console.error("Error:", error);
             toast({
@@ -260,208 +368,220 @@ export default function AITutor() {
         }
     };
 
-    const navigate = useNavigate();
-
     return (
         <AppLayout>
-            <div className="max-w-6xl mx-auto space-y-6">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
-                    <div>
-                        {location.state?.organizerTitle && (
-                            <Button
-                                variant="ghost"
-                                className="mb-2 p-0 h-auto hover:bg-transparent text-muted-foreground hover:text-foreground"
-                                onClick={() => navigate("/knowledge")}
-                            >
-                                <ArrowLeft className="h-4 w-4 mr-2" />
-                                Back to Knowledge Organizer
-                            </Button>
-                        )}
-                        <div className="flex items-center gap-3 mb-2">
-                            <Sparkles className="h-6 w-6 text-primary" />
-                            <h1 className="text-2xl md:text-3xl font-bold text-foreground">AI Tutoring Bot</h1>
-                        </div>
-                        <p className="text-muted-foreground">
-                            Get personalized help with your studies
-                        </p>
-                        {aiUsage && (
-                            <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
-                                <Brain className="h-3 w-3 mr-1" />
-                                {aiUsage.limit - aiUsage.count} AI generations remaining today
+            <div className="flex h-[calc(100vh-8rem)] gap-4">
+                {/* Chat History Sidebar */}
+                <ChatHistorySidebar
+                    sessions={sessions}
+                    currentSessionId={currentSession?.id || null}
+                    onSelectSession={handleSelectSession}
+                    onNewChat={handleNewChat}
+                    onDeleteSession={deleteSession}
+                    onRenameSession={renameSession}
+                    loading={sessionsLoading}
+                />
+
+                {/* Main Content */}
+                <div className="flex-1 flex flex-col min-w-0 space-y-4">
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
+                        <div>
+                            {location.state?.organizerTitle && (
+                                <Button
+                                    variant="ghost"
+                                    className="mb-2 p-0 h-auto hover:bg-transparent text-muted-foreground hover:text-foreground"
+                                    onClick={() => navigate("/knowledge")}
+                                >
+                                    <ArrowLeft className="h-4 w-4 mr-2" />
+                                    Back to Knowledge Organizer
+                                </Button>
+                            )}
+                            <div className="flex items-center gap-3 mb-2">
+                                <Sparkles className="h-6 w-6 text-primary" />
+                                <h1 className="text-2xl md:text-3xl font-bold text-foreground">AI Tutoring Bot</h1>
                             </div>
-                        )}
+                            <p className="text-muted-foreground">
+                                Get personalized help with your studies
+                            </p>
+                            {aiUsage && (
+                                <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
+                                    <Brain className="h-3 w-3 mr-1" />
+                                    {aiUsage.limit - aiUsage.count} AI generations remaining today
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
 
-                {/* Mode Selector */}
-                <div className="flex gap-2 animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
-                    <Button
-                        variant={mode === "chat" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => { setMode("chat"); setPendingQuestion(null); }}
-                    >
-                        Chat
-                    </Button>
-                    <Button
-                        variant={mode === "question" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setMode("question")}
-                    >
-                        Generate Question
-                    </Button>
-                    <Button
-                        variant={mode === "evaluate" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => { setMode("evaluate"); setPendingQuestion(null); }}
-                    >
-                        Evaluate Answer
-                    </Button>
-                </div>
-
-                {/* Pending Question Indicator */}
-                {pendingQuestion && (
-                    <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 text-sm">
-                        <span className="font-medium text-primary">📝 Waiting for your answer:</span>
-                        <p className="mt-1 text-foreground">{pendingQuestion.question}</p>
+                    {/* Mode Selector */}
+                    <div className="flex gap-2 animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
+                        <Button
+                            variant={mode === "chat" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => { setMode("chat"); setPendingQuestion(null); }}
+                        >
+                            Chat
+                        </Button>
+                        <Button
+                            variant={mode === "question" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setMode("question")}
+                        >
+                            Generate Question
+                        </Button>
+                        <Button
+                            variant={mode === "evaluate" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => { setMode("evaluate"); setPendingQuestion(null); }}
+                        >
+                            Evaluate Answer
+                        </Button>
                     </div>
-                )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Chat Area */}
-                    <div className="lg:col-span-2 space-y-4">
-                        <Card className="h-[600px] flex flex-col">
-                            <CardHeader>
-                                <CardTitle>Conversation</CardTitle>
-                                <CardDescription>
-                                    {mode === "chat" && "Ask me anything about your studies"}
-                                    {mode === "question" && "I'll generate questions from your notes"}
-                                    {mode === "evaluate" && "I'll evaluate your answers"}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex-1 flex flex-col p-0 overflow-hidden min-h-0">
-                                <ScrollArea className="flex-1 px-6 min-h-0">
-                                    <div className="space-y-4 py-4">
-                                        {messages.map((message) => (
-                                            <div
-                                                key={message.id}
-                                                className={cn(
-                                                    "flex gap-3",
-                                                    message.role === "user" ? "justify-end" : "justify-start"
-                                                )}
-                                            >
-                                                {message.role === "assistant" && (
-                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                        <Bot className="h-4 w-4 text-primary" />
-                                                    </div>
-                                                )}
+                    {/* Pending Question Indicator */}
+                    {pendingQuestion && (
+                        <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 text-sm">
+                            <span className="font-medium text-primary">📝 Waiting for your answer:</span>
+                            <p className="mt-1 text-foreground">{pendingQuestion.question}</p>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+                        {/* Chat Area */}
+                        <div className="lg:col-span-2 flex flex-col min-h-0">
+                            <Card className="flex-1 flex flex-col min-h-0">
+                                <CardHeader className="shrink-0">
+                                    <CardTitle>Conversation</CardTitle>
+                                    <CardDescription>
+                                        {mode === "chat" && "Ask me anything about your studies"}
+                                        {mode === "question" && "I'll generate questions from your notes"}
+                                        {mode === "evaluate" && "I'll evaluate your answers"}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-1 flex flex-col p-0 overflow-hidden min-h-0">
+                                    <ScrollArea className="flex-1 px-6 min-h-0">
+                                        <div className="space-y-4 py-4">
+                                            {messages.map((message) => (
                                                 <div
+                                                    key={message.id}
                                                     className={cn(
-                                                        "max-w-[80%] rounded-lg p-4",
-                                                        message.role === "user"
-                                                            ? "bg-primary text-primary-foreground"
-                                                            : "bg-muted text-foreground"
+                                                        "flex gap-3",
+                                                        message.role === "user" ? "justify-end" : "justify-start"
                                                     )}
                                                 >
-                                                    {message.role === "assistant" ? (
-                                                        <SimpleMarkdown content={message.content} className="text-sm" />
-                                                    ) : (
-                                                        <p className="whitespace-pre-wrap text-sm break-words">{message.content}</p>
+                                                    {message.role === "assistant" && (
+                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                            <Bot className="h-4 w-4 text-primary" />
+                                                        </div>
                                                     )}
-                                                    <p className="text-xs opacity-70 mt-2">
-                                                        {message.timestamp.toLocaleTimeString()}
-                                                    </p>
-                                                </div>
-                                                {message.role === "user" && (
-                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                        <User className="h-4 w-4 text-primary" />
+                                                    <div
+                                                        className={cn(
+                                                            "max-w-[80%] rounded-lg p-4",
+                                                            message.role === "user"
+                                                                ? "bg-primary text-primary-foreground"
+                                                                : "bg-muted text-foreground"
+                                                        )}
+                                                    >
+                                                        {message.role === "assistant" ? (
+                                                            <SimpleMarkdown content={message.content} className="text-sm" />
+                                                        ) : (
+                                                            <p className="whitespace-pre-wrap text-sm break-words">{message.content}</p>
+                                                        )}
+                                                        <p className="text-xs opacity-70 mt-2">
+                                                            {message.timestamp.toLocaleTimeString()}
+                                                        </p>
                                                     </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                        {loading && (
-                                            <div className="flex gap-3 justify-start">
-                                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                                    <Bot className="h-4 w-4 text-primary" />
+                                                    {message.role === "user" && (
+                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                            <User className="h-4 w-4 text-primary" />
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div className="bg-muted rounded-lg p-4">
-                                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                            ))}
+                                            {loading && (
+                                                <div className="flex gap-3 justify-start">
+                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                                        <Bot className="h-4 w-4 text-primary" />
+                                                    </div>
+                                                    <div className="bg-muted rounded-lg p-4">
+                                                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                        <div ref={scrollRef} />
-                                    </div>
-                                </ScrollArea>
-                                <div className="p-6 border-t border-border">
-                                    <div className="flex gap-2">
-                                        <Input
-                                            value={input}
-                                            onChange={(e) => setInput(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === "Enter" && !e.shiftKey) {
-                                                    e.preventDefault();
-                                                    handleSend();
-                                                }
-                                            }}
-                                            placeholder={
-                                                pendingQuestion
-                                                    ? "Type your answer here..."
-                                                    : mode === "evaluate"
-                                                        ? "Type your answer here..."
-                                                        : "Type your message..."
-                                            }
-                                            disabled={loading}
-                                        />
-                                        <Button onClick={handleSend} disabled={loading || !input.trim()}>
-                                            {loading ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                                <Send className="h-4 w-4" />
                                             )}
-                                        </Button>
+                                            <div ref={scrollRef} />
+                                        </div>
+                                    </ScrollArea>
+                                    <div className="p-6 border-t border-border shrink-0">
+                                        <div className="flex gap-2">
+                                            <Input
+                                                value={input}
+                                                onChange={(e) => setInput(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter" && !e.shiftKey) {
+                                                        e.preventDefault();
+                                                        handleSend();
+                                                    }
+                                                }}
+                                                placeholder={
+                                                    pendingQuestion
+                                                        ? "Type your answer here..."
+                                                        : mode === "evaluate"
+                                                            ? "Type your answer here..."
+                                                            : "Type your message..."
+                                                }
+                                                disabled={loading}
+                                            />
+                                            <Button onClick={handleSend} disabled={loading || !input.trim()}>
+                                                {loading ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <Send className="h-4 w-4" />
+                                                )}
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
 
-                    {/* Context/Notes Sidebar */}
-                    <div className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Context / Notes</CardTitle>
-                                <CardDescription>
-                                    Paste your notes here for better assistance
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Textarea
-                                    value={context}
-                                    onChange={(e) => setContext(e.target.value)}
-                                    placeholder="Paste your notes, study material, or the correct answer here..."
-                                    className="min-h-[200px]"
-                                />
-                                <p className="text-xs text-muted-foreground mt-2">
-                                    {mode === "question" &&
-                                        "I'll generate practice questions based on this context"}
-                                    {mode === "evaluate" &&
-                                        "This should be the correct answer to compare against"}
-                                    {mode === "chat" && "Provide context for better responses"}
-                                </p>
-                            </CardContent>
-                        </Card>
+                        {/* Context/Notes Sidebar */}
+                        <div className="space-y-4">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Context / Notes</CardTitle>
+                                    <CardDescription>
+                                        Paste your notes here for better assistance
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Textarea
+                                        value={context}
+                                        onChange={(e) => setContext(e.target.value)}
+                                        placeholder="Paste your notes, study material, or the correct answer here..."
+                                        className="min-h-[200px]"
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                        {mode === "question" &&
+                                            "I'll generate practice questions based on this context"}
+                                        {mode === "evaluate" &&
+                                            "This should be the correct answer to compare against"}
+                                        {mode === "chat" && "Provide context for better responses"}
+                                    </p>
+                                </CardContent>
+                            </Card>
 
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Tips</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-2 text-sm text-muted-foreground">
-                                <p>• Provide clear context from your notes for better questions</p>
-                                <p>• Use "Generate Question" mode to create practice questions</p>
-                                <p>• After a question is generated, just type your answer</p>
-                                <p>• The AI will automatically evaluate your response</p>
-                            </CardContent>
-                        </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Tips</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-2 text-sm text-muted-foreground">
+                                    <p>• Provide clear context from your notes for better questions</p>
+                                    <p>• Use "Generate Question" mode to create practice questions</p>
+                                    <p>• After a question is generated, just type your answer</p>
+                                    <p>• The AI will automatically evaluate your response</p>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
                 </div>
             </div>
