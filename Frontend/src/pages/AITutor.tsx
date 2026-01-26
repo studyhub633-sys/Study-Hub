@@ -350,12 +350,14 @@ export default function AITutor() {
                 );
                 if (session) {
                     // Update with assistant response
+                    skipNextSyncRef.current = true;
                     await updateSession(session.id, {
                         messages: finalMessages.map(toChatMessage),
                         title: userInput.slice(0, 50) + (userInput.length > 50 ? "..." : ""),
                     });
                 }
             } else if (currentSession) {
+                skipNextSyncRef.current = true;
                 await saveMessages(finalMessages);
             }
         } catch (error: any) {
