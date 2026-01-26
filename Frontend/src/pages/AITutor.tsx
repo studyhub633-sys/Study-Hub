@@ -83,6 +83,8 @@ export default function AITutor() {
 
     // Flag to prevent double session creation
     const sessionCreatedRef = useRef(false);
+    // Flag to skip syncing when we just created a session locally
+    const skipNextSyncRef = useRef(false);
 
     // Load session from URL parameter
     useEffect(() => {
@@ -92,9 +94,16 @@ export default function AITutor() {
         }
     }, [searchParams, currentSession, loadSession]);
 
-    // Sync messages when session changes
+    // Sync messages when session changes (but skip if we just created it locally)
     useEffect(() => {
         if (currentSession) {
+            // Skip sync if we just created this session locally
+            if (skipNextSyncRef.current) {
+                skipNextSyncRef.current = false;
+                // Still update URL
+                setSearchParams({ session: currentSession.id }, { replace: true });
+                return;
+            }
             const loadedMessages = currentSession.messages.map(toMessage);
             setMessages(loadedMessages.length > 0 ? loadedMessages : [defaultWelcomeMessage]);
             setContext(currentSession.context || "");
@@ -332,6 +341,8 @@ export default function AITutor() {
             // Create or update session
             if (!currentSession && !sessionCreatedRef.current) {
                 sessionCreatedRef.current = true;
+                // Skip the sync effect so it doesn't overwrite our messages
+                skipNextSyncRef.current = true;
                 const session = await createSession(
                     toChatMessage(userMessage),
                     context || undefined,
