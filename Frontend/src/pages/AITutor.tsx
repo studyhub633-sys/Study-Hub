@@ -200,9 +200,9 @@ export default function AITutor() {
     // Handle selecting a session
     const handleSelectSession = useCallback(
         (id: string) => {
-            loadSession(id);
+            setSearchParams({ session: id });
         },
-        [loadSession]
+        [setSearchParams]
     );
 
     const handleSend = async () => {
