@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function ResetPassword() {
@@ -18,6 +19,7 @@ export default function ResetPassword() {
     const [submitted, setSubmitted] = useState(false);
     const { updatePassword, session, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     // Check if we have a recovery session
     const [checkingSession, setCheckingSession] = useState(true);
@@ -33,12 +35,12 @@ export default function ResetPassword() {
         setError("");
 
         if (password !== confirmPassword) {
-            setError("Passwords do not match");
+            setError(t('auth.passwordsDoNotMatch'));
             return;
         }
 
         if (password.length < 6) {
-            setError("Password must be at least 6 characters long");
+            setError(t('auth.passwordLength'));
             return;
         }
 
@@ -65,13 +67,13 @@ export default function ResetPassword() {
                     <div className="flex justify-center mb-4">
                         <AnimatedLogoIcon />
                     </div>
-                    <CardTitle className="text-2xl font-bold">Set New Password</CardTitle>
+                    <CardTitle className="text-2xl font-bold">{t('auth.setNewPassword')}</CardTitle>
                     <CardDescription>
                         {submitted
-                            ? "Your password has been successfully reset"
+                            ? t('auth.successReset')
                             : !session && !checkingSession
-                                ? "Your reset link may have expired or is invalid."
-                                : "Enter your new password below"}
+                                ? t('auth.linkExpired')
+                                : t('auth.enterNewPassword')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -79,12 +81,12 @@ export default function ResetPassword() {
                         <div className="mb-4">
                             <Alert variant="destructive">
                                 <AlertDescription>
-                                    Authentication session is missing. This happens if the link is expired or if you've opened it in a different browser than where you started.
+                                    {t('auth.sessionMissing')}
                                 </AlertDescription>
                             </Alert>
                             <Link to="/forgot-password">
                                 <Button variant="outline" className="w-full mt-2">
-                                    Request a new link
+                                    {t('auth.requestNewLink')}
                                 </Button>
                             </Link>
                         </div>
@@ -95,11 +97,11 @@ export default function ResetPassword() {
                                 <CheckCircle2 className="h-12 w-12 text-green-500 animate-in zoom-in duration-300" />
                             </div>
                             <p className="text-muted-foreground">
-                                Your password has been updated. You will be redirected to the login page shortly.
+                                {t('auth.passwordUpdated')}
                             </p>
                             <Link to="/login" className="block mt-4">
                                 <Button className="w-full">
-                                    Login Now
+                                    {t('auth.loginNow')}
                                 </Button>
                             </Link>
                         </div>
@@ -111,12 +113,12 @@ export default function ResetPassword() {
                                 </Alert>
                             )}
                             <div className="space-y-2">
-                                <Label htmlFor="password">New Password</Label>
+                                <Label htmlFor="password">{t('auth.newPassword')}</Label>
                                 <div className="relative">
                                     <Input
                                         id="password"
                                         type={showPassword ? "text" : "password"}
-                                        placeholder="Enter new password"
+                                        placeholder={t('auth.enterNewPasswordPlaceholder')}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
@@ -139,11 +141,11 @@ export default function ResetPassword() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                                <Label htmlFor="confirmPassword">{t('common.confirmPassword')}</Label>
                                 <Input
                                     id="confirmPassword"
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="Confirm new password"
+                                    placeholder={t('auth.confirmNewPasswordPlaceholder')}
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
@@ -158,10 +160,10 @@ export default function ResetPassword() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Updating password...
+                                        {t('auth.updatingDotted')}
                                     </>
                                 ) : (
-                                    "Update Password"
+                                    t('auth.updatePassword')
                                 )}
                             </Button>
                         </form>

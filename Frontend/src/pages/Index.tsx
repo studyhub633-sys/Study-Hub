@@ -8,68 +8,71 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Award, BookOpen, Brain, FileText, Layers, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const modules = [
-  {
-    icon: BookOpen,
-    title: "Exam Notes",
-    description: "Organised notes by subject and topic with highlights",
-    countLabel: "notes",
-    path: "/notes",
-    color: "primary" as const,
-    tableName: "notes",
-  },
-  {
-    icon: Layers,
-    title: "Flashcards",
-    description: "Interactive cards with quiz mode and progress tracking",
-    countLabel: "cards",
-    path: "/flashcards",
-    color: "secondary" as const,
-    tableName: "flashcards",
-  },
-  {
-    icon: FileText,
-    title: "Past Papers",
-    description: "Practice with marked answers and timed quizzes",
-    countLabel: "papers",
-    path: "/past-papers",
-    color: "accent" as const,
-    tableName: "past_papers",
-  },
-  {
-    icon: Brain,
-    title: "Knowledge Organisers",
-    description: "Visual summaries with collapsible sections",
-    countLabel: "organizers",
-    path: "/knowledge",
-    color: "primary" as const,
-    tableName: "knowledge_organizers",
-  },
-  {
-    icon: Award,
-    title: "Extracurriculars",
-    description: "Track activities, hours, and achievements",
-    countLabel: "activities",
-    path: "/extracurricular",
-    color: "premium" as const,
-    tableName: "extracurriculars",
-  },
-  {
-    icon: Sparkles,
-    title: "Unlimited AI Generated Questions",
-    description: "AI-generated questions, tutor support, and practice (10/day for free users)",
-    count: 500,
-    countLabel: "questions",
-    path: "/ai-tutor",
-    color: "premium" as const,
-    isPremium: false, // Available to all users
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export default function Dashboard() {
   const { supabase, user } = useAuth();
   const [moduleCounts, setModuleCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
+
+  const modules = [
+    {
+      icon: BookOpen,
+      title: t('features.examNotes.title'),
+      description: t('features.examNotes.description'),
+      countLabel: t('nav.notes').toLowerCase(),
+      path: "/notes",
+      color: "primary" as const,
+      tableName: "notes",
+    },
+    {
+      icon: Layers,
+      title: t('features.flashcards.title'),
+      description: t('features.flashcards.description'),
+      countLabel: t('nav.flashcards').toLowerCase(),
+      path: "/flashcards",
+      color: "secondary" as const,
+      tableName: "flashcards",
+    },
+    {
+      icon: FileText,
+      title: t('features.pastPapers.title'),
+      description: t('features.pastPapers.description'),
+      countLabel: t('nav.pastPapers').toLowerCase(),
+      path: "/past-papers",
+      color: "accent" as const,
+      tableName: "past_papers",
+    },
+    {
+      icon: Brain,
+      title: t('features.knowledgeOrganisers.title'),
+      description: t('features.knowledgeOrganisers.description'),
+      countLabel: t('nav.knowledge').toLowerCase(),
+      path: "/knowledge",
+      color: "primary" as const,
+      tableName: "knowledge_organizers",
+    },
+    {
+      icon: Award,
+      title: t('features.extracurriculars.title'),
+      description: t('features.extracurriculars.description'),
+      countLabel: t('nav.extracurricular').toLowerCase(),
+      path: "/extracurricular",
+      color: "premium" as const,
+      tableName: "extracurriculars",
+    },
+    {
+      icon: Sparkles,
+      title: t('features.aiQuestions.title'),
+      description: t('features.aiQuestions.description'),
+      count: 500,
+      countLabel: t('features.aiQuestions.title').split(" ").pop()?.toLowerCase() || "questions",
+      path: "/ai-tutor",
+      color: "premium" as const,
+      isPremium: false, // Available to all users
+    },
+  ];
 
   useEffect(() => {
     if (!user) return;
@@ -126,7 +129,7 @@ export default function Dashboard() {
         {/* Quick Access Modules */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-foreground">Quick Access</h2>
+            <h2 className="text-xl font-bold text-foreground">{t('common.quickAccess')}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {modulesWithCounts.map((module, index) => (

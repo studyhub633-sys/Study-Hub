@@ -29,7 +29,8 @@
         "ok": "OK",
         "confirm": "Confirmar",
         "theme": "Tema",
-        "language": "Idioma"
+        "language": "Idioma",
+        "quickAccess": "Acceso Rápido"
     },
     "landing": {
         "heroTitle": "Tu Compañero de Estudio",
@@ -134,6 +135,141 @@
         "resetPasswordSubtitle": "Ingresa tu correo para recibir un enlace de restablecimiento",
         "sendResetLink": "Enviar Enlace",
         "newPassword": "Nueva Contraseña",
-        "createNewPassword": "Crea una nueva contraseña para tu cuenta"
+        "createNewPassword": "Crea una nueva contraseña para tu cuenta",
+        "checkEmail": "Revisa tu correo para el enlace de restablecimiento",
+        "emailSentTo": "Hemos enviado un enlace de restablecimiento de contraseña a {{email}}.",
+        "checkSpam": "¿No recibiste el correo? Revisa tu carpeta de spam o ",
+        "tryAgain": "intenta de nuevo",
+        "returnToLogin": "Volver al Inicio de Sesión",
+        "sendingLink": "Enviando enlace...",
+        "setNewPassword": "Establecer Nueva Contraseña",
+        "successReset": "Tu contraseña ha sido restablecida exitosamente",
+        "linkExpired": "Tu enlace de restablecimiento puede haber expirado o es inválido.",
+        "enterNewPassword": "Ingresa tu nueva contraseña abajo",
+        "sessionMissing": "Falta la sesión de autenticación. Esto sucede si el enlace ha expirado o si lo abriste en un navegador diferente al que iniciaste.",
+        "requestNewLink": "Solicitar un nuevo enlace",
+        "passwordUpdated": "Tu contraseña ha sido actualizada. Serás redirigido a la página de inicio de sesión en breve.",
+        "loginNow": "Iniciar Sesión Ahora",
+        "updatePassword": "Actualizar Contraseña",
+        "updatingDotted": "Actualizando contraseña...",
+        "passwordsDoNotMatch": "Las contraseñas no coinciden",
+        "passwordLength": "La contraseña debe tener al menos 6 caracteres",
+        "enterNewPasswordPlaceholder": "Ingresa nueva contraseña",
+        "confirmNewPasswordPlaceholder": "Confirmar nueva contraseña"
+    },
+    "premium": {
+        "dashboard": {
+            "welcomePremium": "¡Bienvenido, Miembro Premium!",
+            "unlockPotential": "Desbloquea Tu Potencial",
+            "premiumDescription": "¡Gracias por mejorar tu plan! Disfruta de acceso ilimitado a todas nuestras herramientas avanzadas de IA y funciones de estudio.",
+            "freeDescription": "Accede a herramientas avanzadas de IA, contenido exclusivo y potentes funciones de estudio diseñadas para mejorar tus calificaciones.",
+            "upgradeToPremium": "Mejorar a Premium",
+            "activeSubscription": "Suscripción Premium Activa",
+            "plan": "Plan",
+            "renews": "Renueva",
+            "cancelSubscription": "Cancelar Suscripción",
+            "cancelsAtEnd": "La suscripción se cancelará al final del período de facturación",
+            "premiumOnly": "Solo Premium",
+            "launchTool": "Iniciar Herramienta",
+            "yourBenefits": "Tus Beneficios Premium",
+            "premiumFeatures": "Características Premium",
+            "benefitsDescriptionPremium": "Tienes acceso completo a estas características exclusivas",
+            "benefitsDescriptionFree": "Todo lo que obtienes al mejorar a Scientia.ai Premium",
+            "available": "Disponible",
+            "comingSoon": "Próximamente",
+            "unlimitedAI": "Generación de Contenido IA Ilimitada",
+            "unlimitedAIDescription": "Esta función está disponible solo para miembros Premium. Mejora tu plan para acceder a preguntas ilimitadas generadas por IA, tarjetas didácticas y materiales de estudio. Los usuarios gratuitos obtienen 10 solicitudes de IA por día.",
+            "accessGranted": "¡Tienes acceso a esta función!",
+            "unlockPremium": "Desbloquear Premium",
+            "choosePlan": "Elige Tu Plan",
+            "choosePlanSubtitle": "Desbloquea acceso ilimitado a todas las herramientas y funciones de IA",
+            "mostPopular": "Más Popular",
+            "monthly": "Mensual",
+            "monthlyPrice": "£4.99",
+            "monthlyPeriod": "/mes",
+            "monthlyDescription": "Perfecto para probar las funciones premium",
+            "yearly": "Anual",
+            "yearlyPrice": "£39.99",
+            "yearlyPeriod": "/año",
+            "yearlyDescription": "Nuestro mejor valor: ¡ahorra más de £19 anualmente!",
+            "saveAmount": "Ahorra £19.89",
+            "getLifetimeAccess": "Obtener Acceso de Por Vida (Beta)",
+            "processing": "Procesando...",
+            "alreadyPremium": "Ya eres Premium",
+            "haveDiscount": "¿Tienes un código de descuento?",
+            "apply": "Aplicar",
+            "moneyBackGuarantee": "Garantía de Devolución de 30 Días",
+            "moneyBackDescription": "¿No estás satisfecho? Obtén un reembolso completo dentro de los 30 días, sin preguntas."
+        },
+        "features": {
+            "aiTutor": {
+                "title": "Tutor IA",
+                "description": "Tutoría 1 a 1 con IA, preguntas de práctica ilimitadas y evaluación de respuestas."
+            },
+            "homeworkSolver": {
+                "title": "Solucionador de Tareas IA",
+                "description": "Obtén soluciones paso a paso instantáneas para cualquier pregunta de cualquier materia."
+            },
+            "noteCondenser": {
+                "title": "Condensador de Notas",
+                "description": "Convierte páginas de notas en resúmenes concisos y tarjetas didácticas."
+            },
+            "predictedGrades": {
+                "title": "Calificaciones Predichas",
+                "description": "Calcula tus calificaciones potenciales basadas en tu rendimiento actual."
+            },
+            "focusMode": {
+                "title": "Modo Enfoque",
+                "description": "Temporizador de estudio libre de distracciones con técnica Pomodoro."
+            },
+            "leaderboards": {
+                "title": "Tablas de Clasificación",
+                "description": "Compite con otros estudiantes y sigue tus rachas de estudio."
+            },
+            "virtualSessions": {
+                "title": "Sesiones Virtuales",
+                "description": "Únete a sesiones semanales de revisión en grupo dirigidas por tutores expertos."
+            },
+            "homeworkTracker": {
+                "title": "Rastreador de Tareas",
+                "description": "Rastrea asignaciones con notificaciones inteligentes cuando se vencen."
+            },
+            "studyPlans": {
+                "title": "Planes de Estudio IA",
+                "description": "Obtén horarios de estudio personalizados basados en tus fechas de examen."
+            },
+            "mindMap": {
+                "title": "Generador de Mapas Mentales IA",
+                "description": "Transforma tus notas en mapas mentales visuales instantáneamente con IA."
+            },
+            "aiExaminer": {
+                "title": "Examinador IA",
+                "description": "Sube exámenes anteriores completados para calificación y corrección instantánea por IA."
+            },
+            "performanceHeatmap": {
+                "title": "Mapa de Calor de Rendimiento",
+                "description": "Analíticas visuales rojo/ámbar/verde que muestran tus fortalezas y debilidades."
+            },
+            "grade9Notes": {
+                "title": "Notas Premium Grado 9",
+                "description": "Accede a notas exclusivas de Grado 9 y materiales de estudio para obtener las mejores calificaciones."
+            },
+            "workExperience": {
+                "title": "Experiencia Laboral Scientia.ai",
+                "description": "Oportunidades exclusivas de experiencia laboral para miembros premium"
+            },
+            "predictedPapers": {
+                "title": "Exámenes Predichos 2026",
+                "description": "Accede a exámenes predichos exclusivos de 2026 antes de que se publiquen públicamente"
+            }
+        },
+        "planFeatures": {
+            "allPremium": "Todas las características premium",
+            "cancelAnytime": "Cancela en cualquier momento",
+            "monthlyBilling": "Facturación mensual",
+            "fourMonthsFree": "4 meses gratis",
+            "priorityFeatures": "Nuevas características prioritarias",
+            "exclusiveContent": "Contenido exclusivo"
+        }
     }
 }

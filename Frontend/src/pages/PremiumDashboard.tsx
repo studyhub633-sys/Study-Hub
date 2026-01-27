@@ -36,43 +36,18 @@ import {
     Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-const plans = [
-    {
-        name: "Monthly",
-        price: "£4.99",
-        period: "/month",
-        description: "Perfect for trying out premium features",
-        features: [
-            "All premium features",
-            "Cancel anytime",
-            "Monthly billing",
-        ],
-        popular: false,
-    },
-    {
-        name: "Yearly",
-        price: "£39.99",
-        period: "/year",
-        description: "Our best value - save over £19 annually!",
-        features: [
-            "All premium features",
-            "4 months free",
-            "Priority new features",
-            "Exclusive content",
-        ],
-        popular: true,
-        savings: "Save £19.89",
-    },
-];
+
 
 export default function PremiumDashboard() {
     const { user, supabase } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { theme } = useTheme();
+    const { t } = useTranslation();
     const [isPremium, setIsPremium] = useState(false);
     const [checking, setChecking] = useState(true);
     const [subscription, setSubscription] = useState<any>(null);
@@ -85,107 +60,136 @@ export default function PremiumDashboard() {
     const [hasWorkExperience, setHasWorkExperience] = useState(false);
     const [checkingContent, setCheckingContent] = useState(true);
 
+    const plans = [
+        {
+            name: t('premium.dashboard.monthly'),
+            price: t('premium.dashboard.monthlyPrice'),
+            period: t('premium.dashboard.monthlyPeriod'),
+            description: t('premium.dashboard.monthlyDescription'),
+            features: [
+                t('premium.planFeatures.allPremium'),
+                t('premium.planFeatures.cancelAnytime'),
+                t('premium.planFeatures.monthlyBilling'),
+            ],
+            popular: false,
+        },
+        {
+            name: t('premium.dashboard.yearly'),
+            price: t('premium.dashboard.yearlyPrice'),
+            period: t('premium.dashboard.yearlyPeriod'),
+            description: t('premium.dashboard.yearlyDescription'),
+            features: [
+                t('premium.planFeatures.allPremium'),
+                t('premium.planFeatures.fourMonthsFree'),
+                t('premium.planFeatures.priorityFeatures'),
+                t('premium.planFeatures.exclusiveContent'),
+            ],
+            popular: true,
+            savings: t('premium.dashboard.saveAmount'),
+        },
+    ];
+
     // Dashboard-specific feature list (Tools)
     const dashboardFeatures = [
         {
-            title: "AI Tutor",
-            description: "1-to-1 AI tutoring, unlimited practice questions, and answer evaluation.",
+            title: t('premium.features.aiTutor.title'),
+            description: t('premium.features.aiTutor.description'),
             icon: Bot,
             path: "/ai-tutor",
             color: "text-amber-500",
             bg: "bg-amber-500/10",
         },
         {
-            title: "AI Homework Solver",
-            description: "Get instant step-by-step solutions for any subject question.",
+            title: t('premium.features.homeworkSolver.title'),
+            description: t('premium.features.homeworkSolver.description'),
             icon: Brain,
             path: "/premium/homework-solver",
             color: "text-purple-500",
             bg: "bg-purple-500/10",
         },
         {
-            title: "Note Condenser",
-            description: "Turn pages of notes into concise summaries and flashcards.",
+            title: t('premium.features.noteCondenser.title'),
+            description: t('premium.features.noteCondenser.description'),
             icon: FileText,
             path: "/premium/note-condenser",
             color: "text-blue-500",
             bg: "bg-blue-500/10",
         },
         {
-            title: "Predicted Grades",
-            description: "Calculate your potential grades based on current performance.",
+            title: t('premium.features.predictedGrades.title'),
+            description: t('premium.features.predictedGrades.description'),
             icon: Calculator,
             path: "/premium/predicted-grades",
             color: "text-green-500",
             bg: "bg-green-500/10",
         },
         {
-            title: "Focus Mode",
-            description: "Distraction-free study timer with Pomodoro technique.",
+            title: t('premium.features.focusMode.title'),
+            description: t('premium.features.focusMode.description'),
             icon: Timer,
             path: "/premium/focus-mode",
             color: "text-red-500",
             bg: "bg-red-500/10",
         },
         {
-            title: "Leaderboards",
-            description: "Compete with other students and track your study streaks.",
+            title: t('premium.features.leaderboards.title'),
+            description: t('premium.features.leaderboards.description'),
             icon: Trophy,
             path: "/premium/leaderboard",
             color: "text-orange-500",
             bg: "bg-orange-500/10",
         },
         {
-            title: "Virtual Sessions",
-            description: "Join weekly group revision sessions led by expert tutors.",
+            title: t('premium.features.virtualSessions.title'),
+            description: t('premium.features.virtualSessions.description'),
             icon: Users,
             path: "/premium/virtual-sessions",
             color: "text-indigo-500",
             bg: "bg-indigo-500/10",
         },
         {
-            title: "Homework Tracker",
-            description: "Track assignments with smart notifications when they're due.",
+            title: t('premium.features.homeworkTracker.title'),
+            description: t('premium.features.homeworkTracker.description'),
             icon: Calendar,
             path: "/premium/homework-tracker",
             color: "text-pink-500",
             bg: "bg-pink-500/10",
         },
         {
-            title: "AI Study Plans",
-            description: "Get personalized study schedules based on your exam dates.",
+            title: t('premium.features.studyPlans.title'),
+            description: t('premium.features.studyPlans.description'),
             icon: Sparkles,
             path: "/premium/study-plans",
             color: "text-cyan-500",
             bg: "bg-cyan-500/10",
         },
         {
-            title: "AI Mind Map Generator",
-            description: "Transform your notes into visual mind maps instantly with AI.",
+            title: t('premium.features.mindMap.title'),
+            description: t('premium.features.mindMap.description'),
             icon: Network,
             path: "/premium/mind-map-generator",
             color: "text-purple-500",
             bg: "bg-purple-500/10",
         },
         {
-            title: "AI Examiner",
-            description: "Upload completed past papers for instant AI marking and grading.",
+            title: t('premium.features.aiExaminer.title'),
+            description: t('premium.features.aiExaminer.description'),
             icon: GraduationCap,
             path: "/premium/ai-examiner",
             color: "text-blue-500",
             bg: "bg-blue-500/10",
         },
         {
-            title: "Performance Heat Map",
-            description: "Visual red/amber/green analytics showing your strengths and weaknesses.",
+            title: t('premium.features.performanceHeatmap.title'),
+            description: t('premium.features.performanceHeatmap.description'),
             icon: BarChart3,
             path: "/premium/performance-heatmap",
             color: "text-orange-500",
             bg: "bg-orange-500/10",
         },
         {
-            title: "Grade 9 Premium Notes",
-            description: "Access exclusive Grade 9 notes and study materials for top marks.",
+            title: t('premium.features.grade9Notes.title'),
+            description: t('premium.features.grade9Notes.description'),
             icon: FileText,
             path: "/premium/grade-9-notes",
             color: "text-emerald-500",
@@ -194,86 +198,87 @@ export default function PremiumDashboard() {
     ];
 
     // Feature Benefits list (merged; highlight Unlimited AI Questions + AI Tutor)
+    // Feature Benefits list (merged; highlight Unlimited AI Questions + AI Tutor)
     const benefitFeatures = [
         {
             icon: Brain,
-            title: "Unlimited AI Generated Questions",
-            description: "Generate unlimited AI questions tailored to your exam board and subjects (10/day for free users).",
+            title: t('premium.features.aiQuestions.title'),
+            description: t('premium.dashboard.unlimitedAIDescription'),
             highlight: true,
         },
         {
             icon: Bot,
-            title: "AI Tutor",
-            description: "1-to-1 AI tutoring, practice questions, answer evaluation, and study support.",
+            title: t('premium.features.aiTutor.title'),
+            description: t('premium.features.aiTutor.description'),
             highlight: true,
             path: "/ai-tutor",
         },
         {
             icon: Sparkles,
-            title: "Groq AI Study Suggestions",
-            description: "Get personalized study recommendations based on your progress and weak areas",
+            title: t('premium.features.studyPlans.title'),
+            description: t('premium.features.studyPlans.description'),
         },
         {
             icon: Zap,
-            title: "Instant Feedback",
-            description: "Receive detailed explanations and mark scheme breakdowns for every answer",
+            title: t('premium.features.homeworkSolver.title'),
+            description: t('premium.features.homeworkSolver.description'),
         },
         {
             icon: Timer,
-            title: "Progress Analytics",
-            description: "Advanced insights into your study patterns and performance trends",
+            title: t('premium.features.performanceHeatmap.title'),
+            description: t('premium.features.performanceHeatmap.description'),
         },
         {
             icon: Shield,
-            title: "Fully Ad-Free Experience",
-            description: "Study without distractions with a completely ad-free interface",
+            title: t('premium.features.focusMode.title'),
+            description: t('premium.features.focusMode.description'), // Using focus mode description for now or generic
         },
         {
             icon: Users,
-            title: "Priority Support",
-            description: "Get help faster with dedicated premium customer support",
+            title: t('premium.features.virtualSessions.title'),
+            description: t('premium.features.virtualSessions.description'),
         },
         {
             icon: Brain,
-            title: "Grade 9 Premium Notes",
-            description: "Access exclusive Grade 9 notes and study materials",
+            title: t('premium.features.grade9Notes.title'),
+            description: t('premium.features.grade9Notes.description'),
         },
         {
             icon: Timer,
-            title: "Homework Tracker",
-            description: "Track assignments with smart notifications when they're due",
+            title: t('premium.features.homeworkTracker.title'),
+            description: t('premium.features.homeworkTracker.description'),
         },
         {
             icon: Sparkles,
-            title: "AI-Powered Study Plans",
-            description: "Get personalized study schedules based on your exam dates",
+            title: t('premium.features.studyPlans.title'),
+            description: t('premium.features.studyPlans.description'),
         },
         {
             icon: Brain,
-            title: "AI Mind Map Generator",
-            description: "Transform your notes into visual mind maps instantly with AI",
+            title: t('premium.features.mindMap.title'),
+            description: t('premium.features.mindMap.description'),
         },
         {
             icon: GraduationCap,
-            title: "AI Examiner",
-            description: "Upload completed past papers for instant AI marking and grading",
+            title: t('premium.features.aiExaminer.title'),
+            description: t('premium.features.aiExaminer.description'),
         },
         {
             icon: BarChart3,
-            title: "Performance Heat Map",
-            description: "Visual red/amber/green analytics showing your strengths and weaknesses",
+            title: t('premium.features.performanceHeatmap.title'),
+            description: t('premium.features.performanceHeatmap.description'),
         },
         {
             icon: Users,
-            title: "Scientia.ai Work Experience",
-            description: "Exclusive work experience opportunities for premium members",
+            title: t('premium.features.workExperience.title'),
+            description: t('premium.features.workExperience.description'),
             path: "/premium/work-experience",
             badgeKey: "workExperience" as const,
         },
         {
             icon: FileText,
-            title: "2026 Predicted Papers",
-            description: "Access exclusive 2026 predicted exam papers before they're released publicly",
+            title: t('premium.features.predictedPapers.title'),
+            description: t('premium.features.predictedPapers.description'),
             path: "/premium/predicted-papers",
             badgeKey: "predictedPapers" as const,
         },
@@ -412,12 +417,12 @@ export default function PremiumDashboard() {
                     <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div>
                             <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-600 to-amber-600 dark:from-yellow-400 dark:to-amber-400">
-                                {isPremium ? "Welcome, Premium Member!" : "Unlock Your Potential"}
+                                {isPremium ? t('premium.dashboard.welcomePremium') : t('premium.dashboard.unlockPotential')}
                             </h1>
                             <p className="text-muted-foreground mt-3 max-w-xl text-lg">
                                 {isPremium
-                                    ? "Thank you for upgrading! Enjoy unlimited access to all our advanced AI tools and study features."
-                                    : "Access advanced AI tools, exclusive content, and powerful study features designed to boost your grades."}
+                                    ? t('premium.dashboard.premiumDescription')
+                                    : t('premium.dashboard.freeDescription')}
                             </p>
                         </div>
 
@@ -428,7 +433,7 @@ export default function PremiumDashboard() {
                                 onClick={() => document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
                             >
                                 <Sparkles className="w-5 h-5 mr-2" />
-                                Upgrade to Premium
+                                {t('premium.dashboard.upgradeToPremium')}
                             </Button>
                         )}
                     </div>
@@ -441,17 +446,17 @@ export default function PremiumDashboard() {
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
                                     <Check className="h-5 w-5 text-secondary" />
-                                    <h3 className="text-lg font-semibold text-foreground">Active Premium Subscription</h3>
+                                    <h3 className="text-lg font-semibold text-foreground">{t('premium.dashboard.activeSubscription')}</h3>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    Plan: <span className="font-medium text-foreground capitalize">{subscription.plan_type}</span>
+                                    {t('premium.dashboard.plan')}: <span className="font-medium text-foreground capitalize">{subscription.plan_type}</span>
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                    Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                    {t('premium.dashboard.renews')}: {new Date(subscription.current_period_end).toLocaleDateString()}
                                 </p>
                                 {subscription.cancel_at_period_end && (
                                     <p className="text-sm text-destructive mt-2">
-                                        ⚠️ Subscription will cancel at the end of the billing period
+                                        ⚠️ {t('premium.dashboard.cancelsAtEnd')}
                                     </p>
                                 )}
                             </div>
@@ -466,7 +471,7 @@ export default function PremiumDashboard() {
                                     ) : (
                                         <X className="h-4 w-4 mr-2" />
                                     )}
-                                    Cancel Subscription
+                                    {t('premium.dashboard.cancelSubscription')}
                                 </Button>
                             )}
                         </div>
@@ -495,7 +500,7 @@ export default function PremiumDashboard() {
 
                             <CardFooter className="pt-0 flex justify-between items-center text-sm text-muted-foreground">
                                 <span className="group-hover:text-primary transition-colors">
-                                    {!isPremium ? "Premium Only" : "Launch Tool"}
+                                    {!isPremium ? t('premium.dashboard.premiumOnly') : t('premium.dashboard.launchTool')}
                                 </span>
                                 {!isPremium ? (
                                     <Lock className="w-4 h-4 text-muted-foreground" />
@@ -511,19 +516,19 @@ export default function PremiumDashboard() {
                 <div className="space-y-6">
                     <div className="text-center">
                         <h2 className="text-3xl font-bold text-foreground">
-                            {isPremium ? "Your Premium Benefits" : "Premium Features"}
+                            {isPremium ? t('premium.dashboard.yourBenefits') : t('premium.dashboard.premiumFeatures')}
                         </h2>
                         <p className="text-muted-foreground mt-2">
                             {isPremium
-                                ? "You have full access to these exclusive features"
-                                : "Everything you get when you upgrade to Scientia.ai Premium"}
+                                ? t('premium.dashboard.benefitsDescriptionPremium')
+                                : t('premium.dashboard.benefitsDescriptionFree')}
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {benefitFeatures.map((feature, index) => {
                             const f = feature as typeof feature & { highlight?: boolean; path?: string; badgeKey?: "workExperience" | "predictedPapers" };
-                            const badge = f.badgeKey === "workExperience" ? (hasWorkExperience ? "Available" : "Coming Soon") : f.badgeKey === "predictedPapers" ? (hasPredictedPapers ? "Available" : "Coming Soon") : null;
+                            const badge = f.badgeKey === "workExperience" ? (hasWorkExperience ? t('premium.dashboard.available') : t('premium.dashboard.comingSoon')) : f.badgeKey === "predictedPapers" ? (hasPredictedPapers ? t('premium.dashboard.available') : t('premium.dashboard.comingSoon')) : null;
                             return (
                                 <div
                                     key={index}
@@ -562,16 +567,14 @@ export default function PremiumDashboard() {
                             <Crown className="h-4 w-4 text-premium-foreground" />
                         </div>
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Unlimited AI Content Generation</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">{t('premium.dashboard.unlimitedAI')}</h3>
                     <p className="text-muted-foreground mb-4">
-                        This feature is available for Premium members only.
-                        Upgrade to access unlimited AI-generated questions, flashcards, and study materials.
-                        Free users get 10 AI requests per day.
+                        {t('premium.dashboard.unlimitedAIDescription')}
                     </p>
                     {isPremium ? (
                         <div className="flex items-center justify-center gap-2 text-secondary">
                             <Check className="h-5 w-5" />
-                            <span className="font-medium">You have access to this feature!</span>
+                            <span className="font-medium">{t('premium.dashboard.accessGranted')}</span>
                         </div>
                     ) : (
                         <Button
@@ -579,7 +582,7 @@ export default function PremiumDashboard() {
                             onClick={() => document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
                         >
                             <Crown className="h-4 w-4 mr-2" />
-                            Unlock Premium
+                            {t('premium.dashboard.unlockPremium')}
                         </Button>
                     )}
                 </div>
@@ -589,8 +592,8 @@ export default function PremiumDashboard() {
                     <div id="pricing-section" className="space-y-12 pt-12 border-t border-border/50">
                         {/* Pricing Cards */}
                         <div className="text-center mb-8">
-                            <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
-                            <p className="text-muted-foreground">Unlock unlimited access to all AI tools and features</p>
+                            <h2 className="text-3xl font-bold mb-4">{t('premium.dashboard.choosePlan')}</h2>
+                            <p className="text-muted-foreground">{t('premium.dashboard.choosePlanSubtitle')}</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
@@ -609,7 +612,7 @@ export default function PremiumDashboard() {
                                         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                                             <span className="premium-badge">
                                                 <Star className="h-3 w-3 fill-current" />
-                                                Most Popular
+                                                {t('premium.dashboard.mostPopular')}
                                             </span>
                                         </div>
                                     )}
@@ -651,17 +654,17 @@ export default function PremiumDashboard() {
                                         {loading ? (
                                             <>
                                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                Processing...
+                                                {t('premium.dashboard.processing')}
                                             </>
                                         ) : isPremium ? (
                                             <>
                                                 <Check className="h-4 w-4 mr-2" />
-                                                Already Premium
+                                                {t('premium.dashboard.alreadyPremium')}
                                             </>
                                         ) : (
                                             <>
                                                 {plan.popular && <Rocket className="h-4 w-4 mr-2" />}
-                                                Get Lifetime Access (Beta)
+                                                {t('premium.dashboard.getLifetimeAccess')}
                                             </>
                                         )}
                                     </Button>
@@ -675,7 +678,7 @@ export default function PremiumDashboard() {
                                 <div className="flex-1 w-full">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Ticket className="h-5 w-5 text-premium" />
-                                        <h3 className="text-lg font-semibold text-foreground">Have a discount code?</h3>
+                                        <h3 className="text-lg font-semibold text-foreground">{t('premium.dashboard.haveDiscount')}</h3>
                                     </div>
                                     <div className="flex gap-2">
                                         <Input
@@ -685,7 +688,7 @@ export default function PremiumDashboard() {
                                             className="max-w-xs"
                                         />
                                         <Button variant="secondary" onClick={handleApplyCode}>
-                                            Apply
+                                            {t('premium.dashboard.apply')}
                                         </Button>
                                     </div>
                                 </div>
@@ -702,9 +705,9 @@ export default function PremiumDashboard() {
                         {/* Guarantee */}
                         <div className="glass-card p-6 md:p-8 text-center max-w-2xl mx-auto">
                             <Shield className="h-10 w-10 text-secondary mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold text-foreground mb-2">30-Day Money-Back Guarantee</h3>
+                            <h3 className="text-lg font-semibold text-foreground mb-2">{t('premium.dashboard.moneyBackGuarantee')}</h3>
                             <p className="text-muted-foreground">
-                                Not satisfied? Get a full refund within 30 days, no questions asked.
+                                {t('premium.dashboard.moneyBackDescription')}
                             </p>
                         </div>
                     </div>

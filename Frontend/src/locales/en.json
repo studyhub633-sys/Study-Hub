@@ -29,7 +29,8 @@
         "ok": "OK",
         "confirm": "Confirm",
         "theme": "Theme",
-        "language": "Language"
+        "language": "Language",
+        "quickAccess": "Quick Access"
     },
     "landing": {
         "heroTitle": "Your All-in-One",
@@ -134,6 +135,141 @@
         "resetPasswordSubtitle": "Enter your email to receive a password reset link",
         "sendResetLink": "Send Reset Link",
         "newPassword": "New Password",
-        "createNewPassword": "Create a new password for your account"
+        "createNewPassword": "Create a new password for your account",
+        "checkEmail": "Check your email for the reset link",
+        "emailSentTo": "We've sent a password reset link to {{email}}.",
+        "checkSpam": "Didn't receive the email? Check your spam folder or ",
+        "tryAgain": "try again",
+        "returnToLogin": "Return to Login",
+        "sendingLink": "Sending link...",
+        "setNewPassword": "Set New Password",
+        "successReset": "Your password has been successfully reset",
+        "linkExpired": "Your reset link may have expired or is invalid.",
+        "enterNewPassword": "Enter your new password below",
+        "sessionMissing": "Authentication session is missing. This happens if the link is expired or if you've opened it in a different browser than where you started.",
+        "requestNewLink": "Request a new link",
+        "passwordUpdated": "Your password has been updated. You will be redirected to the login page shortly.",
+        "loginNow": "Login Now",
+        "updatePassword": "Update Password",
+        "updatingDotted": "Updating password...",
+        "passwordsDoNotMatch": "Passwords do not match",
+        "passwordLength": "Password must be at least 6 characters long",
+        "enterNewPasswordPlaceholder": "Enter new password",
+        "confirmNewPasswordPlaceholder": "Confirm new password"
+    },
+    "premium": {
+        "dashboard": {
+            "welcomePremium": "Welcome, Premium Member!",
+            "unlockPotential": "Unlock Your Potential",
+            "premiumDescription": "Thank you for upgrading! Enjoy unlimited access to all our advanced AI tools and study features.",
+            "freeDescription": "Access advanced AI tools, exclusive content, and powerful study features designed to boost your grades.",
+            "upgradeToPremium": "Upgrade to Premium",
+            "activeSubscription": "Active Premium Subscription",
+            "plan": "Plan",
+            "renews": "Renews",
+            "cancelSubscription": "Cancel Subscription",
+            "cancelsAtEnd": "Subscription will cancel at the end of the billing period",
+            "premiumOnly": "Premium Only",
+            "launchTool": "Launch Tool",
+            "yourBenefits": "Your Premium Benefits",
+            "premiumFeatures": "Premium Features",
+            "benefitsDescriptionPremium": "You have full access to these exclusive features",
+            "benefitsDescriptionFree": "Everything you get when you upgrade to Scientia.ai Premium",
+            "available": "Available",
+            "comingSoon": "Coming Soon",
+            "unlimitedAI": "Unlimited AI Content Generation",
+            "unlimitedAIDescription": "This feature is available for Premium members only. Upgrade to access unlimited AI-generated questions, flashcards, and study materials. Free users get 10 AI requests per day.",
+            "accessGranted": "You have access to this feature!",
+            "unlockPremium": "Unlock Premium",
+            "choosePlan": "Choose Your Plan",
+            "choosePlanSubtitle": "Unlock unlimited access to all AI tools and features",
+            "mostPopular": "Most Popular",
+            "monthly": "Monthly",
+            "monthlyPrice": "£4.99",
+            "monthlyPeriod": "/month",
+            "monthlyDescription": "Perfect for trying out premium features",
+            "yearly": "Yearly",
+            "yearlyPrice": "£39.99",
+            "yearlyPeriod": "/year",
+            "yearlyDescription": "Our best value - save over £19 annually!",
+            "saveAmount": "Save £19.89",
+            "getLifetimeAccess": "Get Lifetime Access (Beta)",
+            "processing": "Processing...",
+            "alreadyPremium": "Already Premium",
+            "haveDiscount": "Have a discount code?",
+            "apply": "Apply",
+            "moneyBackGuarantee": "30-Day Money-Back Guarantee",
+            "moneyBackDescription": "Not satisfied? Get a full refund within 30 days, no questions asked."
+        },
+        "features": {
+            "aiTutor": {
+                "title": "AI Tutor",
+                "description": "1-to-1 AI tutoring, unlimited practice questions, and answer evaluation."
+            },
+            "homeworkSolver": {
+                "title": "AI Homework Solver",
+                "description": "Get instant step-by-step solutions for any subject question."
+            },
+            "noteCondenser": {
+                "title": "Note Condenser",
+                "description": "Turn pages of notes into concise summaries and flashcards."
+            },
+            "predictedGrades": {
+                "title": "Predicted Grades",
+                "description": "Calculate your potential grades based on current performance."
+            },
+            "focusMode": {
+                "title": "Focus Mode",
+                "description": "Distraction-free study timer with Pomodoro technique."
+            },
+            "leaderboards": {
+                "title": "Leaderboards",
+                "description": "Compete with other students and track your study streaks."
+            },
+            "virtualSessions": {
+                "title": "Virtual Sessions",
+                "description": "Join weekly group revision sessions led by expert tutors."
+            },
+            "homeworkTracker": {
+                "title": "Homework Tracker",
+                "description": "Track assignments with smart notifications when they're due."
+            },
+            "studyPlans": {
+                "title": "AI Study Plans",
+                "description": "Get personalized study schedules based on your exam dates."
+            },
+            "mindMap": {
+                "title": "AI Mind Map Generator",
+                "description": "Transform your notes into visual mind maps instantly with AI."
+            },
+            "aiExaminer": {
+                "title": "AI Examiner",
+                "description": "Upload completed past papers for instant AI marking and grading."
+            },
+            "performanceHeatmap": {
+                "title": "Performance Heat Map",
+                "description": "Visual red/amber/green analytics showing your strengths and weaknesses."
+            },
+            "grade9Notes": {
+                "title": "Grade 9 Premium Notes",
+                "description": "Access exclusive Grade 9 notes and study materials for top marks."
+            },
+            "workExperience": {
+                "title": "Scientia.ai Work Experience",
+                "description": "Exclusive work experience opportunities for premium members"
+            },
+            "predictedPapers": {
+                "title": "2026 Predicted Papers",
+                "description": "Access exclusive 2026 predicted exam papers before they're released publicly"
+            }
+        },
+        "planFeatures": {
+            "allPremium": "All premium features",
+            "cancelAnytime": "Cancel anytime",
+            "monthlyBilling": "Monthly billing",
+            "fourMonthsFree": "4 months free",
+            "priorityFeatures": "Priority new features",
+            "exclusiveContent": "Exclusive content"
+        }
     }
 }

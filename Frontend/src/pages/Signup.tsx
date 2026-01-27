@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, HelpCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { faqs } from "./FAQ";
 
@@ -27,6 +28,7 @@ export default function Signup() {
   const [success, setSuccess] = useState(false);
   const { signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!authLoading && user && !success) {
@@ -67,7 +69,7 @@ export default function Signup() {
         <Link to="/landing">
           <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
-            Back to Landing Page
+            {t('common.back')}
           </Button>
         </Link>
       </div>
@@ -77,9 +79,9 @@ export default function Signup() {
           <div className="flex justify-center mb-4">
             <AnimatedLogoIcon />
           </div>
-          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+          <CardTitle className="text-2xl font-bold">{t('auth.createAccount')}</CardTitle>
           <CardDescription>
-            Sign up to start organizing your studies
+            {t('auth.signupSubtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -100,7 +102,7 @@ export default function Signup() {
                 onClick={() => navigate("/login")}
                 className="w-full"
               >
-                Go to Sign In
+                {t('common.login')}
               </Button>
             </div>
           ) : (
@@ -112,7 +114,7 @@ export default function Signup() {
                   </Alert>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('common.email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -124,7 +126,7 @@ export default function Signup() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t('common.password')}</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -152,7 +154,7 @@ export default function Signup() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">{t('common.confirmPassword')}</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
@@ -183,17 +185,17 @@ export default function Signup() {
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating account...
+                      {t('common.loading')}
                     </>
                   ) : (
-                    "Create Account"
+                    t('common.signup')
                   )}
                 </Button>
               </form>
               <div className="mt-6 text-center text-sm">
-                <span className="text-muted-foreground">Already have an account? </span>
+                <span className="text-muted-foreground">{t('auth.haveAccount')} </span>
                 <Link to="/login" className="text-primary hover:underline font-medium">
-                  Sign in
+                  {t('common.login')}
                 </Link>
               </div>
             </>
@@ -205,7 +207,7 @@ export default function Signup() {
       <div className="w-full max-w-md mt-8">
         <div className="flex items-center gap-2 mb-4">
           <HelpCircle className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">Frequently Asked Questions</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('footer.faq')}</h2>
         </div>
         <Accordion type="single" collapsible className="w-full">
           {faqs.slice(0, 5).map((faq, index) => (

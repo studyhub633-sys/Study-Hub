@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 export default function ForgotPassword() {
@@ -15,6 +16,7 @@ export default function ForgotPassword() {
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const { resetPassword } = useAuth();
+    const { t } = useTranslation();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,7 +40,7 @@ export default function ForgotPassword() {
                 <Link to="/login">
                     <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
                         <ArrowLeft className="h-4 w-4" />
-                        Back to Login
+                        {t('auth.returnToLogin')}
                     </Button>
                 </Link>
             </div>
@@ -48,11 +50,11 @@ export default function ForgotPassword() {
                     <div className="flex justify-center mb-4">
                         <AnimatedLogoIcon />
                     </div>
-                    <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
+                    <CardTitle className="text-2xl font-bold">{t('auth.resetPassword')}</CardTitle>
                     <CardDescription>
                         {submitted
-                            ? "Check your email for the reset link"
-                            : "Enter your email address and we'll send you a link to reset your password"}
+                            ? t('auth.checkEmail')
+                            : t('auth.resetPasswordSubtitle')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -62,20 +64,20 @@ export default function ForgotPassword() {
                                 <CheckCircle2 className="h-12 w-12 text-green-500 animate-in zoom-in duration-300" />
                             </div>
                             <p className="text-muted-foreground">
-                                We've sent a password reset link to <span className="font-semibold text-foreground">{email}</span>.
+                                {t('auth.emailSentTo', { email: email })}
                             </p>
                             <p className="text-sm">
-                                Didn't receive the email? Check your spam folder or{" "}
+                                {t('auth.checkSpam')}
                                 <button
                                     onClick={() => setSubmitted(false)}
                                     className="text-primary hover:underline"
                                 >
-                                    try again
+                                    {t('auth.tryAgain')}
                                 </button>
                             </p>
                             <Link to="/login" className="block mt-4">
                                 <Button variant="outline" className="w-full">
-                                    Return to Login
+                                    {t('auth.returnToLogin')}
                                 </Button>
                             </Link>
                         </div>
@@ -87,7 +89,7 @@ export default function ForgotPassword() {
                                 </Alert>
                             )}
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">{t('common.email')}</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -102,10 +104,10 @@ export default function ForgotPassword() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Sending link...
+                                        {t('auth.sendingLink')}
                                     </>
                                 ) : (
-                                    "Send Reset Link"
+                                    t('auth.sendResetLink')
                                 )}
                             </Button>
                         </form>
