@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useChatSessions, type ChatMessage } from "@/hooks/useChatSessions";
 import { chatWithAI, evaluateAnswer, generateQuestion, generateSimpleQuestion } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Bot, Brain, Loader2, Send, Sparkles, User } from "lucide-react";
+import { ArrowLeft, Bot, Brain, History, Loader2, Send, Sparkles, User } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
@@ -382,56 +383,91 @@ export default function AITutor() {
         }
     };
 
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
     return (
         <AppLayout>
             <div className="flex h-[calc(100vh-8rem)] gap-4">
-                {/* Chat History Sidebar */}
-                <ChatHistorySidebar
-                    sessions={sessions}
-                    currentSessionId={currentSession?.id || null}
-                    onSelectSession={handleSelectSession}
-                    onNewChat={handleNewChat}
-                    onDeleteSession={deleteSession}
-                    onRenameSession={renameSession}
-                    loading={sessionsLoading}
-                />
+                {/* Chat History Sidebar - Desktop */}
+                <div className="hidden md:flex">
+                    <ChatHistorySidebar
+                        sessions={sessions}
+                        currentSessionId={currentSession?.id || null}
+                        onSelectSession={handleSelectSession}
+                        onNewChat={handleNewChat}
+                        onDeleteSession={deleteSession}
+                        onRenameSession={renameSession}
+                        loading={sessionsLoading}
+                    />
+                </div>
 
                 {/* Main Content */}
                 <div className="flex-1 flex flex-col min-w-0 space-y-4">
                     {/* Header */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
-                        <div>
-                            {location.state?.organizerTitle && (
-                                <Button
-                                    variant="ghost"
-                                    className="mb-2 p-0 h-auto hover:bg-transparent text-muted-foreground hover:text-foreground"
-                                    onClick={() => navigate("/knowledge")}
-                                >
-                                    <ArrowLeft className="h-4 w-4 mr-2" />
-                                    Back to Knowledge Organizer
-                                </Button>
-                            )}
-                            <div className="flex items-center gap-3 mb-2">
-                                <Sparkles className="h-6 w-6 text-primary" />
-                                <h1 className="text-2xl md:text-3xl font-bold text-foreground">AI Tutoring Bot</h1>
-                            </div>
-                            <p className="text-muted-foreground">
-                                Get personalized help with your studies
-                            </p>
-                            {aiUsage && (
-                                <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
-                                    <Brain className="h-3 w-3 mr-1" />
-                                    {aiUsage.limit - aiUsage.count} AI generations remaining today
+                    <div className="flex flex-col gap-4 animate-fade-in">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                {location.state?.organizerTitle && (
+                                    <Button
+                                        variant="ghost"
+                                        className="mb-2 p-0 h-auto hover:bg-transparent text-muted-foreground hover:text-foreground"
+                                        onClick={() => navigate("/knowledge")}
+                                    >
+                                        <ArrowLeft className="h-4 w-4 mr-2" />
+                                        Back to Knowledge Organizer
+                                    </Button>
+                                )}
+                                <div className="flex items-center gap-3 mb-2">
+                                    <Sparkles className="h-6 w-6 text-primary" />
+                                    <h1 className="text-2xl md:text-3xl font-bold text-foreground">AI Tutoring Bot</h1>
                                 </div>
-                            )}
+                                <p className="text-muted-foreground">
+                                    Get personalized help with your studies
+                                </p>
+                            </div>
+
+                            {/* Mobile History Toggle */}
+                            <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+                                <SheetTrigger asChild>
+                                    <Button variant="outline" size="icon" className="md:hidden shrink-0">
+                                        <History className="h-5 w-5" />
+                                        <span className="sr-only">Chat History</span>
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent side="left" className="p-0 w-72">
+                                    <ChatHistorySidebar
+                                        sessions={sessions}
+                                        currentSessionId={currentSession?.id || null}
+                                        onSelectSession={(id) => {
+                                            handleSelectSession(id);
+                                            setIsHistoryOpen(false);
+                                        }}
+                                        onNewChat={() => {
+                                            handleNewChat();
+                                            setIsHistoryOpen(false);
+                                        }}
+                                        onDeleteSession={deleteSession}
+                                        onRenameSession={renameSession}
+                                        loading={sessionsLoading}
+                                    />
+                                </SheetContent>
+                            </Sheet>
                         </div>
+
+                        {aiUsage && (
+                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary w-fit">
+                                <Brain className="h-3 w-3 mr-1" />
+                                {aiUsage.limit - aiUsage.count} AI generations remaining today
+                            </div>
+                        )}
                     </div>
 
                     {/* Mode Selector */}
-                    <div className="flex gap-2 animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
+                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 animate-slide-up no-scrollbar" style={{ animationDelay: "0.1s", opacity: 0 }}>
                         <Button
                             variant={mode === "chat" ? "default" : "outline"}
                             size="sm"
+                            className="whitespace-nowrap"
                             onClick={() => { setMode("chat"); setPendingQuestion(null); }}
                         >
                             Chat
@@ -439,6 +475,7 @@ export default function AITutor() {
                         <Button
                             variant={mode === "question" ? "default" : "outline"}
                             size="sm"
+                            className="whitespace-nowrap"
                             onClick={() => setMode("question")}
                         >
                             Generate Question
@@ -446,6 +483,7 @@ export default function AITutor() {
                         <Button
                             variant={mode === "evaluate" ? "default" : "outline"}
                             size="sm"
+                            className="whitespace-nowrap"
                             onClick={() => { setMode("evaluate"); setPendingQuestion(null); }}
                         >
                             Evaluate Answer
@@ -462,10 +500,10 @@ export default function AITutor() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
                         {/* Chat Area */}
-                        <div className="lg:col-span-2 flex flex-col min-h-0">
-                            <Card className="flex-1 flex flex-col min-h-0">
-                                <CardHeader className="shrink-0">
-                                    <CardTitle>Conversation</CardTitle>
+                        <div className="lg:col-span-2 flex flex-col min-h-0 order-2 lg:order-1">
+                            <Card className="flex-1 flex flex-col min-h-0 shadow-sm border-border/60">
+                                <CardHeader className="shrink-0 p-4 pb-2">
+                                    <CardTitle className="text-lg">Conversation</CardTitle>
                                     <CardDescription>
                                         {mode === "chat" && "Ask me anything about your studies"}
                                         {mode === "question" && "I'll generate questions from your notes"}
@@ -473,7 +511,7 @@ export default function AITutor() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex-1 flex flex-col p-0 overflow-hidden min-h-0">
-                                    <ScrollArea className="flex-1 px-6 min-h-0">
+                                    <ScrollArea className="flex-1 px-4 md:px-6 min-h-0">
                                         <div className="space-y-4 py-4">
                                             {messages.map((message) => (
                                                 <div
@@ -490,19 +528,19 @@ export default function AITutor() {
                                                     )}
                                                     <div
                                                         className={cn(
-                                                            "max-w-[80%] rounded-lg p-4",
+                                                            "max-w-[85%] md:max-w-[80%] rounded-2xl px-4 py-3 text-sm",
                                                             message.role === "user"
-                                                                ? "bg-primary text-primary-foreground"
-                                                                : "bg-muted text-foreground"
+                                                                ? "bg-primary text-primary-foreground rounded-br-none"
+                                                                : "bg-muted text-foreground rounded-bl-none"
                                                         )}
                                                     >
                                                         {message.role === "assistant" ? (
                                                             <SimpleMarkdown content={message.content} className="text-sm" />
                                                         ) : (
-                                                            <p className="whitespace-pre-wrap text-sm break-words">{message.content}</p>
+                                                            <p className="whitespace-pre-wrap break-words">{message.content}</p>
                                                         )}
-                                                        <p className="text-xs opacity-70 mt-2">
-                                                            {message.timestamp.toLocaleTimeString()}
+                                                        <p className="text-[10px] opacity-70 mt-1 text-right">
+                                                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </p>
                                                     </div>
                                                     {message.role === "user" && (
@@ -517,7 +555,7 @@ export default function AITutor() {
                                                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                                                         <Bot className="h-4 w-4 text-primary" />
                                                     </div>
-                                                    <div className="bg-muted rounded-lg p-4">
+                                                    <div className="bg-muted rounded-2xl rounded-bl-none p-4">
                                                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                                                     </div>
                                                 </div>
@@ -525,7 +563,7 @@ export default function AITutor() {
                                             <div ref={scrollRef} />
                                         </div>
                                     </ScrollArea>
-                                    <div className="p-6 border-t border-border shrink-0">
+                                    <div className="p-3 md:p-6 border-t border-border shrink-0 bg-background/50 backdrop-blur-sm">
                                         <div className="flex gap-2">
                                             <Input
                                                 value={input}
@@ -544,8 +582,9 @@ export default function AITutor() {
                                                             : "Type your message..."
                                                 }
                                                 disabled={loading}
+                                                className="rounded-full pl-4"
                                             />
-                                            <Button onClick={handleSend} disabled={loading || !input.trim()}>
+                                            <Button onClick={handleSend} disabled={loading || !input.trim()} size="icon" className="rounded-full shrink-0">
                                                 {loading ? (
                                                     <Loader2 className="h-4 w-4 animate-spin" />
                                                 ) : (
@@ -558,23 +597,23 @@ export default function AITutor() {
                             </Card>
                         </div>
 
-                        {/* Context/Notes Sidebar */}
-                        <div className="space-y-4">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Context / Notes</CardTitle>
-                                    <CardDescription>
+                        {/* Context/Notes Sidebar - Desktop & Mobile */}
+                        <div className="space-y-4 order-1 lg:order-2">
+                            <Card className="border-border/60 shadow-sm">
+                                <CardHeader className="py-3 px-4">
+                                    <CardTitle className="text-base">Context / Notes</CardTitle>
+                                    <CardDescription className="text-xs">
                                         Paste your notes here for better assistance
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="p-3 pt-0">
                                     <Textarea
                                         value={context}
                                         onChange={(e) => setContext(e.target.value)}
                                         placeholder="Paste your notes, study material, or the correct answer here..."
-                                        className="min-h-[200px]"
+                                        className="min-h-[100px] lg:min-h-[200px] resize-y"
                                     />
-                                    <p className="text-xs text-muted-foreground mt-2">
+                                    <p className="text-[10px] text-muted-foreground mt-2">
                                         {mode === "question" &&
                                             "I'll generate practice questions based on this context"}
                                         {mode === "evaluate" &&
@@ -584,11 +623,11 @@ export default function AITutor() {
                                 </CardContent>
                             </Card>
 
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Tips</CardTitle>
+                            <Card className="hidden lg:block border-border/60 shadow-sm">
+                                <CardHeader className="py-3 px-4">
+                                    <CardTitle className="text-base">Tips</CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-2 text-sm text-muted-foreground">
+                                <CardContent className="space-y-2 text-xs text-muted-foreground p-3 pt-0">
                                     <p>• Provide clear context from your notes for better questions</p>
                                     <p>• Use "Generate Question" mode to create practice questions</p>
                                     <p>• After a question is generated, just type your answer</p>
