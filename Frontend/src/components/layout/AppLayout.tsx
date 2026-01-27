@@ -87,7 +87,7 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
                     >
                       <div className="flex items-center gap-3 z-10">
                         <Crown className={cn("h-5 w-5 text-premium", location.pathname === "/premium-dashboard" && "text-premium-foreground")} />
-                        <span className="font-bold tracking-tight">Go Premium</span>
+                        <span className="font-bold tracking-tight">{t("sidebar.goPremium")}</span>
                       </div>
                       <div className="flex items-center gap-2 z-10">
                         <span className="text-[10px] bg-background/20 backdrop-blur-sm px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">

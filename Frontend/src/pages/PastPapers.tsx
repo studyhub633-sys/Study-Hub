@@ -647,7 +647,7 @@ export default function PastPapers() {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search papers..."
+              placeholder={t("pastPapers.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -658,7 +658,7 @@ export default function PastPapers() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All Subjects">All Subjects</SelectItem>
+              <SelectItem value="All Subjects">{t("common.allSubjects")}</SelectItem>
               {subjects.map((subject) => (
                 <SelectItem key={subject} value={subject}>
                   {subject}
@@ -671,7 +671,7 @@ export default function PastPapers() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All Boards">All Boards</SelectItem>
+              <SelectItem value="All Boards">{t("common.allBoards")}</SelectItem>
               {EXAM_BOARDS.map((board) => (
                 <SelectItem key={board} value={board}>
                   {board}
@@ -684,10 +684,10 @@ export default function PastPapers() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All Tiers">All Tiers</SelectItem>
-              <SelectItem value="Higher">Higher Tier</SelectItem>
-              <SelectItem value="Foundation">Foundation Tier</SelectItem>
-              <SelectItem value="Unassigned">Unassigned</SelectItem>
+              <SelectItem value="All Tiers">{t("common.allTiers")}</SelectItem>
+              <SelectItem value="Higher">{t("flashcards.higher")}</SelectItem>
+              <SelectItem value="Foundation">{t("flashcards.foundation")}</SelectItem>
+              <SelectItem value="Unassigned">{t("pastPapers.unassigned")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -761,7 +761,7 @@ export default function PastPapers() {
                   ) : (
                     <div className="mb-4 p-3 rounded-lg bg-muted/50 flex items-center gap-2 text-sm text-muted-foreground">
                       <AlertCircle className="h-4 w-4" />
-                      <span>Not attempted yet</span>
+                      <span>{t("pastPapers.notAttempted")}</span>
                     </div>
                   )}
 
@@ -775,12 +775,12 @@ export default function PastPapers() {
                       {isCompleted ? (
                         <>
                           <Eye className="h-4 w-4 mr-2" />
-                          Review
+                          {t("common.review")}
                         </>
                       ) : (
                         <>
                           <Play className="h-4 w-4 mr-2" />
-                          Start Quiz
+                          {t("flashcards.startQuiz")}
                         </>
                       )}
                     </Button>

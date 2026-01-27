@@ -30,7 +30,18 @@
         "confirm": "Confirm",
         "theme": "Theme",
         "language": "Language",
-        "quickAccess": "Quick Access"
+        "quickAccess": "Quick Access",
+        "allSubjects": "All Subjects",
+        "allBoards": "All Boards",
+        "allYears": "All Years",
+        "allTiers": "All Tiers",
+        "noResults": "No results found matching your criteria.",
+        "year": "Year",
+        "subject": "Subject",
+        "apply": "Apply",
+        "review": "Review",
+        "working": "Working Magic...",
+        "comingSoon": "Coming Soon"
     },
     "landing": {
         "heroTitle": "Your All-in-One",
@@ -150,7 +161,8 @@
         "lightMode": "Light Mode",
         "switchToDark": "Switch to dark theme",
         "switchToLight": "Switch to light theme",
-        "generateWithAI": "Generate with AI"
+        "generateWithAI": "Generate with AI",
+        "learnSmarter": "Learn smarter"
     },
     "auth": {
         "welcomeBack": "Welcome Back",
@@ -328,7 +340,18 @@
             "premiumMember": "You're a Premium Member",
             "description": "During beta, premium features are reserved for authorized tester accounts.",
             "descriptionPremium": "You have lifetime access to all premium features during our beta testing phase.",
-            "upgradeNow": "UPGRADE NOW"
+            "upgradeNow": "UPGRADE NOW",
+            "status": {
+                "active": "Active Premium Subscription",
+                "plan": "Plan",
+                "renews": "Renews",
+                "cancelSubscription": "Cancel Subscription"
+            },
+            "discount": {
+                "title": "Have a discount code?",
+                "description": "Enter your code below to unlock premium access or get a special discount.",
+                "placeholder": "Enter code (e.g., FREE_BETA)"
+            }
         }
     },
     "notes": {
@@ -410,7 +433,8 @@
         "testKnowledge": "Test Knowledge",
         "view": "View",
         "noOrganizers": "No knowledge organizers yet",
-        "createFirst": "Create your first knowledge organizer to get started"
+        "createFirst": "Create your first knowledge organizer to get started",
+        "noSections": "No sections yet. Edit this organizer to add sections."
     },
     "library": {
         "title": "Global Library",
@@ -454,6 +478,24 @@
         "quiz": "Quiz",
         "typeAnswer": "Type your answer here...",
         "pasteAnswer": "Paste an answer to evaluate...",
-        "askAnything": "Ask me anything..."
+        "askAnything": "Ask me anything...",
+        "chatMode": "Chat",
+        "quizMode": "Quiz",
+        "timeLeft": "left",
+        "you": "You",
+        "aiName": "AI Tutor",
+        "pendingQuestion": "Pending Question",
+        "disclaimer": "AI can make mistakes. Please verify important information.",
+        "evaluating": "Evaluating...",
+        "generatedQuestion": "Generated Question",
+        "correct": "Correct!",
+        "incorrect": "Not quite right",
+        "similarity": "Similarity Score",
+        "feedback": "Feedback",
+        "contextMessage": "I have context from \"{{title}}\". I can help you test your knowledge with practice questions based on this material. Would you like me to generate a question?",
+        "evaluationError": "I couldn't evaluate your answer. Would you like to try another question?",
+        "questionPrompt": "Here's a practice question based on your context",
+        "typeAnswerPrompt": "Type your answer below, and I'll evaluate it!",
+        "generationError": "I couldn't generate a question. Please try again."
     }
 }

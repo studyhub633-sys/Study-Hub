@@ -13,6 +13,7 @@ import { chatWithAI, evaluateAnswer, generateQuestion, generateSimpleQuestion } 
 import { cn } from "@/lib/utils";
 import { BookOpen, Bot, Loader2, Menu, Send, Sparkles, User } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 interface Message {
@@ -56,6 +57,7 @@ export default function AITutor() {
     const location = useLocation();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
+    const { t } = useTranslation();
 
     // Chat sessions hook
     const {
@@ -131,7 +133,7 @@ export default function AITutor() {
                     {
                         id: "1",
                         role: "assistant",
-                        content: `I have context from "${location.state.organizerTitle}". I can help you test your knowledge with practice questions based on this material. Would you like me to generate a question?`,
+                        content: t("aiTutor.contextMessage", { title: location.state.organizerTitle }),
                         timestamp: new Date(),
                     },
                 ]);
@@ -241,9 +243,9 @@ export default function AITutor() {
 
                 if (result.data) {
                     const { isCorrect, similarity, feedback } = result.data;
-                    responseContent = `**Evaluation:**\n\n${isCorrect ? "✅ Correct!" : "❌ Not quite right"}\n\n**Similarity Score:** ${(similarity * 100).toFixed(1)}%\n\n**Feedback:** ${feedback || "Keep practicing!"}\n\n---\n\nWould you like another question? Just say "yes" or "next question"!`;
+                    responseContent = `**${t("aiTutor.feedback")}:**\n\n${isCorrect ? "✅ " + t("aiTutor.correct") : "❌ " + t("aiTutor.incorrect")}\n\n**${t("aiTutor.similarity")}:** ${(similarity * 100).toFixed(1)}%\n\n**${t("aiTutor.feedback")}:** ${feedback || "Keep practicing!"}\n\n---\n\nWould you like another question? Just say "yes" or "next question"!`;
                 } else {
-                    responseContent = "I couldn't evaluate your answer. Would you like to try another question?";
+                    responseContent = t("aiTutor.evaluationError");
                 }
             }
             // Detect if user wants to generate a question
@@ -275,9 +277,9 @@ export default function AITutor() {
                             question: result.data.question,
                             context: questionContext,
                         });
-                        responseContent = `Here's a practice question based on your context:\n\n**Question:**\n\n${result.data.question}\n\n---\n\nType your answer below, and I'll evaluate it!`;
+                        responseContent = `${t("aiTutor.questionPrompt")}:\n\n**${t("aiTutor.generatedQuestion")}:**\n\n${result.data.question}\n\n---\n\n${t("aiTutor.typeAnswerPrompt")}`;
                     } else {
-                        responseContent = "I couldn't generate a question. Please try again.";
+                        responseContent = t("aiTutor.generationError");
                     }
                 } else if (mode === "evaluate" && context.trim()) {
                     const result = await evaluateAnswer(
@@ -404,10 +406,10 @@ export default function AITutor() {
 
                             <div className="flex items-center gap-2">
                                 <Sparkles className="h-5 w-5 text-primary" />
-                                <span className="font-semibold text-lg">AI Tutor</span>
+                                <span className="font-semibold text-lg">{t("nav.aiTutor")}</span>
                                 {aiUsage && (
                                     <span className="text-xs text-muted-foreground hidden sm:inline-block ml-2 px-2 py-0.5 rounded-full bg-muted">
-                                        {aiUsage.limit - aiUsage.count} left
+                                        {aiUsage.limit - aiUsage.count} {t("aiTutor.timeLeft")}
                                     </span>
                                 )}
                             </div>
@@ -423,7 +425,7 @@ export default function AITutor() {
                                         mode === "chat" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                     )}
                                 >
-                                    Chat
+                                    {t("aiTutor.chatMode")}
                                 </button>
                                 <button
                                     onClick={() => setMode("question")}
@@ -432,7 +434,7 @@ export default function AITutor() {
                                         mode === "question" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                     )}
                                 >
-                                    Quiz
+                                    {t("aiTutor.quizMode")}
                                 </button>
                             </div>
 
@@ -474,12 +476,12 @@ export default function AITutor() {
                                         )}>
                                             {message.role === "user" && (
                                                 <div className="invisible group-hover:visible transition-opacity text-[10px] text-muted-foreground mb-1 text-right">
-                                                    You
+                                                    {t("aiTutor.you")}
                                                 </div>
                                             )}
                                             {message.role === "assistant" && (
                                                 <div className="invisible group-hover:visible transition-opacity text-[10px] text-muted-foreground mb-1">
-                                                    AI Tutor
+                                                    {t("aiTutor.aiName")}
                                                 </div>
                                             )}
 
@@ -534,7 +536,7 @@ export default function AITutor() {
                                 <div className="mb-2 bg-primary/5 border border-primary/20 rounded-lg p-3 text-sm flex items-start gap-2 animate-in slide-in-from-bottom-2">
                                     <span className="text-xl">📝</span>
                                     <div>
-                                        <span className="font-medium text-primary text-xs uppercase tracking-wide">Pending Question</span>
+                                        <span className="font-medium text-primary text-xs uppercase tracking-wide">{t("aiTutor.pendingQuestion")}</span>
                                         <p className="text-sm text-foreground/90 line-clamp-1">{pendingQuestion.question}</p>
                                     </div>
                                     <Button variant="ghost" size="sm" className="ml-auto h-6 w-6 p-0" onClick={() => setPendingQuestion(null)}>×</Button>
@@ -553,10 +555,10 @@ export default function AITutor() {
                                     }}
                                     placeholder={
                                         pendingQuestion
-                                            ? "Type your answer here..."
+                                            ? t("aiTutor.typeAnswer")
                                             : mode === "evaluate"
-                                                ? "Paste an answer to evaluate..."
-                                                : "Ask me anything..."
+                                                ? t("aiTutor.pasteAnswer")
+                                                : t("aiTutor.askAnything")
                                     }
                                     disabled={loading}
                                     className="border-0 focus-visible:ring-0 bg-transparent min-h-[44px] py-3 px-2 shadow-none resize-none"
@@ -578,7 +580,7 @@ export default function AITutor() {
                                 </Button>
                             </div>
                             <p className="text-[10px] text-center text-muted-foreground mt-2">
-                                AI can make mistakes. Please verify important information.
+                                {t("aiTutor.disclaimer")}
                             </p>
                         </div>
                     </div>

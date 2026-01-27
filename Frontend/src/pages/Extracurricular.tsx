@@ -324,10 +324,10 @@ export default function Extracurricular() {
         {/* Stats Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up" style={{ animationDelay: "0.1s" }}>
           {[
-            { label: "Total Hours", value: totalHours, icon: Clock, color: "primary" },
-            { label: "Activities", value: activities.length, icon: Calendar, color: "secondary" },
-            { label: "Achievements", value: totalAchievements, icon: Trophy, color: "accent" },
-            { label: "Active", value: activities.filter((a) => !a.end_date).length, icon: Award, color: "premium" },
+            { label: t("extracurricular.totalHours"), value: totalHours, icon: Clock, color: "primary" },
+            { label: t("extracurricular.activities"), value: activities.length, icon: Calendar, color: "secondary" },
+            { label: t("extracurricular.achievements"), value: totalAchievements, icon: Trophy, color: "accent" },
+            { label: t("extracurricular.active"), value: activities.filter((a) => !a.end_date).length, icon: Award, color: "premium" },
           ].map((stat) => (
             <div key={stat.label} className="glass-card p-4">
               <div className="flex items-center gap-3">
@@ -363,10 +363,10 @@ export default function Extracurricular() {
         <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.15s" }}>
           <div className="flex items-center gap-2 mb-4">
             <Globe className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold text-foreground">Find Opportunities</h3>
+            <h3 className="font-semibold text-foreground">{t("extracurricular.findOpportunities")}</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Explore work experience, volunteering, and skill-building opportunities
+            {t("extracurricular.findOppDesc")}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
@@ -454,18 +454,18 @@ export default function Extracurricular() {
             {activities.length === 0 ? (
               <div className="glass-card p-12 text-center">
                 <Award className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No activities yet</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{t("extracurricular.noActivities")}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Create your first activity to get started
+                  {t("extracurricular.createFirst")}
                 </p>
                 <Button onClick={handleCreateActivity}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Activity
+                  {t("extracurricular.addActivity")}
                 </Button>
               </div>
             ) : (
               <div className="glass-card p-6">
-                <h3 className="font-semibold text-foreground mb-6">Activity Timeline</h3>
+                <h3 className="font-semibold text-foreground mb-6">{t("extracurricular.activityTimeline")}</h3>
                 <div className="relative">
                   {/* Timeline line */}
                   <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
@@ -613,7 +613,7 @@ export default function Extracurricular() {
             {selectedActivity ? (
               <div className="glass-card p-6">
                 <div className="flex items-start justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Activity Details</h3>
+                  <h3 className="font-semibold text-foreground">{t("extracurricular.activityDetails")}</h3>
                   <div className="flex gap-1">
                     <Button
                       variant="ghost"

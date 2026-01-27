@@ -111,8 +111,8 @@ export default function Flashcards() {
 
         try {
           toast({
-            title: "Generating flashcards...",
-            description: "AI is creating flashcards from your organizer content. This may take a moment.",
+            title: t("flashcards.generating"),
+            description: t("flashcards.generatingDesc"),
           });
 
           const result = await generateFlashcards(
@@ -162,8 +162,8 @@ export default function Flashcards() {
       if (error) throw error;
 
       toast({
-        title: "Flashcards Created!",
-        description: `${generatedCards.length} flashcards have been added to your collection.`,
+        title: t("flashcards.successCreated"),
+        description: t("flashcards.successCreatedDesc", { count: generatedCards.length }),
       });
 
       // Clear location state
@@ -267,8 +267,8 @@ export default function Flashcards() {
         if (error) throw error;
 
         toast({
-          title: "Success",
-          description: "Flashcard updated successfully",
+          title: t("common.success"),
+          description: t("flashcards.successUpdated"),
         });
       } else {
         // Create new card
@@ -286,8 +286,8 @@ export default function Flashcards() {
         if (error) throw error;
 
         toast({
-          title: "Success",
-          description: "Flashcard created successfully",
+          title: t("common.success"),
+          description: t("flashcards.successCreatedSingle"),
         });
       }
 
@@ -305,7 +305,7 @@ export default function Flashcards() {
 
   const handleDeleteCard = async (cardId: string) => {
     if (!user) return;
-    if (!confirm("Are you sure you want to delete this flashcard?")) return;
+    if (!confirm(t("flashcards.deleteConfirm"))) return;
 
     try {
       const { error } = await supabase
@@ -317,8 +317,8 @@ export default function Flashcards() {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Flashcard deleted successfully",
+        title: t("common.success"),
+        description: t("flashcards.successDeleted"),
       });
 
       fetchCards();
@@ -389,7 +389,7 @@ export default function Flashcards() {
   const handleBulkDelete = async () => {
     if (!user || selectedCards.size === 0) return;
 
-    if (!confirm(`Are you sure you want to delete ${selectedCards.size} flashcards? This action cannot be undone.`)) return;
+    if (!confirm(t("flashcards.bulkDeleteConfirm", { count: selectedCards.size }))) return;
 
     try {
       setLoading(true);
@@ -402,8 +402,8 @@ export default function Flashcards() {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: `Deleted ${selectedCards.size} flashcards successfully`,
+        title: t("common.success"),
+        description: t("flashcards.bulkDeleted", { count: selectedCards.size }),
       });
 
       setSelectedCards(new Set());
@@ -560,7 +560,7 @@ export default function Flashcards() {
                   {t("flashcards.deleteSelected", { count: selectedCards.size })}
                 </Button>
                 <Button variant="ghost" onClick={handleToggleSelectMode}>
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
               </div>
             )}
@@ -572,7 +572,7 @@ export default function Flashcards() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search flashcards..."
+              placeholder={t("flashcards.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -587,7 +587,7 @@ export default function Flashcards() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All Subjects">All Subjects</SelectItem>
+              <SelectItem value="All Subjects">{t("flashcards.allSubjects")}</SelectItem>
               {subjects.map((subject) => (
                 <SelectItem key={subject} value={subject}>
                   {subject}
@@ -600,7 +600,7 @@ export default function Flashcards() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All Topics">All Topics</SelectItem>
+              <SelectItem value="All Topics">{t("flashcards.allTopics")}</SelectItem>
               {topics.map((topic) => (
                 <SelectItem key={topic} value={topic}>
                   {topic}
@@ -613,9 +613,9 @@ export default function Flashcards() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All Tiers">All Tiers</SelectItem>
-              <SelectItem value="Higher">Higher Tier</SelectItem>
-              <SelectItem value="Foundation">Foundation Tier</SelectItem>
+              <SelectItem value="All Tiers">{t("flashcards.allTiers")}</SelectItem>
+              <SelectItem value="Higher">{t("flashcards.higherTier")}</SelectItem>
+              <SelectItem value="Foundation">{t("flashcards.foundationTier")}</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon" onClick={shuffleCards}>
@@ -641,7 +641,7 @@ export default function Flashcards() {
             <div className="glass-card p-4 animate-slide-up" style={{ animationDelay: "0.2s" }}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">
-                  Card {currentIndex + 1} of {filteredCards.length}
+                  {t("flashcards.cardProgress", { current: currentIndex + 1, total: filteredCards.length })}
                 </span>
                 {quizMode && (
                   <div className="flex items-center gap-4 text-sm">
@@ -715,14 +715,14 @@ export default function Flashcards() {
                     <h3 className="text-xl md:text-2xl font-semibold text-foreground">
                       {currentCard.front}
                     </h3>
-                    <p className="text-sm text-muted-foreground mt-4">Click to reveal answer</p>
+                    <p className="text-sm text-muted-foreground mt-4">{t("flashcards.revealAnswer")}</p>
                   </div>
 
                   {/* Back */}
                   <div className="flip-card-back glass-card p-8 flex flex-col items-center justify-center text-center bg-gradient-to-br from-secondary/10 to-primary/10">
                     <div className="absolute top-4 left-4">
                       <span className="text-xs font-medium px-2 py-1 rounded-full bg-secondary/20 text-secondary-foreground">
-                        Answer
+                        {t("common.answer")}
                       </span>
                     </div>
                     <p className="text-lg md:text-xl text-foreground leading-relaxed">
@@ -747,26 +747,26 @@ export default function Flashcards() {
                     onClick={() => handleAnswer(false)}
                   >
                     <X className="h-5 w-5 mr-2" />
-                    Incorrect
+                    {t("flashcards.incorrect")}
                   </Button>
                   <Button
                     className="h-12 px-6 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
                     onClick={() => handleAnswer(true)}
                   >
                     <Check className="h-5 w-5 mr-2" />
-                    Correct
+                    {t("flashcards.correct")}
                   </Button>
                   {score.correct + score.incorrect > 0 && (
                     <Button variant="outline" onClick={resetQuiz} className="h-12 px-6">
                       <RotateCcw className="h-5 w-5 mr-2" />
-                      Reset
+                      {t("flashcards.reset")}
                     </Button>
                   )}
                 </>
               ) : (
                 <Button variant="outline" onClick={handleFlip} className="h-12 px-6">
                   <RotateCcw className="h-5 w-5 mr-2" />
-                  Flip Card
+                  {t("flashcards.flipCard")}
                 </Button>
               )}
 
@@ -778,7 +778,7 @@ export default function Flashcards() {
             {/* Card Grid Preview */}
             {filteredCards.length > 0 && (
               <div className="mt-8">
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">All Cards</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3">{t("flashcards.allCards")}</h3>
                 <div className="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-slide-up" style={{ animationDelay: "0.5s" }}>
                     {filteredCards.map((card, index) => (

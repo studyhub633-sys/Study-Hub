@@ -3,12 +3,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { hasPremium } from "@/lib/premium";
 import { Brain, Sparkles, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
-
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 export function WelcomeCard() {
   const { supabase, user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<{ full_name?: string; email?: string } | null>(null);
   const [stats, setStats] = useState({
     notesCount: 0,
@@ -20,7 +21,7 @@ export function WelcomeCard() {
   const [aiUsage, setAiUsage] = useState<{ count: number; limit: number; isPremium: boolean } | null>(null);
 
   const currentHour = new Date().getHours();
-  const greeting = currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
+  const greeting = currentHour < 12 ? t("dashboard.welcome.goodMorning") : currentHour < 18 ? t("dashboard.welcome.goodAfternoon") : t("dashboard.welcome.goodEvening");
 
   useEffect(() => {
     if (!user) return;
@@ -51,9 +52,9 @@ export function WelcomeCard() {
         const toYMD = (d: Date) =>
           `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
         const dates = new Set<string>();
-        (sessionsResult.data || []).forEach((r) => dates.add(toYMD(new Date((r as { date: string }).date))));
-        (notesDates.data || []).forEach((r) => dates.add(toYMD(new Date((r as { updated_at: string }).updated_at))));
-        (flashcardsDates.data || []).forEach((r) => dates.add(toYMD(new Date((r as { updated_at: string }).updated_at))));
+        (sessionsResult.data || []).forEach((r: any) => dates.add(toYMD(new Date(r.date))));
+        (notesDates.data || []).forEach((r: any) => dates.add(toYMD(new Date(r.updated_at))));
+        (flashcardsDates.data || []).forEach((r: any) => dates.add(toYMD(new Date(r.updated_at))));
 
         const streak = (() => {
           if (dates.size === 0) return 0;
@@ -119,12 +120,12 @@ export function WelcomeCard() {
               <span className="text-sm font-medium">{greeting}</span>
             </div>
             <h2 className="text-2xl md:text-3xl font-bold text-primary-foreground">
-              Welcome back, {displayName}!
+              {t("dashboard.welcome.welcomeBack", { name: displayName })}
             </h2>
             <p className="text-primary-foreground/80 max-w-md">
-              {loading ? "Loading your progress..." : stats.notesCount + stats.flashcardsCount + stats.papersCount === 0
-                ? "Get started by creating your first note, flashcard, or past paper!"
-                : "You're making great progress. Keep up the momentum!"}
+              {loading ? t("dashboard.welcome.loading") : stats.notesCount + stats.flashcardsCount + stats.papersCount === 0
+                ? t("dashboard.welcome.getStarted")
+                : t("dashboard.welcome.makingProgress")}
             </p>
             {aiUsage && (
               <div className="flex flex-wrap gap-2 mt-4">
@@ -133,9 +134,9 @@ export function WelcomeCard() {
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white transition-colors text-sm font-medium backdrop-blur-md"
                 >
                   <Brain className="h-4 w-4" />
-                  Chat with AI Tutor
+                  {t("dashboard.welcome.chatWithAI")}
                   <span className="text-xs opacity-80 ml-1">
-                    {aiUsage.isPremium ? "(Lifetime Access)" : `(${aiUsage.limit - aiUsage.count} left)`}
+                    {aiUsage.isPremium ? `(${t("dashboard.welcome.lifetimeAccess")})` : `(${aiUsage.limit - aiUsage.count} ${t("common.left")})`}
                   </span>
                 </button>
 
@@ -145,7 +146,7 @@ export function WelcomeCard() {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-premium hover:bg-premium/90 text-premium-foreground transition-all shadow-lg shadow-premium/20 text-sm font-bold border border-premium-foreground/20 animate-pulse-subtle"
                   >
                     <Sparkles className="h-4 w-4" />
-                    Unlock Lifetime Access (Beta)
+                    {t("dashboard.welcome.unlockLifetime")}
                   </button>
                 )}
               </div>
@@ -156,7 +157,7 @@ export function WelcomeCard() {
             <div className="glass-card bg-white/10 backdrop-blur-sm border-white/20 p-4 rounded-xl min-w-[160px]">
               <div className="flex items-center gap-2 text-primary-foreground/80 text-sm mb-2">
                 <TrendingUp className="h-4 w-4" />
-                <span>Total Items</span>
+                <span>{t("dashboard.welcome.totalItems")}</span>
               </div>
               <div className="text-3xl font-bold text-primary-foreground mb-2">
                 {stats.notesCount + stats.flashcardsCount + stats.papersCount}
@@ -172,10 +173,10 @@ export function WelcomeCard() {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
           {[
-            { label: "Notes", value: stats.notesCount.toString(), change: stats.notesCount === 0 ? "None yet" : "Created" },
-            { label: "Flashcards", value: stats.flashcardsCount.toString(), change: stats.flashcardsCount === 0 ? "None yet" : "Created" },
-            { label: "Past Papers", value: stats.papersCount.toString(), change: stats.papersCount === 0 ? "None yet" : "Added" },
-            { label: "Study Streak", value: stats.streak > 0 ? `${stats.streak} days` : "0 days", change: stats.streak > 0 ? "🔥 Keep going!" : "Start studying!" },
+            { label: t("dashboard.welcome.notes"), value: stats.notesCount.toString(), change: stats.notesCount === 0 ? t("dashboard.welcome.noneYet") : t("dashboard.welcome.created") },
+            { label: t("dashboard.welcome.flashcards"), value: stats.flashcardsCount.toString(), change: stats.flashcardsCount === 0 ? t("dashboard.welcome.noneYet") : t("dashboard.welcome.created") },
+            { label: t("dashboard.welcome.pastPapers"), value: stats.papersCount.toString(), change: stats.papersCount === 0 ? t("dashboard.welcome.noneYet") : t("dashboard.welcome.added") },
+            { label: t("dashboard.welcome.studyStreak"), value: stats.streak > 0 ? t("dashboard.welcome.days", { count: stats.streak }) : t("dashboard.welcome.days", { count: 0 }), change: stats.streak > 0 ? t("dashboard.welcome.keepGoing") : t("dashboard.welcome.startStudying") },
           ].map((stat, index) => (
             <div
               key={stat.label}

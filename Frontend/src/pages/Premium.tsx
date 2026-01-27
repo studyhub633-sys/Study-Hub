@@ -55,14 +55,14 @@ export default function Premium() {
   const features = [
     {
       icon: Brain,
-      title: "Unlimited AI Generated Questions",
-      description: "Generate unlimited AI questions tailored to your exam board and subjects (10/day for free users)",
+      title: t("premium.features.unlimitedAI.title"),
+      description: t("premium.features.unlimitedAI.description"),
       key: "unlimitedAI"
     },
     {
       icon: Sparkles,
-      title: "Groq AI Study Suggestions",
-      description: "Get personalized study recommendations based on your progress and weak areas",
+      title: t("premium.features.studySuggestions.title"),
+      description: t("premium.features.studySuggestions.description"),
       key: "studySuggestions"
     },
     {
@@ -129,7 +129,7 @@ export default function Premium() {
 
   const plans = [
     {
-      name: "Monthly",
+      name: t("premium.dashboard.monthly"),
       price: "£4.99",
       period: "/month",
       description: "Perfect for trying out premium features",
@@ -142,7 +142,7 @@ export default function Premium() {
       key: "monthly"
     },
     {
-      name: "Yearly",
+      name: t("premium.dashboard.yearly"),
       price: "£39.99",
       period: "/year",
       description: "Our best value - save over £19 annually!",
@@ -363,13 +363,13 @@ export default function Premium() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Check className="h-5 w-5 text-secondary" />
-                  <h3 className="text-lg font-semibold text-foreground">Active Premium Subscription</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{t("premium.status.active")}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Plan: <span className="font-medium text-foreground capitalize">{subscription.plan_type}</span>
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                  {t("premium.status.renews")}: {new Date(subscription.current_period_end).toLocaleDateString()}
                 </p>
                 {subscription.cancel_at_period_end && (
                   <p className="text-sm text-destructive mt-2">
@@ -388,7 +388,7 @@ export default function Premium() {
                   ) : (
                     <X className="h-4 w-4 mr-2" />
                   )}
-                  Cancel Subscription
+                  {t("premium.status.cancelSubscription")}
                 </Button>
               )}
             </div>
@@ -509,10 +509,10 @@ export default function Premium() {
               <div className="flex-1 w-full">
                 <div className="flex items-center gap-2 mb-2">
                   <Ticket className="h-5 w-5 text-premium" />
-                  <h3 className="text-lg font-semibold text-foreground">Have a discount code?</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{t("premium.discount.title")}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Enter your code below to unlock premium access or get a special discount.
+                  {t("premium.discount.description")}
                 </p>
                 <div className="flex gap-2">
                   <Input

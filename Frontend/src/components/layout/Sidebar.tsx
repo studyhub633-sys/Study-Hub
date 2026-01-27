@@ -130,7 +130,7 @@ export function Sidebar() {
           {!collapsed && (
             <div className="animate-fade-in">
               <h1 className="font-bold text-lg text-sidebar-foreground">Scientia.ai</h1>
-              <p className="text-xs text-muted-foreground">Learn smarter</p>
+              <p className="text-xs text-muted-foreground">{t("sidebar.learnSmarter")}</p>
             </div>
           )}
         </div>
@@ -259,7 +259,7 @@ export function Sidebar() {
           )}
           {!collapsed && (
             <span className="font-medium text-sm ml-3">
-              {theme === "light" ? "Dark Mode" : "Light Mode"}
+              {theme === "light" ? t("sidebar.darkMode") : t("sidebar.lightMode")}
             </span>
           )}
         </Button>

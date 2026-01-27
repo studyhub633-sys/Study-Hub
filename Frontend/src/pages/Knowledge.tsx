@@ -778,7 +778,7 @@ export default function Knowledge() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search organizers..."
+              placeholder={t("knowledge.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -789,7 +789,7 @@ export default function Knowledge() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All Subjects">All Subjects</SelectItem>
+              <SelectItem value="All Subjects">{t("knowledge.allSubjects")}</SelectItem>
               {subjects.map((subject) => (
                 <SelectItem key={subject} value={subject}>
                   {subject}
@@ -802,7 +802,7 @@ export default function Knowledge() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All Boards">All Boards</SelectItem>
+              <SelectItem value="All Boards">{t("knowledge.allBoards")}</SelectItem>
               {EXAM_BOARDS.map((board) => (
                 <SelectItem key={board} value={board}>
                   {board}
@@ -815,10 +815,10 @@ export default function Knowledge() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All Tiers">All Tiers</SelectItem>
-              <SelectItem value="Higher">Higher Tier</SelectItem>
-              <SelectItem value="Foundation">Foundation Tier</SelectItem>
-              <SelectItem value="Unassigned">Unassigned</SelectItem>
+              <SelectItem value="All Tiers">{t("common.allTiers")}</SelectItem>
+              <SelectItem value="Higher">{t("flashcards.higher")}</SelectItem>
+              <SelectItem value="Foundation">{t("flashcards.foundation")}</SelectItem>
+              <SelectItem value="Unassigned">{t("pastPapers.unassigned")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -829,7 +829,7 @@ export default function Knowledge() {
             {organizers.length === 0 ? (
               <div className="glass-card p-8 text-center">
                 <Brain className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No organisers yet</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{t("knowledge.noOrganizers")}</h3>
                 <p className="text-muted-foreground mb-4">
                   Create your first knowledge organiser, generate one with AI, or add from the{" "}
                   <button
@@ -844,10 +844,10 @@ export default function Knowledge() {
                 <div className="flex flex-wrap gap-2 justify-center">
                   <Button onClick={handleCreateOrganizer}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Organiser
+                    {t("knowledge.createOrganizer")}
                   </Button>
                   <Button variant="outline" onClick={() => navigate("/library")}>
-                    Browse Global Library
+                    {t("library.title")}
                   </Button>
                 </div>
               </div>
@@ -1109,7 +1109,7 @@ export default function Knowledge() {
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
-                      <p>No sections yet. Edit this organizer to add sections.</p>
+                      <p>{t("knowledge.noSections")}</p>
                     </div>
                   )}
 

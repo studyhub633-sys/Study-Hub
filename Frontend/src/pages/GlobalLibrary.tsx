@@ -353,7 +353,7 @@ export default function GlobalLibrary() {
                             <Search className="h-5 w-5" />
                         </div>
                         <Input
-                            placeholder="Search library..."
+                            placeholder={t("library.searchPlaceholder")}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-10 h-12 bg-background border-primary/10 rounded-xl shadow-sm"
@@ -369,7 +369,7 @@ export default function GlobalLibrary() {
                                         <SelectValue placeholder="Year" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Years</SelectItem>
+                                        <SelectItem value="all">{t("common.allYears")}</SelectItem>
                                         {availableYears.map(year => (
                                             <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
                                         ))}
@@ -385,7 +385,7 @@ export default function GlobalLibrary() {
                                     <SelectValue placeholder="Subject" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Subjects</SelectItem>
+                                    <SelectItem value="all">{t("common.allSubjects")}</SelectItem>
                                     {availableSubjects.map(subject => (
                                         <SelectItem key={subject} value={subject}>{subject}</SelectItem>
                                     ))}
@@ -434,7 +434,7 @@ export default function GlobalLibrary() {
                                     ))}
                                     {filteredPapers.length === 0 && (
                                         <div className="col-span-full py-20 text-center text-muted-foreground">
-                                            No papers found matching your criteria.
+                                            {t("library.noPapersFound")}
                                         </div>
                                     )}
                                 </div>
@@ -446,10 +446,10 @@ export default function GlobalLibrary() {
                                         <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
                                         <CardHeader className="bg-primary/5">
                                             <CardTitle className="flex items-center gap-2 text-primary">
-                                                <Sparkles className="h-5 w-5" /> Smart Link Importer
+                                                <Sparkles className="h-5 w-5" /> {t("library.smartLinkImporter")}
                                             </CardTitle>
                                             <CardDescription>
-                                                Found a paper link on PMT or PapaCambridge? Paste it below and we'll auto-format it for you.
+                                                {t("library.smartLinkDesc")}
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent className="p-6 space-y-4">
@@ -464,7 +464,7 @@ export default function GlobalLibrary() {
                                                 onClick={handleQuickAdd}
                                                 disabled={isParsing || !quickAddUrl}
                                             >
-                                                {isParsing ? "Working Magic..." : "Add with Smart Parser"}
+                                                {isParsing ? t("library.working") : t("library.addWithSmartParser")}
                                             </Button>
                                             <div className="pt-4 border-t border-primary/5">
                                                 <p className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
@@ -505,14 +505,14 @@ export default function GlobalLibrary() {
                                     <CardContent>
                                         <div className="text-xs text-muted-foreground flex items-center gap-2">
                                             <Brain className="h-3 w-3" />
-                                            {org.content?.sections?.length || 0} Professional Sections
+                                            {t("knowledge.sections", { count: org.content?.sections?.length || 0 })}
                                         </div>
                                     </CardContent>
                                 </Card>
                             ))}
                             {filteredOrganizers.length === 0 && (
                                 <div className="col-span-full py-20 text-center text-muted-foreground">
-                                    No organizers found matching your criteria.
+                                    {t("common.noResults")}
                                 </div>
                             )}
                         </div>
@@ -548,7 +548,7 @@ export default function GlobalLibrary() {
                             ))}
                             {filteredFlashcards.length === 0 && (
                                 <div className="col-span-full py-20 text-center text-muted-foreground">
-                                    No flashcards found matching your criteria.
+                                    {t("common.noResults")}
                                 </div>
                             )}
                         </div>

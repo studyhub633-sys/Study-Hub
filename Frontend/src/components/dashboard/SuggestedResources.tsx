@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowRight, Lightbulb, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 interface Suggestion {
@@ -15,6 +16,7 @@ export function SuggestedResources() {
   const { supabase, user } = useAuth();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!user) return;
@@ -44,48 +46,48 @@ export function SuggestedResources() {
         // Generate suggestions based on data
         if (notesCount === 0) {
           newSuggestions.push({
-            title: "Create your first note",
-            description: "Start organising your studies by creating exam notes.",
-            action: "Get Started",
+            title: t("dashboard.suggestions.createFirstNote"),
+            description: t("dashboard.suggestions.organisingStudies"),
+            action: t("dashboard.suggestions.getStarted"),
             path: "/notes",
           });
         } else if (notesCount && notesCount > 0) {
           newSuggestions.push({
-            title: "Continue your notes",
-            description: `You have ${notesCount} note${notesCount > 1 ? "s" : ""}. Keep adding more!`,
-            action: "View Notes",
+            title: t("dashboard.suggestions.continueNotes"),
+            description: t("dashboard.suggestions.haveNotes", { count: notesCount, plural: notesCount > 1 ? "s" : "" }),
+            action: t("dashboard.suggestions.viewNotes"),
             path: "/notes",
           });
         }
 
         if (flashcardsCount === 0) {
           newSuggestions.push({
-            title: "Create flashcards",
-            description: "Build your flashcard deck to improve your memory retention.",
-            action: "Create Cards",
+            title: t("dashboard.suggestions.createFlashcards"),
+            description: t("dashboard.suggestions.improveRetention"),
+            action: t("dashboard.suggestions.createCards"),
             path: "/flashcards",
           });
         } else if (flashcardsCount && flashcardsCount > 0) {
           newSuggestions.push({
-            title: "Review your flashcards",
-            description: `You have ${flashcardsCount} flashcard${flashcardsCount > 1 ? "s" : ""}. Practice them regularly!`,
-            action: "Practice Now",
+            title: t("dashboard.suggestions.reviewFlashcards"),
+            description: t("dashboard.suggestions.haveFlashcards", { count: flashcardsCount, plural: flashcardsCount > 1 ? "s" : "" }),
+            action: t("dashboard.suggestions.practiceNow"),
             path: "/flashcards",
           });
         }
 
         if (papersCount === 0) {
           newSuggestions.push({
-            title: "Try a past paper",
-            description: "Practice with past papers to prepare for your exams.",
-            action: "Add Papers",
+            title: t("dashboard.suggestions.tryPastPaper"),
+            description: t("dashboard.suggestions.practiceExams"),
+            action: t("dashboard.suggestions.addPapers"),
             path: "/past-papers",
           });
         } else if (papersCount && papersCount > 0) {
           newSuggestions.push({
-            title: "Complete a past paper",
-            description: `You have ${papersCount} past paper${papersCount > 1 ? "s" : ""}. Challenge yourself!`,
-            action: "Start Quiz",
+            title: t("dashboard.suggestions.completePastPaper"),
+            description: t("dashboard.suggestions.havePapers", { count: papersCount, plural: papersCount > 1 ? "s" : "" }),
+            action: t("dashboard.suggestions.startQuiz"),
             path: "/past-papers",
           });
         }
@@ -112,16 +114,16 @@ export function SuggestedResources() {
             <Lightbulb className="h-5 w-5 text-accent-foreground" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">Suggested for You</h3>
-            <p className="text-xs text-muted-foreground">Based on your activity</p>
+            <h3 className="font-semibold text-foreground">{t("dashboard.suggestions.title")}</h3>
+            <p className="text-xs text-muted-foreground">{t("dashboard.suggestions.basedOnActivity")}</p>
           </div>
         </div>
 
         <div className="space-y-3">
           {loading ? (
-            <p className="text-sm text-muted-foreground">Loading suggestions...</p>
+            <p className="text-sm text-muted-foreground">{t("dashboard.suggestions.loading")}</p>
           ) : suggestions.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4">No suggestions available. Start creating content to get personalized recommendations!</p>
+            <p className="text-sm text-muted-foreground py-4">{t("dashboard.suggestions.noSuggestions")}</p>
           ) : (
             suggestions.map((suggestion, index) => (
               <Link
@@ -153,12 +155,12 @@ export function SuggestedResources() {
                 <Sparkles className="h-5 w-5 text-premium-foreground" />
               </div>
               <div>
-                <p className="font-medium text-foreground">Unlock AI-powered suggestions</p>
-                <p className="text-sm text-muted-foreground">Get personalized study recommendations</p>
+                <p className="font-medium text-foreground">{t("dashboard.suggestions.unlockAI")}</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.suggestions.getPersonalized")}</p>
               </div>
             </div>
             <Button size="sm" className="w-full sm:w-auto bg-premium hover:bg-premium/90 text-premium-foreground shrink-0">
-              Upgrade
+              {t("dashboard.suggestions.upgrade")}
             </Button>
           </div>
         </div>

@@ -20,6 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { AlertCircle, Calendar, ChevronRight, Loader2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 const priorityStyles = {
@@ -39,6 +40,7 @@ interface Task {
 
 export function UpcomingTasks() {
   const { supabase, user } = useAuth();
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
@@ -78,7 +80,7 @@ export function UpcomingTasks() {
     e.preventDefault();
     if (!user) return;
     if (!title) {
-      toast.error("Please enter a task title");
+      toast.error(t("dashboard.tasks.errorTitle"));
       return;
     }
 
@@ -97,14 +99,13 @@ export function UpcomingTasks() {
         ]);
 
       if (error) throw error;
-
-      toast.success("Task added successfully");
+      toast.success(t("dashboard.tasks.successAdd"));
       setOpen(false);
       resetForm();
       fetchTasks();
     } catch (error) {
       console.error("Error adding task:", error);
-      toast.error("Failed to add task. Make sure the 'tasks' table exists.");
+      toast.error(t("dashboard.tasks.errorAdd"));
     } finally {
       setIsAdding(false);
     }
@@ -125,54 +126,54 @@ export function UpcomingTasks() {
   return (
     <div className="glass-card p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-foreground">Upcoming Tasks</h3>
+        <h3 className="font-semibold text-foreground">{t("dashboard.tasks.title")}</h3>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="ghost" size="sm" className="text-primary gap-1.5">
               <Plus className="h-4 w-4" />
-              Add Task
+              {t("dashboard.tasks.addTask")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Add New Task</DialogTitle>
+              <DialogTitle>{t("dashboard.tasks.addNewTask")}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddTask} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Task Title</Label>
+                <Label htmlFor="title">{t("dashboard.tasks.taskTitle")}</Label>
                 <Input
                   id="title"
-                  placeholder="e.g., Complete Biology Revision"
+                  placeholder={t("dashboard.tasks.titlePlaceholder")}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
+                <Label htmlFor="subject">{t("dashboard.tasks.subject")}</Label>
                 <Input
                   id="subject"
-                  placeholder="e.g., Biology"
+                  placeholder={t("dashboard.tasks.subjectPlaceholder")}
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
+                  <Label htmlFor="priority">{t("dashboard.tasks.priority")}</Label>
                   <Select value={priority} onValueChange={setPriority}>
                     <SelectTrigger id="priority">
-                      <SelectValue placeholder="Select priority" />
+                      <SelectValue placeholder={t("dashboard.tasks.selectPriority")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="low">{t("dashboard.tasks.low")}</SelectItem>
+                      <SelectItem value="medium">{t("dashboard.tasks.medium")}</SelectItem>
+                      <SelectItem value="high">{t("dashboard.tasks.high")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="due_date">Due Date</Label>
+                  <Label htmlFor="due_date">{t("dashboard.tasks.dueDate")}</Label>
                   <Input
                     id="due_date"
                     type="date"
@@ -184,7 +185,7 @@ export function UpcomingTasks() {
               <DialogFooter className="pt-4">
                 <Button type="submit" disabled={isAdding}>
                   {isAdding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Add Task
+                  {t("dashboard.tasks.addTask")}
                 </Button>
               </DialogFooter>
             </form>
@@ -200,8 +201,8 @@ export function UpcomingTasks() {
         ) : tasks.length === 0 ? (
           <div className="text-center py-8">
             <Calendar className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No upcoming tasks</p>
-            <p className="text-xs text-muted-foreground mt-1">Tasks will appear here when you add them</p>
+            <p className="text-sm text-muted-foreground">{t("dashboard.tasks.noTasks")}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("dashboard.tasks.tasksWillAppear")}</p>
           </div>
         ) : (
           tasks.map((task, index) => (
