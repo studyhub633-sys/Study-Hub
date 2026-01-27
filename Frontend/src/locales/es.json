@@ -389,6 +389,10 @@
             "moneyBackDescription": "¿No estás satisfecho? Obtén un reembolso completo dentro de los 30 días, sin preguntas."
         },
         "features": {
+            "aiQuestions": {
+                "title": "Preguntas de IA Ilimitadas",
+                "description": "Genera preguntas de práctica ilimitadas adaptadas a tu formato de examen"
+            },
             "aiTutor": {
                 "title": "Tutor IA",
                 "description": "Tutoría 1 a 1 con IA, preguntas de práctica ilimitadas y evaluación de respuestas."

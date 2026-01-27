@@ -283,6 +283,80 @@
             "apply": "適用",
             "moneyBackGuarantee": "30日間返金保証",
             "moneyBackDescription": "ご満足いただけませんか？30日以内であれば、理由を問わず全額返金いたします。"
+        },
+        "features": {
+            "aiQuestions": {
+                "title": "無制限のAI質問",
+                "description": "試験形式に合わせた無制限の練習問題を生成"
+            },
+            "aiTutor": {
+                "title": "AIチューター",
+                "description": "AIによる24時間年中無休の個別指導、無制限の練習問題、回答評価。"
+            },
+            "homeworkSolver": {
+                "title": "AI宿題ソルバー",
+                "description": "どんな科目の質問でも、AIが即座にステップバイステップで解決策を提示します。"
+            },
+            "noteCondenser": {
+                "title": "ノート要約",
+                "description": "大量のノートを簡潔なサマリーとフラッシュカードに変換します。"
+            },
+            "predictedGrades": {
+                "title": "予測成績",
+                "description": "現在のパフォーマンスに基づいて潜在的な成績を計算します。"
+            },
+            "focusMode": {
+                "title": "集中モード",
+                "description": "ポモドーロテクニックを使用した気が散らない学習タイマー。"
+            },
+            "leaderboards": {
+                "title": "リーダーボード",
+                "description": "他の学生と競い合い、学習ストリークを追跡します。"
+            },
+            "virtualSessions": {
+                "title": "バーチャルセッション",
+                "description": "専門チューターによる週次グループ復習セッションに参加。"
+            },
+            "homeworkTracker": {
+                "title": "宿題トラッカー",
+                "description": "課題を追跡し、期限が近づくとスマート通知を受け取ります。"
+            },
+            "studyPlans": {
+                "title": "AI学習プラン",
+                "description": "試験日に基づいてパーソナライズされた学習スケジュールを取得します。"
+            },
+            "mindMap": {
+                "title": "AIマインドマップ生成",
+                "description": "AIを使ってノートを視覚的なマインドマップに瞬時に変換します。"
+            },
+            "aiExaminer": {
+                "title": "AI試験官",
+                "description": "完了した過去問をアップロードして、AIによる即時採点と評価を受け取ります。"
+            },
+            "performanceHeatmap": {
+                "title": "パフォーマンスヒートマップ",
+                "description": "強みと弱みを示す視覚的な赤・黄・緑の分析。"
+            },
+            "grade9Notes": {
+                "title": "グレード9プレミアムノート",
+                "description": "最高評価を得るための限定グレード9ノートと学習教材にアクセス。"
+            },
+            "workExperience": {
+                "title": "Scientia.ai職場体験",
+                "description": "プレミアムメンバー限定の職場体験の機会"
+            },
+            "predictedPapers": {
+                "title": "2026年予想問題",
+                "description": "一般公開される前に、2026年の限定予想問題にアクセス"
+            }
+        },
+        "planFeatures": {
+            "allPremium": "すべてのプレミアム機能",
+            "cancelAnytime": "いつでもキャンセル可能",
+            "monthlyBilling": "月次請求",
+            "fourMonthsFree": "4ヶ月無料",
+            "priorityFeatures": "新機能への優先アクセス",
+            "exclusiveContent": "限定コンテンツ"
         }
     },
     "notes": {

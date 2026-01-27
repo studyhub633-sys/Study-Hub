@@ -330,6 +330,10 @@
             "moneyBackDescription": "Not satisfied? Get a full refund within 30 days, no questions asked."
         },
         "features": {
+            "aiQuestions": {
+                "title": "Unlimited AI Questions",
+                "description": "Generate unlimited practice questions tailored to your exam format"
+            },
             "aiTutor": {
                 "title": "AI Tutor",
                 "description": "1-to-1 AI tutoring, unlimited practice questions, and answer evaluation."
