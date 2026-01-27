@@ -131,7 +131,26 @@
         "profile": "Profile",
         "upgradePlan": "Upgrade Plan",
         "freePlan": "Free Plan",
-        "premiumPlan": "Premium Plan"
+        "premiumPlan": "Premium Plan",
+        "home": "Home",
+        "notes": "Exam Notes",
+        "flashcards": "Flashcards",
+        "pastPapers": "Past Papers",
+        "knowledge": "Knowledge Organisers",
+        "extracurricular": "Extracurriculars",
+        "premium": "Premium",
+        "library": "Global Library",
+        "admin": "Admin",
+        "dashboard": "Dashboard",
+        "settings": "Settings",
+        "account": "Account",
+        "manageProfile": "Manage your profile",
+        "appPreferences": "App preferences",
+        "darkMode": "Dark Mode",
+        "lightMode": "Light Mode",
+        "switchToDark": "Switch to dark theme",
+        "switchToLight": "Switch to light theme",
+        "generateWithAI": "Generate with AI"
     },
     "auth": {
         "welcomeBack": "Welcome Back",
@@ -270,6 +289,30 @@
             "predictedPapers": {
                 "title": "2026 Predicted Papers",
                 "description": "Access exclusive 2026 predicted exam papers before they're released publicly"
+            },
+            "unlimitedAI": {
+                "title": "Unlimited AI Generated Questions",
+                "description": "Generate unlimited AI questions tailored to your exam board and subjects (10/day for free users)"
+            },
+            "studySuggestions": {
+                "title": "Groq AI Study Suggestions",
+                "description": "Get personalized study recommendations based on your progress and weak areas"
+            },
+            "instantFeedback": {
+                "title": "Instant Feedback",
+                "description": "Receive detailed explanations and mark scheme breakdowns for every answer"
+            },
+            "progressAnalytics": {
+                "title": "Progress Analytics",
+                "description": "Advanced insights into your study patterns and performance trends"
+            },
+            "adFree": {
+                "title": "Fully Ad-Free Experience",
+                "description": "Study without distractions with a completely ad-free interface"
+            },
+            "prioritySupport": {
+                "title": "Priority Support",
+                "description": "Get help faster with dedicated premium customer support"
             }
         },
         "planFeatures": {

@@ -522,7 +522,7 @@ export default function Premium() {
                     className="max-w-xs"
                   />
                   <Button variant="secondary" onClick={handleApplyCode}>
-                    Apply
+                    {t("premium.dashboard.apply")}
                   </Button>
                 </div>
               </div>
@@ -546,13 +546,13 @@ export default function Premium() {
             <div>
               <h3 className="text-2xl font-bold text-foreground">
                 {hasPredictedPapers || hasWorkExperience
-                  ? "Premium Features"
-                  : "Coming Soon - Premium Features"}
+                  ? t("premium.dashboard.premiumFeatures")
+                  : t("premium.dashboard.premiumFeatures") + " - " + t("premium.dashboard.comingSoon")}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {hasPredictedPapers || hasWorkExperience
-                  ? "Exclusive features available to premium members"
-                  : "Exciting new features launching soon"}
+                  ? t("premium.dashboard.benefitsDescriptionPremium")
+                  : t("premium.dashboard.benefitsDescriptionFree")}
               </p>
             </div>
           </div>
@@ -584,7 +584,7 @@ export default function Premium() {
                         : "bg-muted/50 text-muted-foreground"
                     )}
                   >
-                    {hasWorkExperience ? "Available" : "Coming Soon"}
+                    {hasWorkExperience ? t("premium.dashboard.available") : t("premium.dashboard.comingSoon")}
                   </Badge>
                 )}
               </div>
@@ -632,7 +632,7 @@ export default function Premium() {
                         : "bg-muted/50 text-muted-foreground"
                     )}
                   >
-                    {hasPredictedPapers ? "Available" : "Coming Soon"}
+                    {hasPredictedPapers ? t("premium.dashboard.available") : t("premium.dashboard.comingSoon")}
                   </Badge>
                 )}
               </div>
@@ -659,10 +659,9 @@ export default function Premium() {
         {/* FAQ / Guarantee */}
         <div className="glass-card p-6 md:p-8 text-center animate-slide-up" style={{ animationDelay: "0.6s", opacity: 0 }}>
           <Shield className="h-10 w-10 text-secondary mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">30-Day Money-Back Guarantee</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2">{t("premium.dashboard.moneyBackGuarantee")}</h3>
           <p className="text-muted-foreground max-w-lg mx-auto">
-            Not satisfied? Get a full refund within 30 days, no questions asked.
-            We're confident you'll love Scientia.ai Premium.
+            {t("premium.dashboard.moneyBackDescription")}
           </p>
         </div>
 
@@ -674,16 +673,14 @@ export default function Premium() {
               <Crown className="h-4 w-4 text-premium-foreground" />
             </div>
           </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">Unlimited AI Content Generation</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2">{t("premium.dashboard.unlimitedAI")}</h3>
           <p className="text-muted-foreground mb-4">
-            This feature is available for Premium members only.
-            Upgrade to access unlimited AI-generated questions, flashcards, and study materials.
-            Free users get 10 AI requests per day.
+            {t("premium.dashboard.unlimitedAIDescription")}
           </p>
           {isPremium ? (
             <div className="flex items-center gap-2 text-secondary">
               <Check className="h-5 w-5" />
-              <span className="font-medium">You have access to this feature!</span>
+              <span className="font-medium">{t("premium.dashboard.accessGranted")}</span>
             </div>
           ) : (
             <Button
@@ -692,7 +689,7 @@ export default function Premium() {
               disabled={loading}
             >
               <Crown className="h-4 w-4 mr-2" />
-              Unlock Premium
+              {t("premium.dashboard.unlockPremium")}
             </Button>
           )}
         </div>

@@ -47,6 +47,7 @@ import {
   X
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface KeyPoint {
@@ -684,7 +685,7 @@ export default function Knowledge() {
   };
 
   const filteredOrganizers = organizers.filter((org) => {
-    const matchesSearch = org.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (org.title || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = selectedSubject === "All Subjects" || org.subject === selectedSubject;
     const orgBoard = org.content?.exam_board;
     const matchesBoard = selectedBoard === "All Boards" || orgBoard === selectedBoard;
@@ -773,7 +774,7 @@ export default function Knowledge() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
+        <div className="flex flex-col sm:flex-row gap-3 animate-slide-up" style={{ animationDelay: "0.1s" }}>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input

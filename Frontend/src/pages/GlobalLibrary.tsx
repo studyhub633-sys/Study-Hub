@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SmartPaperParser } from "@/lib/paper-parser";
 import { Brain, Calendar, FileText, Filter, Info, Layers, Library, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface GlobalPaper {
     id: string;
@@ -299,7 +300,7 @@ export default function GlobalLibrary() {
     };
 
     const filteredPapers = papers.filter((paper) => {
-        const matchesSearch = paper.title.toLowerCase().includes(search.toLowerCase()) ||
+        const matchesSearch = (paper.title || "").toLowerCase().includes(search.toLowerCase()) ||
             paper.subject?.toLowerCase().includes(search.toLowerCase()) ||
             paper.exam_board?.toLowerCase().includes(search.toLowerCase());
         const matchesYear = yearFilter === "all" || paper.year?.toString() === yearFilter;
@@ -308,7 +309,7 @@ export default function GlobalLibrary() {
     });
 
     const filteredOrganizers = organizers.filter((org) => {
-        const matchesSearch = org.title.toLowerCase().includes(search.toLowerCase()) ||
+        const matchesSearch = (org.title || "").toLowerCase().includes(search.toLowerCase()) ||
             org.subject?.toLowerCase().includes(search.toLowerCase()) ||
             org.topic?.toLowerCase().includes(search.toLowerCase());
         const matchesSubject = subjectFilter === "all" || org.subject === subjectFilter;
@@ -316,8 +317,8 @@ export default function GlobalLibrary() {
     });
 
     const filteredFlashcards = flashcards.filter((card) => {
-        const matchesSearch = card.front.toLowerCase().includes(search.toLowerCase()) ||
-            card.back.toLowerCase().includes(search.toLowerCase()) ||
+        const matchesSearch = (card.front || "").toLowerCase().includes(search.toLowerCase()) ||
+            (card.back || "").toLowerCase().includes(search.toLowerCase()) ||
             card.topic?.toLowerCase().includes(search.toLowerCase()) ||
             card.subject?.toLowerCase().includes(search.toLowerCase());
         const matchesSubject = subjectFilter === "all" || card.subject === subjectFilter;

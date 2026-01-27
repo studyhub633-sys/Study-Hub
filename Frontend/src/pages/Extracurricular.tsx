@@ -40,6 +40,7 @@ import {
   Users
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface Activity {
   id: string;
@@ -321,7 +322,7 @@ export default function Extracurricular() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up" style={{ animationDelay: "0.1s" }}>
           {[
             { label: "Total Hours", value: totalHours, icon: Clock, color: "primary" },
             { label: "Activities", value: activities.length, icon: Calendar, color: "secondary" },
@@ -359,7 +360,7 @@ export default function Extracurricular() {
         </div>
 
         {/* External Opportunities Section */}
-        <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.15s", opacity: 0 }}>
+        <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.15s" }}>
           <div className="flex items-center gap-2 mb-4">
             <Globe className="h-5 w-5 text-primary" />
             <h3 className="font-semibold text-foreground">Find Opportunities</h3>
@@ -449,7 +450,7 @@ export default function Extracurricular() {
         {/* Timeline and Activities */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Timeline */}
-          <div className="lg:col-span-2 animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
+          <div className="lg:col-span-2 animate-slide-up" style={{ animationDelay: "0.2s" }}>
             {activities.length === 0 ? (
               <div className="glass-card p-12 text-center">
                 <Award className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
@@ -608,7 +609,7 @@ export default function Extracurricular() {
           </div>
 
           {/* Activity Detail / Log Hours */}
-          <div className="lg:col-span-1 space-y-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
+          <div className="lg:col-span-1 space-y-6 animate-slide-up" style={{ animationDelay: "0.3s" }}>
             {selectedActivity ? (
               <div className="glass-card p-6">
                 <div className="flex items-start justify-between mb-4">

@@ -597,7 +597,7 @@ export default function Notes() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Crown className="h-5 w-5 text-premium" />
-                    <h3 className="font-semibold text-foreground">Premium Grade 9 Notes</h3>
+                    <h3 className="font-semibold text-foreground">{t("premium.features.grade9Notes.title")}</h3>
                   </div>
                   <Button
                     variant="ghost"
@@ -609,7 +609,7 @@ export default function Notes() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Exclusive Grade 9 notes available to premium members
+                  {t("premium.features.grade9Notes.description")}
                 </p>
                 {Object.entries(groupedPremiumNotes).map(([subject, topics]) => (
                   <div key={`premium-${subject}`} className="mb-3 last:mb-0">
@@ -667,9 +667,9 @@ export default function Notes() {
                     <Crown className="h-5 w-5 text-premium" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-foreground mb-1">Grade 9 Premium Notes</h3>
+                    <h3 className="font-semibold text-foreground mb-1">{t("premium.features.grade9Notes.title")}</h3>
                     <p className="text-xs text-muted-foreground mb-3">
-                      Access exclusive Grade 9 study notes designed for top marks. Upgrade to premium to unlock.
+                      {t("premium.features.grade9Notes.description")} <br /> {t("premium.dashboard.upgradeToPremium")}
                     </p>
                     <Button
                       size="sm"
@@ -688,13 +688,13 @@ export default function Notes() {
             {Object.keys(groupedNotes).length === 0 && filteredPremiumNotes.length === 0 ? (
               <div className="glass-card p-8 text-center">
                 <BookOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No notes yet</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{t("notes.noNotes")}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Create your first note to get started
+                  {t("notes.createFirstNote")}
                 </p>
                 <Button onClick={handleCreateNote}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Note
+                  {t("notes.createNote")}
                 </Button>
               </div>
             ) : (

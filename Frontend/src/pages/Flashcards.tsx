@@ -40,6 +40,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 
 interface Flashcard {
@@ -427,8 +428,8 @@ export default function Flashcards() {
     const matchesTier =
       selectedTier === "All Tiers" || card.tier === selectedTier;
     const matchesSearch =
-      card.front.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      card.back.toLowerCase().includes(searchQuery.toLowerCase());
+      (card.front || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (card.back || "").toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSubject && matchesTopic && matchesTier && matchesSearch;
   });
 
@@ -567,7 +568,7 @@ export default function Flashcards() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
+        <div className="flex flex-col sm:flex-row gap-3 animate-slide-up" style={{ animationDelay: "0.1s" }}>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -637,7 +638,7 @@ export default function Flashcards() {
         ) : (
           <>
             {/* Progress */}
-            <div className="glass-card p-4 animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
+            <div className="glass-card p-4 animate-slide-up" style={{ animationDelay: "0.2s" }}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">
                   Card {currentIndex + 1} of {filteredCards.length}
@@ -668,7 +669,7 @@ export default function Flashcards() {
                   "flip-card h-80 md:h-96 cursor-pointer animate-scale-in relative",
                   isFlipped && "flipped"
                 )}
-                style={{ animationDelay: "0.3s", opacity: 0 }}
+                style={{ animationDelay: "0.3s" }}
                 onClick={handleFlip}
               >
                 <div className="absolute top-4 right-4 flex gap-2 z-10">
@@ -733,7 +734,7 @@ export default function Flashcards() {
             )}
 
             {/* Controls */}
-            <div className="flex items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: "0.4s", opacity: 0 }}>
+            <div className="flex items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: "0.4s" }}>
               <Button variant="outline" size="icon" onClick={handlePrev} className="h-12 w-12 rounded-full">
                 <ChevronLeft className="h-5 w-5" />
               </Button>
@@ -779,7 +780,7 @@ export default function Flashcards() {
               <div className="mt-8">
                 <h3 className="text-sm font-medium text-muted-foreground mb-3">All Cards</h3>
                 <div className="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-slide-up" style={{ animationDelay: "0.5s", opacity: 0 }}>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-slide-up" style={{ animationDelay: "0.5s" }}>
                     {filteredCards.map((card, index) => (
                       <button
                         key={card.id}

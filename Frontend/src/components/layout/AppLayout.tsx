@@ -7,6 +7,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import { Crown, LogOut, Menu, Moon, Settings, Sparkles, Sun, User } from "lucide-react";
 import { ReactNode, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MobileNav } from "./MobileNav";
 import { Sidebar } from "./Sidebar";
@@ -18,7 +19,9 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
   const { signOut, user } = useAuth();
+  const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -88,7 +91,7 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
                       </div>
                       <div className="flex items-center gap-2 z-10">
                         <span className="text-[10px] bg-background/20 backdrop-blur-sm px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                          LIFETIME
+                          {t("sidebar.upgradePlan")}
                         </span>
                       </div>
                       {/* Shine effect */}
@@ -107,8 +110,8 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
                         <User className="h-5 w-5 text-blue-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-medium">Account</p>
-                        <p className="text-xs text-muted-foreground">{user?.email || "Manage your profile"}</p>
+                        <p className="font-medium">{t("sidebar.account")}</p>
+                        <p className="text-xs text-muted-foreground">{user?.email || t("sidebar.manageProfile")}</p>
                       </div>
                     </Button>
 
@@ -122,8 +125,8 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
                         <Settings className="h-5 w-5 text-gray-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-medium">Settings</p>
-                        <p className="text-xs text-muted-foreground">App preferences</p>
+                        <p className="font-medium">{t("common.settings")}</p>
+                        <p className="text-xs text-muted-foreground">{t("sidebar.appPreferences")}</p>
                       </div>
                     </Button>
 
@@ -146,8 +149,8 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
                         )}
                       </div>
                       <div className="text-left">
-                        <p className="font-medium">{theme === "dark" ? "Light Mode" : "Dark Mode"}</p>
-                        <p className="text-xs text-muted-foreground">Switch to {theme === "dark" ? "light" : "dark"} theme</p>
+                        <p className="font-medium">{theme === "dark" ? t("sidebar.lightMode") : t("sidebar.darkMode")}</p>
+                        <p className="text-xs text-muted-foreground">{theme === "dark" ? t("sidebar.switchToLight") : t("sidebar.switchToDark")}</p>
                       </div>
                     </Button>
 
@@ -163,8 +166,8 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
                         <LogOut className="h-5 w-5" />
                       </div>
                       <div className="text-left">
-                        <p className="font-medium">Sign Out</p>
-                        <p className="text-xs text-muted-foreground">Log out of your account</p>
+                        <p className="font-medium">{t("common.logout")}</p>
+                        <p className="text-xs text-muted-foreground">{t("common.logout")}</p>
                       </div>
                     </Button>
                   </div>
@@ -194,7 +197,7 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
             <div className="absolute inset-0 bg-premium/20 blur-md rounded-full animate-pulse-glow" />
           </div>
           <span className="text-sm font-bold bg-gradient-to-r from-premium to-purple-400 bg-clip-text text-transparent italic tracking-tight whitespace-nowrap">
-            Generate with AI
+            {t("sidebar.generateWithAI")}
           </span>
         </div>
       </div>

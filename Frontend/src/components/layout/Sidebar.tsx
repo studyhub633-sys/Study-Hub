@@ -21,21 +21,8 @@ import {
   Sun
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-  { icon: BookOpen, label: "Exam Notes", path: "/notes" },
-  { icon: Layers, label: "Flashcards", path: "/flashcards" },
-  { icon: FileText, label: "Past Papers", path: "/past-papers" },
-  { icon: Brain, label: "Knowledge Organisers", path: "/knowledge" },
-  { icon: Library, label: "Global Library", path: "/library" },
-  { icon: Award, label: "Extracurriculars", path: "/extracurricular" },
-];
-
-const bottomNavItems = [
-  { icon: Settings, label: "Settings", path: "/settings" },
-];
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -43,7 +30,22 @@ export function Sidebar() {
   const { user, signOut, supabase } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  const navItems = [
+    { icon: LayoutDashboard, label: t("nav.dashboard"), path: "/" },
+    { icon: BookOpen, label: t("nav.notes"), path: "/notes" },
+    { icon: Layers, label: t("nav.flashcards"), path: "/flashcards" },
+    { icon: FileText, label: t("nav.pastPapers"), path: "/past-papers" },
+    { icon: Brain, label: t("nav.knowledge"), path: "/knowledge" },
+    { icon: Library, label: t("nav.library"), path: "/library" },
+    { icon: Award, label: t("nav.extracurricular"), path: "/extracurricular" },
+  ];
+
+  const bottomNavItems = [
+    { icon: Settings, label: t("common.settings"), path: "/settings" },
+  ];
 
   useEffect(() => {
     if (!user) return;
@@ -171,7 +173,7 @@ export function Sidebar() {
         <div className={cn("mt-6 pt-4 border-t border-sidebar-border", collapsed && "border-none mt-4 pt-2")}>
           {!collapsed && (
             <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-fade-in">
-              Premium
+              {t("sidebar.goPremium")}
             </p>
           )}
           <NavLink
@@ -188,7 +190,7 @@ export function Sidebar() {
             <Crown className={cn("h-5 w-5 flex-shrink-0 z-10", location.pathname === "/premium-dashboard" && "animate-pulse")} />
             {!collapsed && (
               <div className="flex items-center justify-between w-full z-10">
-                <span className="font-bold text-sm tracking-tight text-sidebar-foreground group-hover:text-premium transition-colors">Go Premium</span>
+                <span className="font-bold text-sm tracking-tight text-sidebar-foreground group-hover:text-premium transition-colors">{t("sidebar.goPremium")}</span>
                 <span className="premium-badge animate-bounce-subtle">LIFETIME</span>
               </div>
             )}
@@ -272,7 +274,7 @@ export function Sidebar() {
           )}
         >
           <LogOut className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && <span className="font-medium text-sm ml-3">Sign Out</span>}
+          {!collapsed && <span className="font-medium text-sm ml-3">{t("common.logout")}</span>}
         </Button>
       </div>
 

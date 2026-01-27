@@ -42,6 +42,7 @@ import {
   Upload
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 interface Paper {
@@ -546,7 +547,7 @@ export default function PastPapers() {
 
   const filteredPapers = papers.filter((paper) => {
 
-    const matchesSearch = paper.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (paper.title || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = selectedSubject === "All Subjects" || paper.subject === selectedSubject;
     const matchesBoard = selectedBoard === "All Boards" || paper.exam_board === selectedBoard;
     const matchesTier = selectedTier === "All Tiers" ||
@@ -620,7 +621,7 @@ export default function PastPapers() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up" style={{ animationDelay: "0.1s" }}>
           {[
             { label: t("pastPapers.totalPapers"), value: papers.length, icon: FileText },
             { label: t("pastPapers.completed"), value: completedCount, icon: CheckCircle },
@@ -642,7 +643,7 @@ export default function PastPapers() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-3 animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
+        <div className="flex flex-wrap gap-3 animate-slide-up" style={{ animationDelay: "0.2s" }}>
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -715,7 +716,7 @@ export default function PastPapers() {
                 <div
                   key={paper.id}
                   className="glass-card p-5 hover-lift animate-slide-up"
-                  style={{ animationDelay: `${0.1 * index}s`, opacity: 0 }}
+                  style={{ animationDelay: `${0.1 * index}s` }}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
