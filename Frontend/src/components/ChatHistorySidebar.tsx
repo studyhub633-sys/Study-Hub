@@ -143,7 +143,7 @@ export function ChatHistorySidebar({
 
     if (isCollapsed) {
         return (
-            <div className="w-12 border-r border-border/50 bg-muted/30 flex flex-col items-center py-4 gap-2">
+            <div className="w-12 h-full border-r border-border/50 bg-muted/30 flex flex-col items-center py-4 gap-2">
                 <Button
                     variant="ghost"
                     size="icon"
@@ -166,7 +166,7 @@ export function ChatHistorySidebar({
 
     return (
         <>
-            <div className="w-64 border-r border-border/50 bg-muted/30 flex flex-col">
+            <div className="w-64 h-full border-r border-border/50 bg-muted/30 flex flex-col">
                 {/* Header */}
                 <div className="p-3 border-b border-border/50 flex items-center justify-between">
                     <h3 className="text-sm font-medium text-foreground">Chat History</h3>

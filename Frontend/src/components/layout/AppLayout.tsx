@@ -13,9 +13,10 @@ import { Sidebar } from "./Sidebar";
 
 interface AppLayoutProps {
   children: ReactNode;
+  fullWidth?: boolean;
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
   const { signOut, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       </div>
 
       {/* Main Content */}
-      <main className="md:ml-72 min-h-screen transition-all duration-300">
+      <main className="md:ml-72 min-h-screen transition-all duration-300 flex flex-col">
         {/* Top Header - Mobile */}
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border md:hidden">
           <div className="flex items-center justify-between px-4 py-3 gap-3">
@@ -174,7 +175,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <div className="p-4 md:p-8 pb-24 md:pb-8">
+        <div className={cn(
+          "flex-1",
+          fullWidth ? "p-0" : "p-4 md:p-8 pb-24 md:pb-8"
+        )}>
           {children}
         </div>
       </main>
