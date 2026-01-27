@@ -39,39 +39,104 @@ export function WelcomeCard() {
           setProfile(profileData);
         }
 
-        // Fetch counts and activity for streak (study_sessions, notes, flashcards)
-        const [notesResult, flashcardsResult, papersResult, sessionsResult, notesDates, flashcardsDates] = await Promise.all([
+        // Fetch counts and activity for streak from MULTIPLE sources
+        const [
+          notesResult,
+          flashcardsResult,
+          papersResult,
+          // Activity dates from various sources
+          notesDates,
+          flashcardsDates,
+          aiUsageDates,
+          knowledgeOrganizersDates,
+          pastPapersDates,
+          // Optional: study_sessions if table exists
+          sessionsResult
+        ] = await Promise.all([
+          // Counts
           supabase.from("notes").select("*", { count: "exact", head: true }).eq("user_id", user.id),
           supabase.from("flashcards").select("*", { count: "exact", head: true }).eq("user_id", user.id),
           supabase.from("past_papers").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+          // Activity dates for streak calculation
+          supabase.from("notes").select("created_at, updated_at").eq("user_id", user.id),
+          supabase.from("flashcards").select("created_at, updated_at").eq("user_id", user.id),
+          supabase.from("ai_usage_tracking").select("created_at").eq("user_id", user.id),
+          supabase.from("knowledge_organizers").select("created_at, updated_at").eq("user_id", user.id),
+          supabase.from("past_papers").select("created_at, updated_at").eq("user_id", user.id),
+          // Study sessions (gracefully handles if table doesn't exist - will return empty/error)
           supabase.from("study_sessions").select("date").eq("user_id", user.id),
-          supabase.from("notes").select("updated_at").eq("user_id", user.id),
-          supabase.from("flashcards").select("updated_at").eq("user_id", user.id),
         ]);
 
+        // Convert date to YYYY-MM-DD format
         const toYMD = (d: Date) =>
           `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-        const dates = new Set<string>();
-        (sessionsResult.data || []).forEach((r: any) => dates.add(toYMD(new Date(r.date))));
-        (notesDates.data || []).forEach((r: any) => dates.add(toYMD(new Date(r.updated_at))));
-        (flashcardsDates.data || []).forEach((r: any) => dates.add(toYMD(new Date(r.updated_at))));
 
+        // Collect all activity dates into a Set
+        const dates = new Set<string>();
+
+        // Add study sessions dates
+        (sessionsResult?.data || []).forEach((r: any) => {
+          if (r.date) dates.add(toYMD(new Date(r.date)));
+        });
+
+        // Add notes activity (both created and updated)
+        (notesDates.data || []).forEach((r: any) => {
+          if (r.created_at) dates.add(toYMD(new Date(r.created_at)));
+          if (r.updated_at) dates.add(toYMD(new Date(r.updated_at)));
+        });
+
+        // Add flashcards activity
+        (flashcardsDates.data || []).forEach((r: any) => {
+          if (r.created_at) dates.add(toYMD(new Date(r.created_at)));
+          if (r.updated_at) dates.add(toYMD(new Date(r.updated_at)));
+        });
+
+        // Add AI usage activity (chat, questions, etc.)
+        (aiUsageDates.data || []).forEach((r: any) => {
+          if (r.created_at) dates.add(toYMD(new Date(r.created_at)));
+        });
+
+        // Add knowledge organizers activity
+        (knowledgeOrganizersDates.data || []).forEach((r: any) => {
+          if (r.created_at) dates.add(toYMD(new Date(r.created_at)));
+          if (r.updated_at) dates.add(toYMD(new Date(r.updated_at)));
+        });
+
+        // Add past papers activity
+        (pastPapersDates.data || []).forEach((r: any) => {
+          if (r.created_at) dates.add(toYMD(new Date(r.created_at)));
+          if (r.updated_at) dates.add(toYMD(new Date(r.updated_at)));
+        });
+
+        // Calculate streak: count consecutive days from today/yesterday backwards
         const streak = (() => {
           if (dates.size === 0) return 0;
+
           const today = toYMD(new Date());
-          const yesterday = toYMD(new Date(Date.now() - 864e5));
+          const yesterday = toYMD(new Date(Date.now() - 86400000)); // 24 hours ago
+
+          // Start from today or yesterday (to allow for timezone differences)
           let ref: string;
-          if (dates.has(today)) ref = today;
-          else if (dates.has(yesterday)) ref = yesterday;
-          else return 0;
-          let count = 0;
-          let d = ref;
-          while (dates.has(d)) {
-            count++;
-            const [y, m, day] = d.split("-").map(Number);
-            const next = new Date(y, m - 1, day - 1);
-            d = toYMD(next);
+          if (dates.has(today)) {
+            ref = today;
+          } else if (dates.has(yesterday)) {
+            ref = yesterday;
+          } else {
+            return 0; // No recent activity, streak is broken
           }
+
+          // Count consecutive days backwards
+          let count = 0;
+          let currentDate = ref;
+
+          while (dates.has(currentDate)) {
+            count++;
+            // Move to previous day
+            const [y, m, day] = currentDate.split("-").map(Number);
+            const prevDate = new Date(y, m - 1, day - 1);
+            currentDate = toYMD(prevDate);
+          }
+
           return count;
         })();
 
@@ -82,7 +147,7 @@ export function WelcomeCard() {
           streak,
         });
 
-        // Fetch AI usage
+        // Fetch AI usage for display
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { count: aiCount } = await supabase
           .from("ai_usage_tracking")
