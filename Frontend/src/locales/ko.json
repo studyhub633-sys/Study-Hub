@@ -1,0 +1,139 @@
+{
+    "common": {
+        "loading": "로딩 중...",
+        "error": "오류",
+        "success": "성공",
+        "save": "저장",
+        "cancel": "취소",
+        "delete": "삭제",
+        "edit": "편집",
+        "close": "닫기",
+        "back": "뒤로",
+        "next": "다음",
+        "submit": "제출",
+        "search": "검색",
+        "settings": "설정",
+        "profile": "프로필",
+        "logout": "로그아웃",
+        "login": "로그인",
+        "signup": "회원가입",
+        "email": "이메일",
+        "password": "비밀번호",
+        "confirmPassword": "비밀번호 확인",
+        "forgotPassword": "비밀번호를 잊으셨나요?",
+        "rememberMe": "로그인 유지",
+        "or": "또는",
+        "and": "그리고",
+        "yes": "예",
+        "no": "아니오",
+        "ok": "확인",
+        "confirm": "확인",
+        "theme": "테마",
+        "language": "언어"
+    },
+    "landing": {
+        "heroTitle": "올인원",
+        "heroTitleHighlight": "학습 동반자",
+        "heroDescription": "노트를 정리하고, 플래시카드로 연습하고, 기출문제를 복습하고, 진행 상황을 추적하세요—학생을 위해 설계된 강력한 플랫폼에서 모두 가능합니다.",
+        "getStartedFree": "무료로 시작하기",
+        "signIn": "로그인",
+        "signUp": "회원가입",
+        "getStarted": "시작하기",
+        "featuresTitle": "성공에 필요한 모든 것",
+        "featuresSubtitle": "더 똑똑하게 공부할 수 있도록 설계된 강력한 도구들",
+        "whyChoose": "왜 Scientia.ai를 선택해야 할까요?",
+        "whyChooseSubtitle": "이미 학습 습관을 개선하고 있는 수천 명의 학생들과 함께하세요",
+        "stayUpdated": "최신 정보 받기",
+        "newsletterDescription": "학습 팁, 기능 업데이트 및 독점 콘텐츠를 위해 뉴스레터를 구독하세요.",
+        "enterEmail": "이메일을 입력하세요",
+        "subscribe": "구독하기",
+        "subscribed": "구독 완료!",
+        "subscribedMessage": "뉴스레터를 구독해 주셔서 감사합니다.",
+        "ctaTitle": "학습 습관을 바꿀 준비가 되셨나요?",
+        "ctaDescription": "오늘부터 학습을 정리하세요. 무료로 시작할 수 있습니다.",
+        "createAccount": "계정 만들기"
+    },
+    "features": {
+        "examNotes": {
+            "title": "시험 노트",
+            "description": "과목과 주제별로 정리된 하이라이트 노트"
+        },
+        "flashcards": {
+            "title": "플래시카드",
+            "description": "퀴즈 모드와 진행 추적이 있는 대화형 카드"
+        },
+        "pastPapers": {
+            "title": "기출문제",
+            "description": "정답 표시와 시간 제한 퀴즈로 연습"
+        },
+        "knowledgeOrganisers": {
+            "title": "지식 정리기",
+            "description": "접을 수 있는 섹션이 있는 시각적 요약"
+        },
+        "extracurriculars": {
+            "title": "비교과 활동",
+            "description": "활동, 시간 및 성과 추적"
+        },
+        "aiQuestions": {
+            "title": "무제한 AI 생성 문제",
+            "description": "AI 생성 문제, 튜터 지원 및 연습"
+        }
+    },
+    "benefits": {
+        "organize": "모든 학습 자료를 한 곳에서 정리",
+        "trackProgress": "모든 과목의 진행 상황 추적",
+        "accessPapers": "기출문제 및 연습 문제 접근",
+        "createFlashcards": "효율적으로 플래시카드 만들기 및 복습",
+        "monitorActivities": "비교과 활동 모니터링",
+        "getRecommendations": "맞춤형 학습 추천 받기"
+    },
+    "footer": {
+        "description": "체계적인 학습과 학업 성공을 위한 올인원 학습 동반자.",
+        "legal": "법적 사항",
+        "termsAndConditions": "이용약관",
+        "returnsAndRefunds": "반품 및 환불",
+        "support": "지원",
+        "faq": "자주 묻는 질문",
+        "contactUs": "문의하기",
+        "account": "계정",
+        "copyright": "© 2026 Scientia.ai. All rights reserved.",
+        "terms": "약관",
+        "returns": "반품"
+    },
+    "languageModal": {
+        "title": "언어를 변경하시겠습니까?",
+        "description": "{{language}}을(를) 선호하실 것 같습니다. 변경하시겠습니까?",
+        "switchTo": "예, {{language}}(으)로 변경",
+        "keepCurrent": "아니오, 영어 유지",
+        "dontAskAgain": "다시 묻지 않기"
+    },
+    "languageSelector": {
+        "selectLanguage": "언어 선택",
+        "currentLanguage": "현재: {{language}}"
+    },
+    "nav": {
+        "home": "홈",
+        "notes": "노트",
+        "flashcards": "플래시카드",
+        "pastPapers": "기출문제",
+        "knowledge": "지식",
+        "extracurricular": "비교과",
+        "aiTutor": "AI 튜터",
+        "premium": "프리미엄",
+        "library": "라이브러리",
+        "admin": "관리자"
+    },
+    "auth": {
+        "welcomeBack": "다시 오신 것을 환영합니다",
+        "loginSubtitle": "학습 여정을 계속하려면 로그인하세요",
+        "createAccount": "계정 만들기",
+        "signupSubtitle": "오늘 학습 여정을 시작하세요",
+        "noAccount": "계정이 없으신가요?",
+        "haveAccount": "이미 계정이 있으신가요?",
+        "resetPassword": "비밀번호 재설정",
+        "resetPasswordSubtitle": "재설정 링크를 받을 이메일을 입력하세요",
+        "sendResetLink": "링크 보내기",
+        "newPassword": "새 비밀번호",
+        "createNewPassword": "계정의 새 비밀번호를 만드세요"
+    }
+}

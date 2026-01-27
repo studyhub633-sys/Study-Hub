@@ -1,0 +1,139 @@
+{
+    "common": {
+        "loading": "Laden...",
+        "error": "Fehler",
+        "success": "Erfolg",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "delete": "Löschen",
+        "edit": "Bearbeiten",
+        "close": "Schließen",
+        "back": "Zurück",
+        "next": "Weiter",
+        "submit": "Absenden",
+        "search": "Suchen",
+        "settings": "Einstellungen",
+        "profile": "Profil",
+        "logout": "Abmelden",
+        "login": "Anmelden",
+        "signup": "Registrieren",
+        "email": "E-Mail",
+        "password": "Passwort",
+        "confirmPassword": "Passwort bestätigen",
+        "forgotPassword": "Passwort vergessen?",
+        "rememberMe": "Angemeldet bleiben",
+        "or": "oder",
+        "and": "und",
+        "yes": "Ja",
+        "no": "Nein",
+        "ok": "OK",
+        "confirm": "Bestätigen",
+        "theme": "Design",
+        "language": "Sprache"
+    },
+    "landing": {
+        "heroTitle": "Ihr All-in-One",
+        "heroTitleHighlight": "Lernbegleiter",
+        "heroDescription": "Organisieren Sie Notizen, üben Sie mit Lernkarten, wiederholen Sie alte Prüfungen und verfolgen Sie Ihren Fortschritt—alles auf einer leistungsstarken Plattform für Studierende.",
+        "getStartedFree": "Kostenlos Starten",
+        "signIn": "Anmelden",
+        "signUp": "Registrieren",
+        "getStarted": "Loslegen",
+        "featuresTitle": "Alles was Sie zum Erfolg Brauchen",
+        "featuresSubtitle": "Leistungsstarke Tools, die Ihnen helfen, intelligenter zu lernen",
+        "whyChoose": "Warum Scientia.ai Wählen?",
+        "whyChooseSubtitle": "Schließen Sie sich Tausenden von Studierenden an, die bereits ihre Lerngewohnheiten verbessern",
+        "stayUpdated": "Bleiben Sie Informiert",
+        "newsletterDescription": "Abonnieren Sie unseren Newsletter für Lerntipps, Feature-Updates und exklusive Inhalte.",
+        "enterEmail": "Geben Sie Ihre E-Mail ein",
+        "subscribe": "Abonnieren",
+        "subscribed": "Abonniert!",
+        "subscribedMessage": "Vielen Dank für Ihr Newsletter-Abonnement.",
+        "ctaTitle": "Bereit, Ihre Lerngewohnheiten zu Transformieren?",
+        "ctaDescription": "Beginnen Sie heute mit der Organisation Ihres Lernens. Der Start ist kostenlos.",
+        "createAccount": "Konto Erstellen"
+    },
+    "features": {
+        "examNotes": {
+            "title": "Prüfungsnotizen",
+            "description": "Organisierte Notizen nach Fach und Thema mit Hervorhebungen"
+        },
+        "flashcards": {
+            "title": "Lernkarten",
+            "description": "Interaktive Karten mit Quiz-Modus und Fortschrittsverfolgung"
+        },
+        "pastPapers": {
+            "title": "Alte Prüfungen",
+            "description": "Übung mit markierten Antworten und zeitgesteuerten Tests"
+        },
+        "knowledgeOrganisers": {
+            "title": "Wissensorganisatoren",
+            "description": "Visuelle Zusammenfassungen mit einklappbaren Abschnitten"
+        },
+        "extracurriculars": {
+            "title": "Außerschulische Aktivitäten",
+            "description": "Verfolgen Sie Aktivitäten, Stunden und Erfolge"
+        },
+        "aiQuestions": {
+            "title": "Unbegrenzte KI-generierte Fragen",
+            "description": "KI-generierte Fragen, Tutor-Unterstützung und Übung"
+        }
+    },
+    "benefits": {
+        "organize": "Organisieren Sie alle Ihre Lernmaterialien an einem Ort",
+        "trackProgress": "Verfolgen Sie Ihren Fortschritt in allen Fächern",
+        "accessPapers": "Greifen Sie auf alte Prüfungen und Übungsfragen zu",
+        "createFlashcards": "Erstellen und wiederholen Sie Lernkarten effizient",
+        "monitorActivities": "Überwachen Sie Ihre außerschulischen Aktivitäten",
+        "getRecommendations": "Erhalten Sie personalisierte Lernempfehlungen"
+    },
+    "footer": {
+        "description": "Ihr All-in-One Lernbegleiter für organisiertes Lernen und akademischen Erfolg.",
+        "legal": "Rechtliches",
+        "termsAndConditions": "Allgemeine Geschäftsbedingungen",
+        "returnsAndRefunds": "Rückgaben und Erstattungen",
+        "support": "Support",
+        "faq": "FAQ",
+        "contactUs": "Kontakt",
+        "account": "Konto",
+        "copyright": "© 2026 Scientia.ai. Alle Rechte vorbehalten.",
+        "terms": "AGB",
+        "returns": "Rückgaben"
+    },
+    "languageModal": {
+        "title": "Sprache Ändern?",
+        "description": "Wir haben erkannt, dass Sie möglicherweise {{language}} bevorzugen. Möchten Sie wechseln?",
+        "switchTo": "Ja, zu {{language}} wechseln",
+        "keepCurrent": "Nein, Englisch behalten",
+        "dontAskAgain": "Nicht mehr fragen"
+    },
+    "languageSelector": {
+        "selectLanguage": "Sprache Auswählen",
+        "currentLanguage": "Aktuell: {{language}}"
+    },
+    "nav": {
+        "home": "Startseite",
+        "notes": "Notizen",
+        "flashcards": "Lernkarten",
+        "pastPapers": "Prüfungen",
+        "knowledge": "Wissen",
+        "extracurricular": "Aktivitäten",
+        "aiTutor": "KI-Tutor",
+        "premium": "Premium",
+        "library": "Bibliothek",
+        "admin": "Admin"
+    },
+    "auth": {
+        "welcomeBack": "Willkommen Zurück",
+        "loginSubtitle": "Melden Sie sich an, um Ihre Lernreise fortzusetzen",
+        "createAccount": "Konto Erstellen",
+        "signupSubtitle": "Beginnen Sie heute Ihre Lernreise",
+        "noAccount": "Kein Konto?",
+        "haveAccount": "Bereits ein Konto?",
+        "resetPassword": "Passwort Zurücksetzen",
+        "resetPasswordSubtitle": "Geben Sie Ihre E-Mail ein, um einen Zurücksetzungslink zu erhalten",
+        "sendResetLink": "Link Senden",
+        "newPassword": "Neues Passwort",
+        "createNewPassword": "Erstellen Sie ein neues Passwort für Ihr Konto"
+    }
+}

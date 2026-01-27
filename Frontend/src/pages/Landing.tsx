@@ -1,5 +1,6 @@
 import AnimatedLogo from "@/components/AnimatedLogo";
 import AnimatedLogoIcon from "@/components/AnimatedLogoIcon";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -154,6 +155,7 @@ export default function Landing() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-3">
+            <LanguageSelector />
             <Button
               variant="ghost"
               size="icon"

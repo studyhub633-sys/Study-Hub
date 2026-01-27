@@ -1,0 +1,139 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "close": "Close",
+        "back": "Back",
+        "next": "Next",
+        "submit": "Submit",
+        "search": "Search",
+        "settings": "Settings",
+        "profile": "Profile",
+        "logout": "Log Out",
+        "login": "Sign In",
+        "signup": "Sign Up",
+        "email": "Email",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "forgotPassword": "Forgot Password?",
+        "rememberMe": "Remember Me",
+        "or": "or",
+        "and": "and",
+        "yes": "Yes",
+        "no": "No",
+        "ok": "OK",
+        "confirm": "Confirm",
+        "theme": "Theme",
+        "language": "Language"
+    },
+    "landing": {
+        "heroTitle": "Your All-in-One",
+        "heroTitleHighlight": "Study Companion",
+        "heroDescription": "Organise notes, practice with flashcards, review past papers, and track your progress—all in one powerful platform designed for students.",
+        "getStartedFree": "Get Started Free",
+        "signIn": "Sign In",
+        "signUp": "Sign Up",
+        "getStarted": "Get Started",
+        "featuresTitle": "Everything You Need to Succeed",
+        "featuresSubtitle": "Powerful tools designed to help you study smarter, not harder",
+        "whyChoose": "Why Choose Scientia.ai?",
+        "whyChooseSubtitle": "Join thousands of students who are already improving their study habits",
+        "stayUpdated": "Stay Updated",
+        "newsletterDescription": "Subscribe to our newsletter for study tips, feature updates, and exclusive content.",
+        "enterEmail": "Enter your email",
+        "subscribe": "Subscribe",
+        "subscribed": "Subscribed!",
+        "subscribedMessage": "Thank you for subscribing to our newsletter.",
+        "ctaTitle": "Ready to Transform Your Study Habits?",
+        "ctaDescription": "Start organizing your studies today. It's free to get started.",
+        "createAccount": "Create Your Account"
+    },
+    "features": {
+        "examNotes": {
+            "title": "Exam Notes",
+            "description": "Organised notes by subject and topic with highlights"
+        },
+        "flashcards": {
+            "title": "Flashcards",
+            "description": "Interactive cards with quiz mode and progress tracking"
+        },
+        "pastPapers": {
+            "title": "Past Papers",
+            "description": "Practice with marked answers and timed quizzes"
+        },
+        "knowledgeOrganisers": {
+            "title": "Knowledge Organisers",
+            "description": "Visual summaries with collapsible sections"
+        },
+        "extracurriculars": {
+            "title": "Extracurriculars",
+            "description": "Track activities, hours, and achievements"
+        },
+        "aiQuestions": {
+            "title": "Unlimited AI Generated Questions",
+            "description": "AI-generated questions, tutor support, and practice"
+        }
+    },
+    "benefits": {
+        "organize": "Organise all your study materials in one place",
+        "trackProgress": "Track your progress across all subjects",
+        "accessPapers": "Access past papers and practice questions",
+        "createFlashcards": "Create and review flashcards efficiently",
+        "monitorActivities": "Monitor your extracurricular activities",
+        "getRecommendations": "Get personalized study recommendations"
+    },
+    "footer": {
+        "description": "Your all-in-one study companion for organized learning and academic success.",
+        "legal": "Legal",
+        "termsAndConditions": "Terms and Conditions",
+        "returnsAndRefunds": "Returns and Refunds",
+        "support": "Support",
+        "faq": "FAQ",
+        "contactUs": "Contact Us",
+        "account": "Account",
+        "copyright": "© 2026 Scientia.ai. All rights reserved.",
+        "terms": "Terms",
+        "returns": "Returns"
+    },
+    "languageModal": {
+        "title": "Change Language?",
+        "description": "We detected that you might prefer {{language}}. Would you like to switch?",
+        "switchTo": "Yes, switch to {{language}}",
+        "keepCurrent": "No, keep English",
+        "dontAskAgain": "Don't ask me again"
+    },
+    "languageSelector": {
+        "selectLanguage": "Select Language",
+        "currentLanguage": "Current: {{language}}"
+    },
+    "nav": {
+        "home": "Home",
+        "notes": "Notes",
+        "flashcards": "Flashcards",
+        "pastPapers": "Past Papers",
+        "knowledge": "Knowledge",
+        "extracurricular": "Extracurricular",
+        "aiTutor": "AI Tutor",
+        "premium": "Premium",
+        "library": "Library",
+        "admin": "Admin"
+    },
+    "auth": {
+        "welcomeBack": "Welcome Back",
+        "loginSubtitle": "Sign in to continue your learning journey",
+        "createAccount": "Create Account",
+        "signupSubtitle": "Start your learning journey today",
+        "noAccount": "Don't have an account?",
+        "haveAccount": "Already have an account?",
+        "resetPassword": "Reset Password",
+        "resetPasswordSubtitle": "Enter your email to receive a password reset link",
+        "sendResetLink": "Send Reset Link",
+        "newPassword": "New Password",
+        "createNewPassword": "Create a new password for your account"
+    }
+}

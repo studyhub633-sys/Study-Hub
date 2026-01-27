@@ -1,0 +1,139 @@
+{
+    "common": {
+        "loading": "लोड हो रहा है...",
+        "error": "त्रुटि",
+        "success": "सफलता",
+        "save": "सहेजें",
+        "cancel": "रद्द करें",
+        "delete": "हटाएं",
+        "edit": "संपादित करें",
+        "close": "बंद करें",
+        "back": "वापस",
+        "next": "अगला",
+        "submit": "जमा करें",
+        "search": "खोजें",
+        "settings": "सेटिंग्स",
+        "profile": "प्रोफ़ाइल",
+        "logout": "लॉग आउट",
+        "login": "लॉग इन",
+        "signup": "साइन अप",
+        "email": "ईमेल",
+        "password": "पासवर्ड",
+        "confirmPassword": "पासवर्ड की पुष्टि करें",
+        "forgotPassword": "पासवर्ड भूल गए?",
+        "rememberMe": "मुझे याद रखें",
+        "or": "या",
+        "and": "और",
+        "yes": "हाँ",
+        "no": "नहीं",
+        "ok": "ठीक है",
+        "confirm": "पुष्टि करें",
+        "theme": "थीम",
+        "language": "भाषा"
+    },
+    "landing": {
+        "heroTitle": "आपका ऑल-इन-वन",
+        "heroTitleHighlight": "अध्ययन साथी",
+        "heroDescription": "नोट्स व्यवस्थित करें, फ्लैशकार्ड से अभ्यास करें, पिछले पेपर देखें और अपनी प्रगति ट्रैक करें—छात्रों के लिए डिज़ाइन किए गए एक शक्तिशाली प्लेटफ़ॉर्म पर।",
+        "getStartedFree": "मुफ्त में शुरू करें",
+        "signIn": "लॉग इन",
+        "signUp": "साइन अप",
+        "getStarted": "शुरू करें",
+        "featuresTitle": "सफलता के लिए सब कुछ",
+        "featuresSubtitle": "स्मार्ट तरीके से पढ़ाई के लिए शक्तिशाली उपकरण",
+        "whyChoose": "Scientia.ai क्यों चुनें?",
+        "whyChooseSubtitle": "हजारों छात्रों से जुड़ें जो पहले से अपनी पढ़ाई की आदतें सुधार रहे हैं",
+        "stayUpdated": "अपडेट रहें",
+        "newsletterDescription": "अध्ययन टिप्स, फ़ीचर अपडेट और विशेष सामग्री के लिए हमारे न्यूज़लेटर की सदस्यता लें।",
+        "enterEmail": "अपना ईमेल दर्ज करें",
+        "subscribe": "सदस्यता लें",
+        "subscribed": "सदस्यता हो गई!",
+        "subscribedMessage": "हमारे न्यूज़लेटर की सदस्यता के लिए धन्यवाद।",
+        "ctaTitle": "अपनी पढ़ाई की आदतें बदलने के लिए तैयार?",
+        "ctaDescription": "आज से अपनी पढ़ाई व्यवस्थित करना शुरू करें। शुरू करना मुफ्त है।",
+        "createAccount": "अपना खाता बनाएं"
+    },
+    "features": {
+        "examNotes": {
+            "title": "परीक्षा नोट्स",
+            "description": "विषय और टॉपिक के अनुसार हाइलाइट्स के साथ व्यवस्थित नोट्स"
+        },
+        "flashcards": {
+            "title": "फ्लैशकार्ड",
+            "description": "क्विज़ मोड और प्रगति ट्रैकिंग के साथ इंटरैक्टिव कार्ड"
+        },
+        "pastPapers": {
+            "title": "पिछले पेपर",
+            "description": "चिह्नित उत्तरों और समयबद्ध क्विज़ के साथ अभ्यास"
+        },
+        "knowledgeOrganisers": {
+            "title": "नॉलेज ऑर्गनाइज़र",
+            "description": "संक्षिप्त करने योग्य अनुभागों के साथ विज़ुअल सारांश"
+        },
+        "extracurriculars": {
+            "title": "पाठ्येतर गतिविधियां",
+            "description": "गतिविधियों, घंटों और उपलब्धियों को ट्रैक करें"
+        },
+        "aiQuestions": {
+            "title": "असीमित AI प्रश्न",
+            "description": "AI-जनित प्रश्न, ट्यूटर सपोर्ट और अभ्यास"
+        }
+    },
+    "benefits": {
+        "organize": "अपनी सभी अध्ययन सामग्री एक जगह व्यवस्थित करें",
+        "trackProgress": "सभी विषयों में अपनी प्रगति ट्रैक करें",
+        "accessPapers": "पिछले पेपर और अभ्यास प्रश्नों तक पहुंचें",
+        "createFlashcards": "कुशलता से फ्लैशकार्ड बनाएं और समीक्षा करें",
+        "monitorActivities": "अपनी पाठ्येतर गतिविधियों की निगरानी करें",
+        "getRecommendations": "व्यक्तिगत अध्ययन अनुशंसाएं प्राप्त करें"
+    },
+    "footer": {
+        "description": "व्यवस्थित सीखने और शैक्षणिक सफलता के लिए आपका ऑल-इन-वन अध्ययन साथी।",
+        "legal": "कानूनी",
+        "termsAndConditions": "नियम और शर्तें",
+        "returnsAndRefunds": "रिटर्न और रिफंड",
+        "support": "सहायता",
+        "faq": "अक्सर पूछे जाने वाले प्रश्न",
+        "contactUs": "संपर्क करें",
+        "account": "खाता",
+        "copyright": "© 2026 Scientia.ai. सर्वाधिकार सुरक्षित।",
+        "terms": "शर्तें",
+        "returns": "रिटर्न"
+    },
+    "languageModal": {
+        "title": "भाषा बदलें?",
+        "description": "हमने पता लगाया कि आप {{language}} पसंद कर सकते हैं। क्या आप बदलना चाहेंगे?",
+        "switchTo": "हाँ, {{language}} में बदलें",
+        "keepCurrent": "नहीं, अंग्रेज़ी रखें",
+        "dontAskAgain": "दोबारा न पूछें"
+    },
+    "languageSelector": {
+        "selectLanguage": "भाषा चुनें",
+        "currentLanguage": "वर्तमान: {{language}}"
+    },
+    "nav": {
+        "home": "होम",
+        "notes": "नोट्स",
+        "flashcards": "फ्लैशकार्ड",
+        "pastPapers": "पेपर",
+        "knowledge": "ज्ञान",
+        "extracurricular": "पाठ्येतर",
+        "aiTutor": "AI ट्यूटर",
+        "premium": "प्रीमियम",
+        "library": "लाइब्रेरी",
+        "admin": "एडमिन"
+    },
+    "auth": {
+        "welcomeBack": "वापसी पर स्वागत है",
+        "loginSubtitle": "अपनी सीखने की यात्रा जारी रखने के लिए लॉग इन करें",
+        "createAccount": "खाता बनाएं",
+        "signupSubtitle": "आज ही अपनी सीखने की यात्रा शुरू करें",
+        "noAccount": "खाता नहीं है?",
+        "haveAccount": "पहले से खाता है?",
+        "resetPassword": "पासवर्ड रीसेट करें",
+        "resetPasswordSubtitle": "रीसेट लिंक प्राप्त करने के लिए अपना ईमेल दर्ज करें",
+        "sendResetLink": "लिंक भेजें",
+        "newPassword": "नया पासवर्ड",
+        "createNewPassword": "अपने खाते के लिए नया पासवर्ड बनाएं"
+    }
+}

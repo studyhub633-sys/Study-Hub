@@ -1,0 +1,139 @@
+{
+    "common": {
+        "loading": "Laden...",
+        "error": "Fout",
+        "success": "Succes",
+        "save": "Opslaan",
+        "cancel": "Annuleren",
+        "delete": "Verwijderen",
+        "edit": "Bewerken",
+        "close": "Sluiten",
+        "back": "Terug",
+        "next": "Volgende",
+        "submit": "Verzenden",
+        "search": "Zoeken",
+        "settings": "Instellingen",
+        "profile": "Profiel",
+        "logout": "Uitloggen",
+        "login": "Inloggen",
+        "signup": "Registreren",
+        "email": "E-mail",
+        "password": "Wachtwoord",
+        "confirmPassword": "Bevestig Wachtwoord",
+        "forgotPassword": "Wachtwoord vergeten?",
+        "rememberMe": "Onthoud mij",
+        "or": "of",
+        "and": "en",
+        "yes": "Ja",
+        "no": "Nee",
+        "ok": "OK",
+        "confirm": "Bevestigen",
+        "theme": "Thema",
+        "language": "Taal"
+    },
+    "landing": {
+        "heroTitle": "Jouw Alles-in-Één",
+        "heroTitleHighlight": "Studiegenoot",
+        "heroDescription": "Organiseer aantekeningen, oefen met flashcards, bekijk oude examens en volg je voortgang—alles op één krachtig platform ontworpen voor studenten.",
+        "getStartedFree": "Gratis Beginnen",
+        "signIn": "Inloggen",
+        "signUp": "Registreren",
+        "getStarted": "Beginnen",
+        "featuresTitle": "Alles Wat Je Nodig Hebt om te Slagen",
+        "featuresSubtitle": "Krachtige tools ontworpen om je slimmer te laten studeren",
+        "whyChoose": "Waarom Kiezen voor Scientia.ai?",
+        "whyChooseSubtitle": "Sluit je aan bij duizenden studenten die al hun studiegewoontes verbeteren",
+        "stayUpdated": "Blijf Op de Hoogte",
+        "newsletterDescription": "Abonneer op onze nieuwsbrief voor studietips, functie-updates en exclusieve content.",
+        "enterEmail": "Voer je e-mail in",
+        "subscribe": "Abonneren",
+        "subscribed": "Geabonneerd!",
+        "subscribedMessage": "Bedankt voor je abonnement op onze nieuwsbrief.",
+        "ctaTitle": "Klaar om Je Studiegewoontes te Transformeren?",
+        "ctaDescription": "Begin vandaag met het organiseren van je studie. Het is gratis om te beginnen.",
+        "createAccount": "Maak Je Account Aan"
+    },
+    "features": {
+        "examNotes": {
+            "title": "Examen Aantekeningen",
+            "description": "Georganiseerde aantekeningen per vak en onderwerp met markeringen"
+        },
+        "flashcards": {
+            "title": "Flashcards",
+            "description": "Interactieve kaarten met quizmodus en voortgangsregistratie"
+        },
+        "pastPapers": {
+            "title": "Oude Examens",
+            "description": "Oefen met gemarkeerde antwoorden en getimede quizzen"
+        },
+        "knowledgeOrganisers": {
+            "title": "Kennis Organisatoren",
+            "description": "Visuele samenvattingen met inklapbare secties"
+        },
+        "extracurriculars": {
+            "title": "Buitenschoolse Activiteiten",
+            "description": "Volg activiteiten, uren en prestaties"
+        },
+        "aiQuestions": {
+            "title": "Onbeperkte AI-gegenereerde Vragen",
+            "description": "AI-gegenereerde vragen, tutor ondersteuning en oefening"
+        }
+    },
+    "benefits": {
+        "organize": "Organiseer al je studiemateriaal op één plek",
+        "trackProgress": "Volg je voortgang in alle vakken",
+        "accessPapers": "Toegang tot oude examens en oefenvragen",
+        "createFlashcards": "Maak en bekijk flashcards efficiënt",
+        "monitorActivities": "Monitor je buitenschoolse activiteiten",
+        "getRecommendations": "Krijg gepersonaliseerde studie-aanbevelingen"
+    },
+    "footer": {
+        "description": "Jouw alles-in-één studiegenoot voor georganiseerd leren en academisch succes.",
+        "legal": "Juridisch",
+        "termsAndConditions": "Algemene Voorwaarden",
+        "returnsAndRefunds": "Retourzendingen en Terugbetalingen",
+        "support": "Ondersteuning",
+        "faq": "FAQ",
+        "contactUs": "Contact",
+        "account": "Account",
+        "copyright": "© 2026 Scientia.ai. Alle rechten voorbehouden.",
+        "terms": "Voorwaarden",
+        "returns": "Retour"
+    },
+    "languageModal": {
+        "title": "Taal Wijzigen?",
+        "description": "We hebben gedetecteerd dat je mogelijk {{language}} prefereert. Wil je overschakelen?",
+        "switchTo": "Ja, overschakelen naar {{language}}",
+        "keepCurrent": "Nee, Engels behouden",
+        "dontAskAgain": "Niet meer vragen"
+    },
+    "languageSelector": {
+        "selectLanguage": "Selecteer Taal",
+        "currentLanguage": "Huidig: {{language}}"
+    },
+    "nav": {
+        "home": "Home",
+        "notes": "Aantekeningen",
+        "flashcards": "Flashcards",
+        "pastPapers": "Examens",
+        "knowledge": "Kennis",
+        "extracurricular": "Buitenschools",
+        "aiTutor": "AI Tutor",
+        "premium": "Premium",
+        "library": "Bibliotheek",
+        "admin": "Admin"
+    },
+    "auth": {
+        "welcomeBack": "Welkom Terug",
+        "loginSubtitle": "Log in om je leerreis voort te zetten",
+        "createAccount": "Account Aanmaken",
+        "signupSubtitle": "Begin vandaag je leerreis",
+        "noAccount": "Geen account?",
+        "haveAccount": "Heb je al een account?",
+        "resetPassword": "Wachtwoord Resetten",
+        "resetPasswordSubtitle": "Voer je e-mail in om een resetlink te ontvangen",
+        "sendResetLink": "Link Verzenden",
+        "newPassword": "Nieuw Wachtwoord",
+        "createNewPassword": "Maak een nieuw wachtwoord voor je account"
+    }
+}

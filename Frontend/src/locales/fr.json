@@ -1,0 +1,139 @@
+{
+    "common": {
+        "loading": "Chargement...",
+        "error": "Erreur",
+        "success": "Succès",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "edit": "Modifier",
+        "close": "Fermer",
+        "back": "Retour",
+        "next": "Suivant",
+        "submit": "Soumettre",
+        "search": "Rechercher",
+        "settings": "Paramètres",
+        "profile": "Profil",
+        "logout": "Déconnexion",
+        "login": "Connexion",
+        "signup": "S'inscrire",
+        "email": "E-mail",
+        "password": "Mot de passe",
+        "confirmPassword": "Confirmer le mot de passe",
+        "forgotPassword": "Mot de passe oublié ?",
+        "rememberMe": "Se souvenir de moi",
+        "or": "ou",
+        "and": "et",
+        "yes": "Oui",
+        "no": "Non",
+        "ok": "OK",
+        "confirm": "Confirmer",
+        "theme": "Thème",
+        "language": "Langue"
+    },
+    "landing": {
+        "heroTitle": "Votre Compagnon d'Étude",
+        "heroTitleHighlight": "Tout-en-Un",
+        "heroDescription": "Organisez vos notes, pratiquez avec des cartes mémoire, révisez les anciens examens et suivez vos progrès—le tout sur une plateforme puissante conçue pour les étudiants.",
+        "getStartedFree": "Commencer Gratuitement",
+        "signIn": "Connexion",
+        "signUp": "S'inscrire",
+        "getStarted": "Commencer",
+        "featuresTitle": "Tout ce dont Vous Avez Besoin pour Réussir",
+        "featuresSubtitle": "Des outils puissants conçus pour vous aider à étudier plus intelligemment",
+        "whyChoose": "Pourquoi Choisir Scientia.ai ?",
+        "whyChooseSubtitle": "Rejoignez des milliers d'étudiants qui améliorent déjà leurs habitudes d'étude",
+        "stayUpdated": "Restez Informé",
+        "newsletterDescription": "Abonnez-vous à notre newsletter pour des conseils d'étude, des mises à jour de fonctionnalités et du contenu exclusif.",
+        "enterEmail": "Entrez votre e-mail",
+        "subscribe": "S'abonner",
+        "subscribed": "Abonné !",
+        "subscribedMessage": "Merci de vous être abonné à notre newsletter.",
+        "ctaTitle": "Prêt à Transformer vos Habitudes d'Étude ?",
+        "ctaDescription": "Commencez à organiser vos études aujourd'hui. C'est gratuit pour commencer.",
+        "createAccount": "Créer Votre Compte"
+    },
+    "features": {
+        "examNotes": {
+            "title": "Notes d'Examen",
+            "description": "Notes organisées par matière et sujet avec surlignages"
+        },
+        "flashcards": {
+            "title": "Cartes Mémoire",
+            "description": "Cartes interactives avec mode quiz et suivi de progression"
+        },
+        "pastPapers": {
+            "title": "Anciens Examens",
+            "description": "Pratiquez avec des réponses corrigées et des quiz chronométrés"
+        },
+        "knowledgeOrganisers": {
+            "title": "Organisateurs de Connaissances",
+            "description": "Résumés visuels avec sections pliables"
+        },
+        "extracurriculars": {
+            "title": "Activités Extrascolaires",
+            "description": "Suivez les activités, les heures et les réalisations"
+        },
+        "aiQuestions": {
+            "title": "Questions Générées par IA Illimitées",
+            "description": "Questions générées par IA, support tuteur et pratique"
+        }
+    },
+    "benefits": {
+        "organize": "Organisez tous vos supports d'étude en un seul endroit",
+        "trackProgress": "Suivez vos progrès dans toutes les matières",
+        "accessPapers": "Accédez aux anciens examens et questions de pratique",
+        "createFlashcards": "Créez et révisez des cartes mémoire efficacement",
+        "monitorActivities": "Surveillez vos activités extrascolaires",
+        "getRecommendations": "Obtenez des recommandations d'étude personnalisées"
+    },
+    "footer": {
+        "description": "Votre compagnon d'étude tout-en-un pour un apprentissage organisé et la réussite académique.",
+        "legal": "Mentions Légales",
+        "termsAndConditions": "Conditions Générales",
+        "returnsAndRefunds": "Retours et Remboursements",
+        "support": "Support",
+        "faq": "FAQ",
+        "contactUs": "Contactez-nous",
+        "account": "Compte",
+        "copyright": "© 2026 Scientia.ai. Tous droits réservés.",
+        "terms": "Conditions",
+        "returns": "Retours"
+    },
+    "languageModal": {
+        "title": "Changer de Langue ?",
+        "description": "Nous avons détecté que vous pourriez préférer {{language}}. Voulez-vous changer ?",
+        "switchTo": "Oui, passer à {{language}}",
+        "keepCurrent": "Non, garder l'anglais",
+        "dontAskAgain": "Ne plus me demander"
+    },
+    "languageSelector": {
+        "selectLanguage": "Sélectionner la Langue",
+        "currentLanguage": "Actuel : {{language}}"
+    },
+    "nav": {
+        "home": "Accueil",
+        "notes": "Notes",
+        "flashcards": "Cartes",
+        "pastPapers": "Examens",
+        "knowledge": "Connaissances",
+        "extracurricular": "Extrascolaire",
+        "aiTutor": "Tuteur IA",
+        "premium": "Premium",
+        "library": "Bibliothèque",
+        "admin": "Admin"
+    },
+    "auth": {
+        "welcomeBack": "Bon Retour",
+        "loginSubtitle": "Connectez-vous pour continuer votre parcours d'apprentissage",
+        "createAccount": "Créer un Compte",
+        "signupSubtitle": "Commencez votre parcours d'apprentissage aujourd'hui",
+        "noAccount": "Pas de compte ?",
+        "haveAccount": "Déjà un compte ?",
+        "resetPassword": "Réinitialiser le Mot de Passe",
+        "resetPasswordSubtitle": "Entrez votre e-mail pour recevoir un lien de réinitialisation",
+        "sendResetLink": "Envoyer le Lien",
+        "newPassword": "Nouveau Mot de Passe",
+        "createNewPassword": "Créez un nouveau mot de passe pour votre compte"
+    }
+}

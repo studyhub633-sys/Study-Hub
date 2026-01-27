@@ -1,0 +1,139 @@
+{
+    "common": {
+        "loading": "載入中...",
+        "error": "錯誤",
+        "success": "成功",
+        "save": "儲存",
+        "cancel": "取消",
+        "delete": "刪除",
+        "edit": "編輯",
+        "close": "關閉",
+        "back": "返回",
+        "next": "下一步",
+        "submit": "提交",
+        "search": "搜尋",
+        "settings": "設定",
+        "profile": "個人資料",
+        "logout": "登出",
+        "login": "登入",
+        "signup": "註冊",
+        "email": "電子郵件",
+        "password": "密碼",
+        "confirmPassword": "確認密碼",
+        "forgotPassword": "忘記密碼？",
+        "rememberMe": "記住我",
+        "or": "或",
+        "and": "和",
+        "yes": "是",
+        "no": "否",
+        "ok": "確定",
+        "confirm": "確認",
+        "theme": "主題",
+        "language": "語言"
+    },
+    "landing": {
+        "heroTitle": "您的一站式",
+        "heroTitleHighlight": "學習夥伴",
+        "heroDescription": "整理筆記、練習閃卡、複習歷年試卷並追蹤您的進度——專為學生設計的強大學習平台。",
+        "getStartedFree": "免費開始",
+        "signIn": "登入",
+        "signUp": "註冊",
+        "getStarted": "開始使用",
+        "featuresTitle": "成功所需的一切",
+        "featuresSubtitle": "強大的工具幫助您更聰明地學習",
+        "whyChoose": "為什麼選擇 Scientia.ai？",
+        "whyChooseSubtitle": "加入數千名正在改善學習習慣的學生",
+        "stayUpdated": "保持更新",
+        "newsletterDescription": "訂閱我們的電子報，獲取學習技巧、功能更新和獨家內容。",
+        "enterEmail": "輸入您的電子郵件",
+        "subscribe": "訂閱",
+        "subscribed": "訂閱成功！",
+        "subscribedMessage": "感謝您訂閱我們的電子報。",
+        "ctaTitle": "準備好改變您的學習習慣了嗎？",
+        "ctaDescription": "今天就開始整理您的學習。完全免費。",
+        "createAccount": "建立帳戶"
+    },
+    "features": {
+        "examNotes": {
+            "title": "考試筆記",
+            "description": "按科目和主題整理的筆記，帶有重點標註"
+        },
+        "flashcards": {
+            "title": "閃卡",
+            "description": "帶有測驗模式和進度追蹤的互動卡片"
+        },
+        "pastPapers": {
+            "title": "歷年試卷",
+            "description": "帶標記答案和計時測驗的練習"
+        },
+        "knowledgeOrganisers": {
+            "title": "知識整理器",
+            "description": "帶可摺疊部分的視覺化摘要"
+        },
+        "extracurriculars": {
+            "title": "課外活動",
+            "description": "追蹤活動、時間和成就"
+        },
+        "aiQuestions": {
+            "title": "無限AI生成問題",
+            "description": "AI生成的問題、導師支援和練習"
+        }
+    },
+    "benefits": {
+        "organize": "在一個地方整理所有學習資料",
+        "trackProgress": "追蹤所有科目的進度",
+        "accessPapers": "存取歷年試卷和練習題",
+        "createFlashcards": "高效建立和複習閃卡",
+        "monitorActivities": "監控您的課外活動",
+        "getRecommendations": "獲得個人化學習建議"
+    },
+    "footer": {
+        "description": "您的一站式學習夥伴，打造有組織的學習和學業成功。",
+        "legal": "法律",
+        "termsAndConditions": "條款和條件",
+        "returnsAndRefunds": "退貨和退款",
+        "support": "支援",
+        "faq": "常見問題",
+        "contactUs": "聯繫我們",
+        "account": "帳戶",
+        "copyright": "© 2026 Scientia.ai。保留所有權利。",
+        "terms": "條款",
+        "returns": "退貨"
+    },
+    "languageModal": {
+        "title": "更改語言？",
+        "description": "我們偵測到您可能更喜歡{{language}}。您想切換嗎？",
+        "switchTo": "是的，切換到{{language}}",
+        "keepCurrent": "不，保持英語",
+        "dontAskAgain": "不再詢問"
+    },
+    "languageSelector": {
+        "selectLanguage": "選擇語言",
+        "currentLanguage": "目前：{{language}}"
+    },
+    "nav": {
+        "home": "首頁",
+        "notes": "筆記",
+        "flashcards": "閃卡",
+        "pastPapers": "歷年試卷",
+        "knowledge": "知識",
+        "extracurricular": "課外活動",
+        "aiTutor": "AI導師",
+        "premium": "進階版",
+        "library": "圖書館",
+        "admin": "管理"
+    },
+    "auth": {
+        "welcomeBack": "歡迎回來",
+        "loginSubtitle": "登入以繼續您的學習之旅",
+        "createAccount": "建立帳戶",
+        "signupSubtitle": "今天開始您的學習之旅",
+        "noAccount": "還沒有帳戶？",
+        "haveAccount": "已有帳戶？",
+        "resetPassword": "重設密碼",
+        "resetPasswordSubtitle": "輸入您的電子郵件以接收密碼重設連結",
+        "sendResetLink": "發送重設連結",
+        "newPassword": "新密碼",
+        "createNewPassword": "為您的帳戶建立新密碼"
+    }
+}

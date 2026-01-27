@@ -1,0 +1,139 @@
+{
+    "common": {
+        "loading": "جاري التحميل...",
+        "error": "خطأ",
+        "success": "نجاح",
+        "save": "حفظ",
+        "cancel": "إلغاء",
+        "delete": "حذف",
+        "edit": "تعديل",
+        "close": "إغلاق",
+        "back": "رجوع",
+        "next": "التالي",
+        "submit": "إرسال",
+        "search": "بحث",
+        "settings": "الإعدادات",
+        "profile": "الملف الشخصي",
+        "logout": "تسجيل الخروج",
+        "login": "تسجيل الدخول",
+        "signup": "إنشاء حساب",
+        "email": "البريد الإلكتروني",
+        "password": "كلمة المرور",
+        "confirmPassword": "تأكيد كلمة المرور",
+        "forgotPassword": "نسيت كلمة المرور؟",
+        "rememberMe": "تذكرني",
+        "or": "أو",
+        "and": "و",
+        "yes": "نعم",
+        "no": "لا",
+        "ok": "موافق",
+        "confirm": "تأكيد",
+        "theme": "السمة",
+        "language": "اللغة"
+    },
+    "landing": {
+        "heroTitle": "رفيقك الدراسي",
+        "heroTitleHighlight": "الشامل",
+        "heroDescription": "نظم ملاحظاتك، وتدرب بالبطاقات التعليمية، وراجع الامتحانات السابقة، وتتبع تقدمك—كل ذلك في منصة واحدة قوية مصممة للطلاب.",
+        "getStartedFree": "ابدأ مجانًا",
+        "signIn": "تسجيل الدخول",
+        "signUp": "إنشاء حساب",
+        "getStarted": "ابدأ الآن",
+        "featuresTitle": "كل ما تحتاجه للنجاح",
+        "featuresSubtitle": "أدوات قوية مصممة لمساعدتك على الدراسة بذكاء",
+        "whyChoose": "لماذا تختار Scientia.ai؟",
+        "whyChooseSubtitle": "انضم إلى آلاف الطلاب الذين يحسنون عاداتهم الدراسية",
+        "stayUpdated": "ابق على اطلاع",
+        "newsletterDescription": "اشترك في نشرتنا الإخبارية للحصول على نصائح دراسية وتحديثات الميزات ومحتوى حصري.",
+        "enterEmail": "أدخل بريدك الإلكتروني",
+        "subscribe": "اشترك",
+        "subscribed": "تم الاشتراك!",
+        "subscribedMessage": "شكرًا لاشتراكك في نشرتنا الإخبارية.",
+        "ctaTitle": "مستعد لتغيير عاداتك الدراسية؟",
+        "ctaDescription": "ابدأ بتنظيم دراستك اليوم. البدء مجاني.",
+        "createAccount": "أنشئ حسابك"
+    },
+    "features": {
+        "examNotes": {
+            "title": "ملاحظات الامتحان",
+            "description": "ملاحظات منظمة حسب المادة والموضوع مع تمييزات"
+        },
+        "flashcards": {
+            "title": "البطاقات التعليمية",
+            "description": "بطاقات تفاعلية مع وضع الاختبار وتتبع التقدم"
+        },
+        "pastPapers": {
+            "title": "الامتحانات السابقة",
+            "description": "تدرب بإجابات محددة واختبارات موقوتة"
+        },
+        "knowledgeOrganisers": {
+            "title": "منظمات المعرفة",
+            "description": "ملخصات مرئية بأقسام قابلة للطي"
+        },
+        "extracurriculars": {
+            "title": "الأنشطة اللامنهجية",
+            "description": "تتبع الأنشطة والساعات والإنجازات"
+        },
+        "aiQuestions": {
+            "title": "أسئلة ذكاء اصطناعي غير محدودة",
+            "description": "أسئلة مولدة بالذكاء الاصطناعي، ودعم المعلم، والتدريب"
+        }
+    },
+    "benefits": {
+        "organize": "نظم جميع مواد دراستك في مكان واحد",
+        "trackProgress": "تتبع تقدمك في جميع المواد",
+        "accessPapers": "الوصول إلى الامتحانات السابقة وأسئلة التدريب",
+        "createFlashcards": "أنشئ واراجع البطاقات التعليمية بكفاءة",
+        "monitorActivities": "راقب أنشطتك اللامنهجية",
+        "getRecommendations": "احصل على توصيات دراسية شخصية"
+    },
+    "footer": {
+        "description": "رفيقك الدراسي الشامل للتعلم المنظم والنجاح الأكاديمي.",
+        "legal": "القانونية",
+        "termsAndConditions": "الشروط والأحكام",
+        "returnsAndRefunds": "الإرجاع والاسترداد",
+        "support": "الدعم",
+        "faq": "الأسئلة الشائعة",
+        "contactUs": "اتصل بنا",
+        "account": "الحساب",
+        "copyright": "© 2026 Scientia.ai. جميع الحقوق محفوظة.",
+        "terms": "الشروط",
+        "returns": "الإرجاع"
+    },
+    "languageModal": {
+        "title": "تغيير اللغة؟",
+        "description": "اكتشفنا أنك قد تفضل {{language}}. هل تريد التبديل؟",
+        "switchTo": "نعم، التبديل إلى {{language}}",
+        "keepCurrent": "لا، الإبقاء على الإنجليزية",
+        "dontAskAgain": "لا تسألني مرة أخرى"
+    },
+    "languageSelector": {
+        "selectLanguage": "اختر اللغة",
+        "currentLanguage": "الحالية: {{language}}"
+    },
+    "nav": {
+        "home": "الرئيسية",
+        "notes": "الملاحظات",
+        "flashcards": "البطاقات",
+        "pastPapers": "الامتحانات",
+        "knowledge": "المعرفة",
+        "extracurricular": "اللامنهجي",
+        "aiTutor": "معلم ذكي",
+        "premium": "مميز",
+        "library": "المكتبة",
+        "admin": "الإدارة"
+    },
+    "auth": {
+        "welcomeBack": "مرحبًا بعودتك",
+        "loginSubtitle": "سجل الدخول لمتابعة رحلة تعلمك",
+        "createAccount": "إنشاء حساب",
+        "signupSubtitle": "ابدأ رحلة تعلمك اليوم",
+        "noAccount": "ليس لديك حساب؟",
+        "haveAccount": "لديك حساب بالفعل؟",
+        "resetPassword": "إعادة تعيين كلمة المرور",
+        "resetPasswordSubtitle": "أدخل بريدك الإلكتروني لتلقي رابط إعادة التعيين",
+        "sendResetLink": "إرسال الرابط",
+        "newPassword": "كلمة مرور جديدة",
+        "createNewPassword": "أنشئ كلمة مرور جديدة لحسابك"
+    }
+}

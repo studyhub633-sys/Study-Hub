@@ -1,8 +1,10 @@
+import { LanguagePermissionModal } from "@/components/LanguagePermissionModal";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -61,231 +63,234 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AuthProvider>
-            <BrowserRouter>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/landing" element={<Landing />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/returns" element={<Returns />} />
-                  <Route
-                    path="/"
-                    element={
-                      <ProtectedRoute>
-                        <Index />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/notes"
-                    element={
-                      <ProtectedRoute>
-                        <Notes />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/flashcards"
-                    element={
-                      <ProtectedRoute>
-                        <Flashcards />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/past-papers"
-                    element={
-                      <ProtectedRoute>
-                        <PastPapers />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/knowledge"
-                    element={
-                      <ProtectedRoute>
-                        <Knowledge />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/extracurricular"
-                    element={
-                      <ProtectedRoute>
-                        <Extracurricular />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/ai-tutor"
-                    element={
-                      <ProtectedRoute>
-                        <AITutor />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium"
-                    element={<Navigate to="/premium-dashboard" replace />}
-                  />
-                  <Route
-                    path="/premium-dashboard"
-                    element={
-                      <ProtectedRoute>
-                        <PremiumDashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/homework-solver"
-                    element={
-                      <ProtectedRoute>
-                        <HomeworkSolver />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/note-condenser"
-                    element={
-                      <ProtectedRoute>
-                        <NoteCondenser />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/homework-tracker"
-                    element={
-                      <ProtectedRoute>
-                        <HomeworkTracker />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/study-plans"
-                    element={
-                      <ProtectedRoute>
-                        <StudyPlans />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/predicted-grades"
-                    element={
-                      <ProtectedRoute>
-                        <PredictedGrades />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/focus-mode"
-                    element={
-                      <ProtectedRoute>
-                        <FocusMode />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/leaderboard"
-                    element={
-                      <ProtectedRoute>
-                        <Leaderboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/virtual-sessions"
-                    element={
-                      <ProtectedRoute>
-                        <VirtualSessions />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/predicted-papers"
-                    element={
-                      <ProtectedRoute>
-                        <PredictedPapers />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/work-experience"
-                    element={
-                      <ProtectedRoute>
-                        <WorkExperience />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/mind-map-generator"
-                    element={
-                      <ProtectedRoute>
-                        <MindMapGenerator />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/ai-examiner"
-                    element={
-                      <ProtectedRoute>
-                        <AIExaminer />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/performance-heatmap"
-                    element={
-                      <ProtectedRoute>
-                        <PerformanceHeatMap />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/premium/grade-9-notes"
-                    element={
-                      <ProtectedRoute>
-                        <Grade9Notes />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/settings"
-                    element={
-                      <ProtectedRoute>
-                        <Settings />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute>
-                        <Admin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/library"
-                    element={
-                      <ProtectedRoute>
-                        <GlobalLibrary />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </BrowserRouter>
-          </AuthProvider>
-        </TooltipProvider>
+        <LanguageProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <LanguagePermissionModal />
+            <AuthProvider>
+              <BrowserRouter>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/landing" element={<Landing />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/faq" element={<FAQ />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/returns" element={<Returns />} />
+                    <Route
+                      path="/"
+                      element={
+                        <ProtectedRoute>
+                          <Index />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/notes"
+                      element={
+                        <ProtectedRoute>
+                          <Notes />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/flashcards"
+                      element={
+                        <ProtectedRoute>
+                          <Flashcards />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/past-papers"
+                      element={
+                        <ProtectedRoute>
+                          <PastPapers />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/knowledge"
+                      element={
+                        <ProtectedRoute>
+                          <Knowledge />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/extracurricular"
+                      element={
+                        <ProtectedRoute>
+                          <Extracurricular />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/ai-tutor"
+                      element={
+                        <ProtectedRoute>
+                          <AITutor />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium"
+                      element={<Navigate to="/premium-dashboard" replace />}
+                    />
+                    <Route
+                      path="/premium-dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <PremiumDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/homework-solver"
+                      element={
+                        <ProtectedRoute>
+                          <HomeworkSolver />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/note-condenser"
+                      element={
+                        <ProtectedRoute>
+                          <NoteCondenser />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/homework-tracker"
+                      element={
+                        <ProtectedRoute>
+                          <HomeworkTracker />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/study-plans"
+                      element={
+                        <ProtectedRoute>
+                          <StudyPlans />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/predicted-grades"
+                      element={
+                        <ProtectedRoute>
+                          <PredictedGrades />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/focus-mode"
+                      element={
+                        <ProtectedRoute>
+                          <FocusMode />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/leaderboard"
+                      element={
+                        <ProtectedRoute>
+                          <Leaderboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/virtual-sessions"
+                      element={
+                        <ProtectedRoute>
+                          <VirtualSessions />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/predicted-papers"
+                      element={
+                        <ProtectedRoute>
+                          <PredictedPapers />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/work-experience"
+                      element={
+                        <ProtectedRoute>
+                          <WorkExperience />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/mind-map-generator"
+                      element={
+                        <ProtectedRoute>
+                          <MindMapGenerator />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/ai-examiner"
+                      element={
+                        <ProtectedRoute>
+                          <AIExaminer />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/performance-heatmap"
+                      element={
+                        <ProtectedRoute>
+                          <PerformanceHeatMap />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/grade-9-notes"
+                      element={
+                        <ProtectedRoute>
+                          <Grade9Notes />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <ProtectedRoute>
+                          <Settings />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute>
+                          <Admin />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/library"
+                      element={
+                        <ProtectedRoute>
+                          <GlobalLibrary />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </BrowserRouter>
+            </AuthProvider>
+          </TooltipProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

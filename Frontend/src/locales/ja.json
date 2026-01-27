@@ -1,0 +1,139 @@
+{
+    "common": {
+        "loading": "読み込み中...",
+        "error": "エラー",
+        "success": "成功",
+        "save": "保存",
+        "cancel": "キャンセル",
+        "delete": "削除",
+        "edit": "編集",
+        "close": "閉じる",
+        "back": "戻る",
+        "next": "次へ",
+        "submit": "送信",
+        "search": "検索",
+        "settings": "設定",
+        "profile": "プロフィール",
+        "logout": "ログアウト",
+        "login": "ログイン",
+        "signup": "登録",
+        "email": "メールアドレス",
+        "password": "パスワード",
+        "confirmPassword": "パスワード確認",
+        "forgotPassword": "パスワードをお忘れですか？",
+        "rememberMe": "ログイン状態を保持",
+        "or": "または",
+        "and": "と",
+        "yes": "はい",
+        "no": "いいえ",
+        "ok": "OK",
+        "confirm": "確認",
+        "theme": "テーマ",
+        "language": "言語"
+    },
+    "landing": {
+        "heroTitle": "オールインワンの",
+        "heroTitleHighlight": "学習パートナー",
+        "heroDescription": "ノートを整理し、フラッシュカードで練習し、過去問を復習し、進捗を追跡—学生のために設計された強力なプラットフォーム。",
+        "getStartedFree": "無料で始める",
+        "signIn": "ログイン",
+        "signUp": "新規登録",
+        "getStarted": "始める",
+        "featuresTitle": "成功に必要なすべて",
+        "featuresSubtitle": "より賢く学ぶための強力なツール",
+        "whyChoose": "なぜScientia.aiを選ぶのか？",
+        "whyChooseSubtitle": "すでに学習習慣を改善している何千人もの学生に参加しましょう",
+        "stayUpdated": "最新情報を入手",
+        "newsletterDescription": "学習のヒント、機能の更新、限定コンテンツのニュースレターを購読してください。",
+        "enterEmail": "メールアドレスを入力",
+        "subscribe": "購読する",
+        "subscribed": "購読完了！",
+        "subscribedMessage": "ニュースレターをご購読いただきありがとうございます。",
+        "ctaTitle": "学習習慣を変える準備はできていますか？",
+        "ctaDescription": "今日から学習を整理しましょう。無料で始められます。",
+        "createAccount": "アカウントを作成"
+    },
+    "features": {
+        "examNotes": {
+            "title": "試験ノート",
+            "description": "科目とトピック別に整理されたハイライト付きノート"
+        },
+        "flashcards": {
+            "title": "フラッシュカード",
+            "description": "クイズモードと進捗追跡付きのインタラクティブカード"
+        },
+        "pastPapers": {
+            "title": "過去問",
+            "description": "解答付き練習問題とタイムドクイズ"
+        },
+        "knowledgeOrganisers": {
+            "title": "知識オーガナイザー",
+            "description": "折りたたみセクション付きのビジュアルサマリー"
+        },
+        "extracurriculars": {
+            "title": "課外活動",
+            "description": "活動、時間、成果を追跡"
+        },
+        "aiQuestions": {
+            "title": "無制限AI生成問題",
+            "description": "AI生成の問題、チューターサポート、練習"
+        }
+    },
+    "benefits": {
+        "organize": "すべての学習資料を一箇所で整理",
+        "trackProgress": "すべての科目の進捗を追跡",
+        "accessPapers": "過去問と練習問題にアクセス",
+        "createFlashcards": "効率的にフラッシュカードを作成・復習",
+        "monitorActivities": "課外活動を監視",
+        "getRecommendations": "パーソナライズされた学習推奨を取得"
+    },
+    "footer": {
+        "description": "整理された学習と学業成功のためのオールインワン学習パートナー。",
+        "legal": "法的情報",
+        "termsAndConditions": "利用規約",
+        "returnsAndRefunds": "返品・返金",
+        "support": "サポート",
+        "faq": "よくある質問",
+        "contactUs": "お問い合わせ",
+        "account": "アカウント",
+        "copyright": "© 2026 Scientia.ai. All rights reserved.",
+        "terms": "規約",
+        "returns": "返品"
+    },
+    "languageModal": {
+        "title": "言語を変更しますか？",
+        "description": "{{language}}をお好みのようです。切り替えますか？",
+        "switchTo": "はい、{{language}}に切り替える",
+        "keepCurrent": "いいえ、英語のままにする",
+        "dontAskAgain": "今後は確認しない"
+    },
+    "languageSelector": {
+        "selectLanguage": "言語を選択",
+        "currentLanguage": "現在：{{language}}"
+    },
+    "nav": {
+        "home": "ホーム",
+        "notes": "ノート",
+        "flashcards": "フラッシュカード",
+        "pastPapers": "過去問",
+        "knowledge": "知識",
+        "extracurricular": "課外活動",
+        "aiTutor": "AIチューター",
+        "premium": "プレミアム",
+        "library": "ライブラリ",
+        "admin": "管理"
+    },
+    "auth": {
+        "welcomeBack": "おかえりなさい",
+        "loginSubtitle": "学習の旅を続けるためにログイン",
+        "createAccount": "アカウント作成",
+        "signupSubtitle": "今日から学習の旅を始めましょう",
+        "noAccount": "アカウントをお持ちでないですか？",
+        "haveAccount": "すでにアカウントをお持ちですか？",
+        "resetPassword": "パスワードをリセット",
+        "resetPasswordSubtitle": "パスワードリセットリンクを受け取るメールアドレスを入力",
+        "sendResetLink": "リセットリンクを送信",
+        "newPassword": "新しいパスワード",
+        "createNewPassword": "アカウントの新しいパスワードを作成"
+    }
+}
