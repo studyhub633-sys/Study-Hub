@@ -565,30 +565,11 @@
         "clickToView": "Click on any activity to view details"
     },
     "aiTutor": {
-        "welcomeMessage": "Hello! I'm your AI tutoring assistant. I can help you with:\n\n• Explaining concepts from your notes\n• Generating practice questions\n• Evaluating your answers\n• Providing study tips\n\nWhat would you like to learn today?",
-        "chat": "Chat",
-        "quiz": "Quiz",
-        "typeAnswer": "Type your answer here...",
-        "pasteAnswer": "Paste an answer to evaluate...",
+        "welcomeMessage": "Hello! I'm your AI assistant. How can I help you today?\n\nI can assist you with:\n\n• Explaining concepts and topics\n• Answering your questions\n• Helping with homework and assignments\n• Providing study tips and guidance\n• Having conversations about any subject\n\nFeel free to ask me anything!",
         "askAnything": "Ask me anything...",
-        "chatMode": "Chat",
-        "quizMode": "Quiz",
-        "timeLeft": "left",
         "you": "You",
-        "aiName": "AI Tutor",
-        "pendingQuestion": "Pending Question",
-        "disclaimer": "AI can make mistakes. Please verify important information.",
-        "evaluating": "Evaluating...",
-        "generatedQuestion": "Generated Question",
-        "correct": "Correct!",
-        "incorrect": "Not quite right",
-        "similarity": "Similarity Score",
-        "feedback": "Feedback",
-        "contextMessage": "I have context from \"{{title}}\". I can help you test your knowledge with practice questions based on this material. Would you like me to generate a question?",
-        "evaluationError": "I couldn't evaluate your answer. Would you like to try another question?",
-        "questionPrompt": "Here's a practice question based on your context",
-        "typeAnswerPrompt": "Type your answer below, and I'll evaluate it!",
-        "generationError": "I couldn't generate a question. Please try again."
+        "aiName": "AI Assistant",
+        "disclaimer": "AI can make mistakes. Please verify important information."
     },
     "settings": {
         "title": "Settings",

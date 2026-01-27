@@ -1,5 +1,4 @@
 import { ChatHistorySidebar } from "@/components/ChatHistorySidebar";
-import { ContextSidebar } from "@/components/ContextSidebar";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SimpleMarkdown } from "@/components/SimpleMarkdown";
 import { Button } from "@/components/ui/button";
@@ -9,23 +8,18 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useChatSessions, type ChatMessage } from "@/hooks/useChatSessions";
-import { chatWithAI, evaluateAnswer, generateQuestion, generateSimpleQuestion } from "@/lib/ai-client";
+import { chatWithAI } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
-import { BookOpen, Bot, Loader2, Menu, Send, Sparkles, User } from "lucide-react";
+import { Bot, Loader2, Menu, Send, Sparkles, User } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 interface Message {
     id: string;
     role: "user" | "assistant";
     content: string;
     timestamp: Date;
-}
-
-interface PendingQuestion {
-    question: string;
-    context: string;
 }
 
 // Convert internal Message to ChatMessage for storage
@@ -47,15 +41,13 @@ const toMessage = (msg: ChatMessage): Message => ({
 const defaultWelcomeMessage: Message = {
     id: "1",
     role: "assistant",
-    content: "Hello! I'm your AI tutoring assistant. I can help you with:\n\n• Explaining concepts from your notes\n• Generating practice questions\n• Evaluating your answers\n• Providing study tips\n\nWhat would you like to learn today?",
+    content: "Hello! I'm your AI assistant. How can I help you today?\n\nI can assist you with:\n\n• Explaining concepts and topics\n• Answering your questions\n• Helping with homework and assignments\n• Providing study tips and guidance\n• Having conversations about any subject\n\nFeel free to ask me anything!",
     timestamp: new Date(),
 };
 
 export default function AITutor() {
-    const { supabase, user } = useAuth();
+    const { supabase } = useAuth();
     const { toast } = useToast();
-    const location = useLocation();
-    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const { t, i18n } = useTranslation();
 
@@ -74,13 +66,7 @@ export default function AITutor() {
 
     const [messages, setMessages] = useState<Message[]>([defaultWelcomeMessage]);
     const [input, setInput] = useState("");
-    const [context, setContext] = useState("");
     const [loading, setLoading] = useState(false);
-    const [mode, setMode] = useState<"chat" | "question" | "evaluate">("chat");
-    const [aiUsage, setAiUsage] = useState<{ count: number; limit: number } | null>(null);
-
-    // Track the pending question waiting for an answer
-    const [pendingQuestion, setPendingQuestion] = useState<PendingQuestion | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // Flag to prevent double session creation
@@ -91,7 +77,6 @@ export default function AITutor() {
 
     // UI State
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-    const [isContextOpen, setIsContextOpen] = useState(false);
 
     // Load session from URL parameter
     useEffect(() => {
@@ -108,8 +93,6 @@ export default function AITutor() {
             if (currentSession.id !== loadedSessionId) {
                 const loadedMessages = currentSession.messages.map(toMessage);
                 setMessages(loadedMessages.length > 0 ? loadedMessages : [defaultWelcomeMessage]);
-                setContext(currentSession.context || "");
-                setMode(currentSession.mode || "chat");
                 setLoadedSessionId(currentSession.id);
 
                 // Update URL
@@ -120,55 +103,6 @@ export default function AITutor() {
             setLoadedSessionId(null);
         }
     }, [currentSession, loadedSessionId, setSearchParams]);
-
-    // Handle navigation state from Knowledge page
-    useEffect(() => {
-        if (location.state?.context && !currentSession) {
-            setContext(location.state.context);
-            if (location.state.mode) {
-                setMode(location.state.mode);
-            }
-            if (location.state.organizerTitle) {
-                setMessages([
-                    {
-                        id: "1",
-                        role: "assistant",
-                        content: t("aiTutor.contextMessage", { title: location.state.organizerTitle }),
-                        timestamp: new Date(),
-                    },
-                ]);
-            }
-        }
-    }, [location.state, currentSession]);
-
-    // Fetch AI usage
-    const fetchAiUsage = async () => {
-        if (!user || !supabase) return;
-        try {
-            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-            const { count } = await supabase
-                .from("ai_usage_tracking")
-                .select("*", { count: "exact", head: true })
-                .eq("user_id", user.id)
-                .gt("created_at", oneDayAgo);
-
-            const { data: profile } = await supabase
-                .from("profiles")
-                .select("is_premium, email")
-                .eq("id", user.id)
-                .single();
-
-            const TESTER_EMAILS = ['admin@studyhub.com', 'tester@studyhub.com', 'andre@studyhub.com'];
-            const isPremium = profile?.is_premium || TESTER_EMAILS.includes(profile?.email || '');
-            setAiUsage({ count: count || 0, limit: isPremium ? 500 : 10 });
-        } catch (error) {
-            console.error("Error fetching AI usage:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchAiUsage();
-    }, [user, supabase]);
 
     // Auto-scroll to bottom when messages change
     useEffect(() => {
@@ -192,9 +126,6 @@ export default function AITutor() {
     const handleNewChat = useCallback(() => {
         clearCurrentSession();
         setMessages([defaultWelcomeMessage]);
-        setContext("");
-        setMode("chat");
-        setPendingQuestion(null);
         sessionCreatedRef.current = false;
         setSearchParams({}, { replace: true });
     }, [clearCurrentSession, setSearchParams]);
@@ -206,6 +137,14 @@ export default function AITutor() {
         },
         [setSearchParams]
     );
+
+    // Build conversation history for context
+    const buildConversationHistory = useCallback((msgs: Message[]) => {
+        return msgs.slice(-10).map(msg => ({
+            role: msg.role,
+            content: msg.content
+        }));
+    }, []);
 
     const handleSend = async () => {
         if (!input.trim() || loading) return;
@@ -224,96 +163,21 @@ export default function AITutor() {
         setLoading(true);
 
         try {
-            let responseContent = "";
+            // Build conversation history for context
+            const history = buildConversationHistory(messages);
 
-            // Check if there's a pending question waiting for an answer
-            if (pendingQuestion) {
-                const result = await evaluateAnswer(
-                    {
-                        correctAnswer: pendingQuestion.context,
-                        studentAnswer: userInput,
-                        threshold: 0.6,
-                        language: i18n.language,
-                    },
-                    supabase
-                );
+            const result = await chatWithAI(
+                {
+                    message: userInput,
+                    history: history,
+                    language: i18n.language,
+                },
+                supabase
+            );
 
-                setPendingQuestion(null);
+            if (result.error) throw new Error(result.error);
 
-                if (result.error) throw new Error(result.error);
-
-                if (result.data) {
-                    const { isCorrect, similarity, feedback } = result.data;
-                    responseContent = `**${t("aiTutor.feedback")}:**\n\n${isCorrect ? "✅ " + t("aiTutor.correct") : "❌ " + t("aiTutor.incorrect")}\n\n**${t("aiTutor.similarity")}:** ${(similarity * 100).toFixed(1)}%\n\n**${t("aiTutor.feedback")}:** ${feedback || "Keep practicing!"}\n\n---\n\nWould you like another question? Just say "yes" or "next question"!`;
-                } else {
-                    responseContent = t("aiTutor.evaluationError");
-                }
-            }
-            // Detect if user wants to generate a question
-            else {
-                const wantsQuestion = mode === "question" ||
-                    userInput.toLowerCase().includes("generate question") ||
-                    // ... other triggers
-                    userInput.toLowerCase().includes("make a question");
-
-                const questionContext = context.trim() || userInput;
-
-                if (wantsQuestion && questionContext) {
-                    const isFromKnowledgeOrganizer = location.state?.organizerTitle;
-                    const generateFunction = isFromKnowledgeOrganizer ? generateSimpleQuestion : generateQuestion;
-
-                    const result = await generateFunction(
-                        {
-                            context: questionContext,
-                            subject: "General",
-                            difficulty: "medium",
-                            language: i18n.language,
-                        },
-                        supabase
-                    );
-
-                    if (result.error) throw new Error(result.error);
-
-                    if (result.data?.question) {
-                        setPendingQuestion({
-                            question: result.data.question,
-                            context: questionContext,
-                        });
-                        responseContent = `${t("aiTutor.questionPrompt")}:\n\n**${t("aiTutor.generatedQuestion")}:**\n\n${result.data.question}\n\n---\n\n${t("aiTutor.typeAnswerPrompt")}`;
-                    } else {
-                        responseContent = t("aiTutor.generationError");
-                    }
-                } else if (mode === "evaluate" && context.trim()) {
-                    const result = await evaluateAnswer(
-                        {
-                            correctAnswer: context,
-                            studentAnswer: userInput,
-                            threshold: 0.7,
-                            language: i18n.language,
-                        },
-                        supabase
-                    );
-
-                    if (result.error) throw new Error(result.error);
-
-                    if (result.data) {
-                        const { isCorrect, similarity, feedback } = result.data;
-                        responseContent = `**Evaluation:**\n\n${isCorrect ? "✅ Correct!" : "❌ Not quite right"}\n\n**Similarity Score:** ${(similarity * 100).toFixed(1)}%\n\n**Feedback:** ${feedback || "Keep practicing!"}`;
-                    }
-                } else {
-                    const result = await chatWithAI(
-                        {
-                            message: userInput,
-                            context: questionContext,
-                            language: i18n.language,
-                        },
-                        supabase
-                    );
-
-                    if (result.error) throw new Error(result.error);
-                    responseContent = (result.data as any)?.reply || "I couldn't generate a response. Please try again.";
-                }
-            }
+            const responseContent = (result.data as any)?.reply || "I couldn't generate a response. Please try again.";
 
             const assistantMessage: Message = {
                 id: (Date.now() + 1).toString(),
@@ -330,8 +194,8 @@ export default function AITutor() {
                 sessionCreatedRef.current = true;
                 const session = await createSession(
                     toChatMessage(userMessage),
-                    context || undefined,
-                    mode
+                    undefined,
+                    "chat"
                 );
                 if (session) {
                     setLoadedSessionId(session.id);
@@ -411,48 +275,7 @@ export default function AITutor() {
                             <div className="flex items-center gap-2">
                                 <Sparkles className="h-5 w-5 text-primary" />
                                 <span className="font-semibold text-lg">{t("nav.aiTutor")}</span>
-                                {aiUsage && (
-                                    <span className="text-xs text-muted-foreground hidden sm:inline-block ml-2 px-2 py-0.5 rounded-full bg-muted">
-                                        {aiUsage.limit - aiUsage.count} {t("aiTutor.timeLeft")}
-                                    </span>
-                                )}
                             </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            {/* Mode Selector - Compact */}
-                            <div className="flex bg-muted/50 rounded-lg p-0.5 mr-2">
-                                <button
-                                    onClick={() => setMode("chat")}
-                                    className={cn(
-                                        "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                        mode === "chat" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                    )}
-                                >
-                                    {t("aiTutor.chatMode")}
-                                </button>
-                                <button
-                                    onClick={() => setMode("question")}
-                                    className={cn(
-                                        "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                        mode === "question" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                    )}
-                                >
-                                    {t("aiTutor.quizMode")}
-                                </button>
-                            </div>
-
-                            {/* Mobile/Tablet Context Toggle */}
-                            <Sheet open={isContextOpen} onOpenChange={setIsContextOpen}>
-                                <SheetTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="lg:hidden text-muted-foreground hover:text-foreground">
-                                        <BookOpen className="h-5 w-5" />
-                                    </Button>
-                                </SheetTrigger>
-                                <SheetContent side="right" className="w-full sm:w-[400px]">
-                                    <ContextSidebar context={context} setContext={setContext} mode={mode} />
-                                </SheetContent>
-                            </Sheet>
                         </div>
                     </div>
 
@@ -535,18 +358,6 @@ export default function AITutor() {
                     {/* Input Area */}
                     <div className="p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border/40">
                         <div className="w-full max-w-3xl mx-auto">
-                            {/* Pending Question Indicator */}
-                            {pendingQuestion && (
-                                <div className="mb-2 bg-primary/5 border border-primary/20 rounded-lg p-3 text-sm flex items-start gap-2 animate-in slide-in-from-bottom-2">
-                                    <span className="text-xl">📝</span>
-                                    <div>
-                                        <span className="font-medium text-primary text-xs uppercase tracking-wide">{t("aiTutor.pendingQuestion")}</span>
-                                        <p className="text-sm text-foreground/90 line-clamp-1">{pendingQuestion.question}</p>
-                                    </div>
-                                    <Button variant="ghost" size="sm" className="ml-auto h-6 w-6 p-0" onClick={() => setPendingQuestion(null)}>×</Button>
-                                </div>
-                            )}
-
                             <div className="relative flex items-end gap-2 bg-muted/30 p-2 rounded-xl border border-border/40 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all shadow-sm">
                                 <Input
                                     value={input}
@@ -557,13 +368,7 @@ export default function AITutor() {
                                             handleSend();
                                         }
                                     }}
-                                    placeholder={
-                                        pendingQuestion
-                                            ? t("aiTutor.typeAnswer")
-                                            : mode === "evaluate"
-                                                ? t("aiTutor.pasteAnswer")
-                                                : t("aiTutor.askAnything")
-                                    }
+                                    placeholder={t("aiTutor.askAnything")}
                                     disabled={loading}
                                     className="border-0 focus-visible:ring-0 bg-transparent min-h-[44px] py-3 px-2 shadow-none resize-none"
                                 />
@@ -588,11 +393,6 @@ export default function AITutor() {
                             </p>
                         </div>
                     </div>
-                </div>
-
-                {/* Desktop Right Sidebar (Context) */}
-                <div className="hidden lg:flex lg:w-80 border-l border-border/40 bg-background/50 shrink-0 flex-col p-4 overflow-y-auto">
-                    <ContextSidebar context={context} setContext={setContext} mode={mode} />
                 </div>
             </div>
         </AppLayout>
