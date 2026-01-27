@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { message, context } = req.body;
+        const { message, context, language } = req.body;
 
         if (!message) {
             return res.status(400).json({ error: "Message is required" });
@@ -45,7 +45,19 @@ export default async function handler(req, res) {
             throw error;
         }
 
-        let systemPrompt = "You are a helpful, encouraging, and knowledgeable AI tutor. Your goal is to help students learn and understand concepts clearly. Keep answers concise but informative.";
+        // Build language instruction
+        const languageNames = {
+            en: "English", es: "Spanish", fr: "French", de: "German",
+            it: "Italian", pt: "Portuguese", nl: "Dutch", ru: "Russian",
+            ja: "Japanese", ko: "Korean", "zh-CN": "Simplified Chinese",
+            "zh-TW": "Traditional Chinese", ar: "Arabic", hi: "Hindi"
+        };
+        const langName = languageNames[language] || "English";
+        const langInstruction = language && language !== "en"
+            ? `IMPORTANT: You MUST respond in ${langName}. All your responses should be in ${langName}.`
+            : "";
+
+        let systemPrompt = `You are a helpful, encouraging, and knowledgeable AI tutor. Your goal is to help students learn and understand concepts clearly. Keep answers concise but informative. ${langInstruction}`;
         if (context) {
             systemPrompt += `\n\nContext/Notes provided by student:\n${context}`;
         }

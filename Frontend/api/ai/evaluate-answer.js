@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { correctAnswer, studentAnswer, threshold = 0.7 } = req.body;
+        const { correctAnswer, studentAnswer, threshold = 0.7, language } = req.body;
 
         if (!correctAnswer || !studentAnswer) {
             return res.status(400).json({ error: "Both 'correctAnswer' and 'studentAnswer' are required" });
@@ -45,6 +45,18 @@ export default async function handler(req, res) {
             throw error;
         }
 
+        // Build language instruction
+        const languageNames = {
+            en: "English", es: "Spanish", fr: "French", de: "German",
+            it: "Italian", pt: "Portuguese", nl: "Dutch", ru: "Russian",
+            ja: "Japanese", ko: "Korean", "zh-CN": "Simplified Chinese",
+            "zh-TW": "Traditional Chinese", ar: "Arabic", hi: "Hindi"
+        };
+        const langName = languageNames[language] || "English";
+        const langInstruction = language && language !== "en"
+            ? ` IMPORTANT: Write the feedback field in ${langName}.`
+            : "";
+
         // Use Groq to evaluate the answer
         const response = await fetch(GROQ_API_URL, {
             method: "POST",
@@ -57,7 +69,7 @@ export default async function handler(req, res) {
                 messages: [
                     {
                         role: "system",
-                        content: "You are an educational evaluator. Compare the student's answer to the correct answer and determine how similar/correct it is. Return ONLY a JSON object with these fields: similarity (a number between 0 and 1), isCorrect (boolean), feedback (a brief explanation)."
+                        content: `You are an educational evaluator. Compare the student's answer to the correct answer and determine how similar/correct it is. Return ONLY a JSON object with these fields: similarity (a number between 0 and 1), isCorrect (boolean), feedback (a brief explanation).${langInstruction}`
                     },
                     {
                         role: "user",

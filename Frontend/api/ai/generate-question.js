@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { context, subject, difficulty = "medium" } = req.body;
+        const { context, subject, difficulty = "medium", language } = req.body;
 
         if (!context || !subject) {
             return res.status(400).json({ error: "Both 'context' and 'subject' are required" });
@@ -45,7 +45,20 @@ export default async function handler(req, res) {
             throw error;
         }
 
+        // Build language instruction
+        const languageNames = {
+            en: "English", es: "Spanish", fr: "French", de: "German",
+            it: "Italian", pt: "Portuguese", nl: "Dutch", ru: "Russian",
+            ja: "Japanese", ko: "Korean", "zh-CN": "Simplified Chinese",
+            "zh-TW": "Traditional Chinese", ar: "Arabic", hi: "Hindi"
+        };
+        const langName = languageNames[language] || "English";
+        const langInstruction = language && language !== "en"
+            ? `IMPORTANT: Generate the question in ${langName}. The entire question must be written in ${langName}.`
+            : "";
+
         const userPrompt = `You are an educational AI tutor. Create a ${difficulty} difficulty ${subject} practice question based on the following study material.
+        ${langInstruction}
         
         Study Material:
         ${context}
@@ -55,6 +68,7 @@ export default async function handler(req, res) {
         - The question should test understanding, not just recall
         - Make it clear, specific, and answerable based on the material
         - Format as a single question ending with a question mark
+        ${language && language !== "en" ? `- Write the question in ${langName}` : ""}
         
         Generate only the question, nothing else.`;
 

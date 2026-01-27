@@ -9,12 +9,14 @@ interface GenerateQuestionParams {
   context: string;
   subject: string;
   difficulty?: "easy" | "medium" | "hard";
+  language?: string;
 }
 
 interface EvaluateAnswerParams {
   correctAnswer: string;
   studentAnswer: string;
   threshold?: number;
+  language?: string;
 }
 
 interface GenerateFlashcardsParams {
@@ -356,6 +358,7 @@ export const chatWithAI = async (
     message: string;
     context?: string;
     history?: Array<{ role: string; content: string }>;
+    language?: string;
   },
   supabase: any
 ) => {

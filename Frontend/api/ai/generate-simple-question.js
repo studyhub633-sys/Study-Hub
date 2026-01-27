@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { context, subject, difficulty = "medium" } = req.body;
+        const { context, subject, difficulty = "medium", language } = req.body;
 
         if (!context) {
             return res.status(400).json({ error: "Context is required" });
@@ -45,6 +45,18 @@ export default async function handler(req, res) {
             throw error;
         }
 
+        // Build language instruction
+        const languageNames = {
+            en: "English", es: "Spanish", fr: "French", de: "German",
+            it: "Italian", pt: "Portuguese", nl: "Dutch", ru: "Russian",
+            ja: "Japanese", ko: "Korean", "zh-CN": "Simplified Chinese",
+            "zh-TW": "Traditional Chinese", ar: "Arabic", hi: "Hindi"
+        };
+        const langName = languageNames[language] || "English";
+        const langInstruction = language && language !== "en"
+            ? ` Write the question in ${langName}.`
+            : "";
+
         console.log('Making request to Groq API...');
 
         const response = await fetch(GROQ_API_URL, {
@@ -58,7 +70,7 @@ export default async function handler(req, res) {
                 messages: [
                     {
                         role: "user",
-                        content: `Create a simple single-sentence practice question about this text: "${context.substring(0, 1000)}". Only output the question, nothing else.`
+                        content: `Create a simple single-sentence practice question about this text: "${context.substring(0, 1000)}".${langInstruction} Only output the question, nothing else.`
                     }
                 ],
                 max_tokens: 100,

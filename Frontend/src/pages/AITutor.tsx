@@ -57,7 +57,7 @@ export default function AITutor() {
     const location = useLocation();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     // Chat sessions hook
     const {
@@ -233,6 +233,7 @@ export default function AITutor() {
                         correctAnswer: pendingQuestion.context,
                         studentAnswer: userInput,
                         threshold: 0.6,
+                        language: i18n.language,
                     },
                     supabase
                 );
@@ -266,6 +267,7 @@ export default function AITutor() {
                             context: questionContext,
                             subject: "General",
                             difficulty: "medium",
+                            language: i18n.language,
                         },
                         supabase
                     );
@@ -287,6 +289,7 @@ export default function AITutor() {
                             correctAnswer: context,
                             studentAnswer: userInput,
                             threshold: 0.7,
+                            language: i18n.language,
                         },
                         supabase
                     );
@@ -302,6 +305,7 @@ export default function AITutor() {
                         {
                             message: userInput,
                             context: questionContext,
+                            language: i18n.language,
                         },
                         supabase
                     );
