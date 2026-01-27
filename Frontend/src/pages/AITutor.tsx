@@ -84,44 +84,44 @@ export default function AITutor() {
     // Flag to prevent double session creation
     const sessionCreatedRef = useRef(false);
 
+    // Track which session is currently loaded in the UI to prevent overwriting local state on updates
+    const [loadedSessionId, setLoadedSessionId] = useState<string | null>(null);
+
     // UI State
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isContextOpen, setIsContextOpen] = useState(false);
 
-    // Load session from URL parameter - Single Source of Truth
+    // Load session from URL parameter
     useEffect(() => {
         const sessionId = searchParams.get("session");
-        if (sessionId) {
-            // If URL has a session, load it if it's not already loaded
-            if (!currentSession || currentSession.id !== sessionId) {
-                loadSession(sessionId);
-            }
-        } else if (currentSession) {
-            // If URL has no session but we have one loaded, clear it (unless we just created it)
-            if (!sessionCreatedRef.current) {
-                clearCurrentSession();
-            }
+        if (sessionId && (!currentSession || currentSession.id !== sessionId)) {
+            loadSession(sessionId);
         }
-    }, [searchParams, currentSession, loadSession, clearCurrentSession]);
+    }, [searchParams, currentSession, loadSession]);
 
-    // Sync messages from currentSession when it changes
+    // Sync messages only when switching to a different session
     useEffect(() => {
         if (currentSession) {
-            const loadedMessages = currentSession.messages.map(toMessage);
-            setMessages(loadedMessages.length > 0 ? loadedMessages : [defaultWelcomeMessage]);
-            setContext(currentSession.context || "");
-            setMode(currentSession.mode || "chat");
+            // Only update state if we're switching to a new session
+            if (currentSession.id !== loadedSessionId) {
+                const loadedMessages = currentSession.messages.map(toMessage);
+                setMessages(loadedMessages.length > 0 ? loadedMessages : [defaultWelcomeMessage]);
+                setContext(currentSession.context || "");
+                setMode(currentSession.mode || "chat");
+                setLoadedSessionId(currentSession.id);
 
-            // Ensure URL matches (in case it was set via internal logic like creating a new session)
-            if (searchParams.get("session") !== currentSession.id) {
+                // Update URL
                 setSearchParams({ session: currentSession.id }, { replace: true });
             }
+        } else {
+            // No current session (cleared)
+            setLoadedSessionId(null);
         }
-    }, [currentSession, setSearchParams]); // Removed searchParams from dependency to avoid loop? No, need to check if we SHOULD update.
+    }, [currentSession, loadedSessionId, setSearchParams]);
 
     // Handle navigation state from Knowledge page
     useEffect(() => {
-        if (location.state?.context && !currentSession && !searchParams.get("session")) {
+        if (location.state?.context && !currentSession) {
             setContext(location.state.context);
             if (location.state.mode) {
                 setMode(location.state.mode);
@@ -137,7 +137,7 @@ export default function AITutor() {
                 ]);
             }
         }
-    }, [location.state, currentSession, searchParams]);
+    }, [location.state, currentSession]);
 
     // Fetch AI usage
     const fetchAiUsage = async () => {
@@ -197,12 +197,12 @@ export default function AITutor() {
         setSearchParams({}, { replace: true });
     }, [clearCurrentSession, setSearchParams]);
 
-    // Handle selecting a session - ONLY UPDATE URL
+    // Handle selecting a session
     const handleSelectSession = useCallback(
         (id: string) => {
-            setSearchParams({ session: id });
+            loadSession(id);
         },
-        [setSearchParams]
+        [loadSession]
     );
 
     const handleSend = async () => {
@@ -328,8 +328,7 @@ export default function AITutor() {
                     mode
                 );
                 if (session) {
-                    searchParams.set("session", session.id); // Wait... actually we should use setSearchParams
-                    setSearchParams({ session: session.id }, { replace: true });
+                    setLoadedSessionId(session.id);
                     await updateSession(session.id, {
                         messages: finalMessages.map(toChatMessage),
                         title: userInput.slice(0, 50) + (userInput.length > 50 ? "..." : ""),
