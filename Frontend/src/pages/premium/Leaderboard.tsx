@@ -31,11 +31,23 @@ export default function Leaderboard() {
         try {
             setLoading(true);
 
-            // Try to fetch from secure RPC function first
+            // Fetch from secure RPC function - this calculates XP and streak from real data
             const { data: leaderboardData, error } = await supabase
                 .rpc('get_leaderboard', { limit_count: 50 });
 
-            if (error) throw error;
+            if (error) {
+                console.error("Leaderboard RPC error:", error);
+                // If the RPC function doesn't exist yet, show helpful message
+                if (error.message.includes("function") || error.code === "42883") {
+                    toast({
+                        title: "Setup Required",
+                        description: "Please run the leaderboard_function.sql migration in Supabase to enable the leaderboard.",
+                        variant: "destructive",
+                    });
+                }
+                setUsers([]);
+                return;
+            }
 
             if (leaderboardData && leaderboardData.length > 0) {
                 const formattedUsers: LeaderboardUser[] = leaderboardData.map((u: any) => ({
@@ -48,27 +60,19 @@ export default function Leaderboard() {
                     isUser: u.user_id === user?.id
                 }));
                 setUsers(formattedUsers);
-                return;
+            } else {
+                // No users in leaderboard yet - empty state
+                setUsers([]);
             }
-
-            // If empty, show some empty state or fallback (omitted for now to rely on real data)
-            setUsers([]);
 
         } catch (error: any) {
             console.error("Error fetching leaderboard:", error);
-            // Fallback for demo/dev if RPC not exists yet
-            setUsers([
-                { rank: 1, name: "Sarah J.", xp: 12450, streak: 45, avatar: null, user_id: "1", isUser: false },
-                { rank: 2, name: "Mike T.", xp: 11200, streak: 32, avatar: null, user_id: "2", isUser: false },
-                { rank: 3, name: "Alex R.", xp: 10890, streak: 28, avatar: null, user_id: "3", isUser: false },
-                { rank: 4, name: user?.email?.split("@")[0] || "You", xp: 8450, streak: 12, avatar: null, user_id: user?.id || "4", isUser: true },
-                { rank: 5, name: "Emily W.", xp: 8120, streak: 15, avatar: null, user_id: "5", isUser: false },
-            ]);
-
             toast({
-                title: "Notice",
-                description: "Leaderboard running in demo mode. Run migration to see real data.",
+                title: "Error",
+                description: "Failed to load leaderboard. Please try again later.",
+                variant: "destructive",
             });
+            setUsers([]);
         } finally {
             setLoading(false);
         }
@@ -95,6 +99,25 @@ export default function Leaderboard() {
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
+                ) : users.length === 0 ? (
+                    /* Empty State */
+                    <Card className="p-8 text-center">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="p-4 rounded-full bg-orange-500/10">
+                                <Trophy className="w-12 h-12 text-orange-500" />
+                            </div>
+                            <h3 className="text-xl font-semibold">No Rankings Yet</h3>
+                            <p className="text-muted-foreground max-w-md">
+                                The leaderboard will populate as students start studying.
+                                Create notes, flashcards, or use the AI Tutor to earn XP and appear on the leaderboard!
+                            </p>
+                            <div className="flex gap-3 mt-4">
+                                <a href="/dashboard" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                                    Start Studying
+                                </a>
+                            </div>
+                        </div>
+                    </Card>
                 ) : (
                     <>
                         {/* Top 3 Podium (Visual) */}
