@@ -10,12 +10,14 @@ import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@supabase/supabase-js";
 import { ArrowRight, Award, BookOpen, Brain, Check, FileText, Layers, Loader2, Mail, Menu, Moon, Sparkles, Sun } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 function NewsletterSignup() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,16 +52,16 @@ function NewsletterSignup() {
       }
 
       toast({
-        title: "Subscribed!",
-        description: "Thank you for subscribing to our newsletter.",
+        title: t('landing.subscribed'),
+        description: t('landing.subscribedMessage'),
       });
       setEmail("");
     } catch (error: any) {
       console.error("Error subscribing:", error);
       // Still show success to user (graceful degradation)
       toast({
-        title: "Subscribed!",
-        description: "Thank you for subscribing to our newsletter.",
+        title: t('landing.subscribed'),
+        description: t('landing.subscribedMessage'),
       });
       setEmail("");
     } finally {
@@ -73,7 +75,7 @@ function NewsletterSignup() {
         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="email"
-          placeholder="Enter your email"
+          placeholder={t('landing.enterEmail')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="pl-9"
@@ -85,7 +87,7 @@ function NewsletterSignup() {
         {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          "Subscribe"
+          t('landing.subscribe')
         )}
       </Button>
     </form>
@@ -94,53 +96,54 @@ function NewsletterSignup() {
 
 export default function Landing() {
   const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation();
 
   const features = [
     {
       icon: BookOpen,
-      title: "Exam Notes",
-      description: "Organised notes by subject and topic with highlights",
+      titleKey: "features.examNotes.title",
+      descriptionKey: "features.examNotes.description",
       link: "/notes",
     },
     {
       icon: Layers,
-      title: "Flashcards",
-      description: "Interactive cards with quiz mode and progress tracking",
+      titleKey: "features.flashcards.title",
+      descriptionKey: "features.flashcards.description",
       link: "/flashcards",
     },
     {
       icon: FileText,
-      title: "Past Papers",
-      description: "Practice with marked answers and timed quizzes",
+      titleKey: "features.pastPapers.title",
+      descriptionKey: "features.pastPapers.description",
       link: "/past-papers",
     },
     {
       icon: Brain,
-      title: "Knowledge Organisers",
-      description: "Visual summaries with collapsible sections",
+      titleKey: "features.knowledgeOrganisers.title",
+      descriptionKey: "features.knowledgeOrganisers.description",
       link: "/knowledge",
     },
     {
       icon: Award,
-      title: "Extracurriculars",
-      description: "Track activities, hours, and achievements",
+      titleKey: "features.extracurriculars.title",
+      descriptionKey: "features.extracurriculars.description",
       link: "/extracurricular",
     },
     {
       icon: Sparkles,
-      title: "Unlimited AI Generated Questions",
-      description: "AI-generated questions, tutor support, and practice",
+      titleKey: "features.aiQuestions.title",
+      descriptionKey: "features.aiQuestions.description",
       link: "/ai-tutor",
     },
   ];
 
-  const benefits = [
-    "Organise all your study materials in one place",
-    "Track your progress across all subjects",
-    "Access past papers and practice questions",
-    "Create and review flashcards efficiently",
-    "Monitor your extracurricular activities",
-    "Get personalized study recommendations",
+  const benefitKeys = [
+    "benefits.organize",
+    "benefits.trackProgress",
+    "benefits.accessPapers",
+    "benefits.createFlashcards",
+    "benefits.monitorActivities",
+    "benefits.getRecommendations",
   ];
 
   return (
@@ -170,10 +173,10 @@ export default function Landing() {
               )}
             </Button>
             <Button variant="ghost" asChild>
-              <Link to="/login">Sign In</Link>
+              <Link to="/login">{t('landing.signIn')}</Link>
             </Button>
             <Button asChild>
-              <Link to="/signup">Get Started</Link>
+              <Link to="/signup">{t('landing.getStarted')}</Link>
             </Button>
           </div>
 
@@ -194,17 +197,17 @@ export default function Landing() {
 
                   <div className="flex flex-col gap-4">
                     <Button asChild className="w-full justify-start text-lg" variant="ghost">
-                      <Link to="/login">Sign In</Link>
+                      <Link to="/login">{t('landing.signIn')}</Link>
                     </Button>
                     <Button asChild className="w-full justify-start text-lg">
-                      <Link to="/signup">Get Started</Link>
+                      <Link to="/signup">{t('landing.getStarted')}</Link>
                     </Button>
                   </div>
 
                   <div className="h-px bg-border" />
 
                   <div className="flex items-center justify-between px-4">
-                    <span className="font-medium">Theme</span>
+                    <span className="font-medium">{t('common.theme')}</span>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -230,23 +233,23 @@ export default function Landing() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 text-center lg:text-left">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Your All-in-One
+              {t('landing.heroTitle')}
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                {" "}Study Companion
+                {" "}{t('landing.heroTitleHighlight')}
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0">
-              Organise notes, practice with flashcards, review past papers, and track your progress—all in one powerful platform designed for students.
+              {t('landing.heroDescription')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
               <Button size="lg" asChild className="text-lg px-8">
                 <Link to="/signup">
-                  Get Started Free
+                  {t('landing.getStartedFree')}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="text-lg px-8">
-                <Link to="/login">Sign In</Link>
+                <Link to="/login">{t('landing.signIn')}</Link>
               </Button>
             </div>
           </div>
@@ -257,23 +260,23 @@ export default function Landing() {
       {/* Features Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything You Need to Succeed</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('landing.featuresTitle')}</h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Powerful tools designed to help you study smarter, not harder
+            {t('landing.featuresSubtitle')}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <Link key={feature.title} to={feature.link} className="block">
+              <Link key={feature.titleKey} to={feature.link} className="block">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
                   <CardHeader>
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                       <Icon className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle className="group-hover:text-primary transition-colors">{feature.title}</CardTitle>
-                    <CardDescription>{feature.description}</CardDescription>
+                    <CardTitle className="group-hover:text-primary transition-colors">{t(feature.titleKey)}</CardTitle>
+                    <CardDescription>{t(feature.descriptionKey)}</CardDescription>
                   </CardHeader>
                 </Card>
               </Link>
@@ -286,18 +289,18 @@ export default function Landing() {
       <section className="container mx-auto px-4 py-20 bg-muted/50 rounded-3xl my-20">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose Scientia.ai?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('landing.whyChoose')}</h2>
             <p className="text-muted-foreground text-lg">
-              Join thousands of students who are already improving their study habits
+              {t('landing.whyChooseSubtitle')}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {benefits.map((benefit) => (
-              <div key={benefit} className="flex items-start gap-3">
+            {benefitKeys.map((benefitKey) => (
+              <div key={benefitKey} className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Check className="h-4 w-4 text-primary" />
                 </div>
-                <p className="text-foreground">{benefit}</p>
+                <p className="text-foreground">{t(benefitKey)}</p>
               </div>
             ))}
           </div>
@@ -308,9 +311,9 @@ export default function Landing() {
       <section className="container mx-auto px-4 py-20">
         <Card className="max-w-2xl mx-auto bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl mb-2">Stay Updated</CardTitle>
+            <CardTitle className="text-2xl mb-2">{t('landing.stayUpdated')}</CardTitle>
             <CardDescription className="text-base">
-              Subscribe to our newsletter for study tips, feature updates, and exclusive content.
+              {t('landing.newsletterDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -323,15 +326,15 @@ export default function Landing() {
       <section className="container mx-auto px-4 py-20">
         <Card className="max-w-3xl mx-auto bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl mb-4">Ready to Transform Your Study Habits?</CardTitle>
+            <CardTitle className="text-3xl mb-4">{t('landing.ctaTitle')}</CardTitle>
             <CardDescription className="text-lg">
-              Start organizing your studies today. It's free to get started.
+              {t('landing.ctaDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <Button size="lg" asChild className="text-lg px-8">
               <Link to="/signup">
-                Create Your Account
+                {t('landing.createAccount')}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -349,61 +352,61 @@ export default function Landing() {
                 <h3 className="font-bold text-lg">Scientia.ai</h3>
               </div>
               <p className="text-sm text-muted-foreground">
-                Your all-in-one study companion for organized learning and academic success.
+                {t('footer.description')}
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
+              <h4 className="font-semibold mb-4">{t('footer.legal')}</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-                    Terms and Conditions
+                    {t('footer.termsAndConditions')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/returns" className="text-muted-foreground hover:text-foreground transition-colors">
-                    Returns and Refunds
+                    {t('footer.returnsAndRefunds')}
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
+              <h4 className="font-semibold mb-4">{t('footer.support')}</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link to="/faq" className="text-muted-foreground hover:text-foreground transition-colors">
-                    FAQ
+                    {t('footer.faq')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
-                    Contact Us
+                    {t('footer.contactUs')}
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Account</h4>
+              <h4 className="font-semibold mb-4">{t('footer.account')}</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link to="/login" className="text-muted-foreground hover:text-foreground transition-colors">
-                    Sign In
+                    {t('landing.signIn')}
                   </Link>
                 </li>
                 <li>
                   <Link to="/signup" className="text-muted-foreground hover:text-foreground transition-colors">
-                    Sign Up
+                    {t('landing.signUp')}
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-t border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">© 2026 Scientia.ai. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">{t('footer.copyright')}</p>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-              <Link to="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
-              <Link to="/returns" className="hover:text-foreground transition-colors">Returns</Link>
+              <Link to="/terms" className="hover:text-foreground transition-colors">{t('footer.terms')}</Link>
+              <Link to="/faq" className="hover:text-foreground transition-colors">{t('footer.faq')}</Link>
+              <Link to="/returns" className="hover:text-foreground transition-colors">{t('footer.returns')}</Link>
             </div>
           </div>
         </div>
