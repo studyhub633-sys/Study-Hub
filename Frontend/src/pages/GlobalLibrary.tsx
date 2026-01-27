@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { SmartPaperParser } from "@/lib/paper-parser";
-import { Brain, Calendar, FileText, Filter, Globe, Info, Layers, Library, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { Brain, Calendar, FileText, Filter, Info, Layers, Library, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 interface GlobalPaper {
@@ -39,6 +39,7 @@ interface GlobalFlashcard {
 
 export default function GlobalLibrary() {
     const { supabase, user } = useAuth();
+    const { t } = useTranslation();
     const [papers, setPapers] = useState<GlobalPaper[]>([]);
     const [organizers, setOrganizers] = useState<GlobalOrganizer[]>([]);
     const [flashcards, setFlashcards] = useState<GlobalFlashcard[]>([]);
@@ -331,16 +332,16 @@ export default function GlobalLibrary() {
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <Library className="h-8 w-8 text-primary" />
-                            <h1 className="text-4xl font-extrabold tracking-tight">Global Library</h1>
+                            <h1 className="text-4xl font-extrabold tracking-tight">{t("library.title")}</h1>
                         </div>
                         <p className="text-muted-foreground text-lg">
-                            Discover verified past papers, knowledge organizers, and flashcards.
+                            {t("library.subtitle")}
                         </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                         <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600">
                             <ShieldCheck className="h-4 w-4" />
-                            <span className="text-sm font-bold uppercase tracking-wider">Trusted Sources Only</span>
+                            <span className="text-sm font-bold uppercase tracking-wider">{t("library.trustedSources")}</span>
                         </div>
                     </div>
                 </div>
@@ -396,13 +397,13 @@ export default function GlobalLibrary() {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-3 mb-8 h-12 p-1 bg-muted/50 backdrop-blur-sm rounded-xl">
                         <TabsTrigger value="papers" className="rounded-lg font-bold text-base flex gap-2">
-                            <FileText className="h-4 w-4" /> Past Papers
+                            <FileText className="h-4 w-4" /> {t("library.pastPapers")}
                         </TabsTrigger>
                         <TabsTrigger value="organizers" className="rounded-lg font-bold text-base flex gap-2">
-                            <Brain className="h-4 w-4" /> Organisers
+                            <Brain className="h-4 w-4" /> {t("library.organisers")}
                         </TabsTrigger>
                         <TabsTrigger value="flashcards" className="rounded-lg font-bold text-base flex gap-2">
-                            <Layers className="h-4 w-4" /> Flashcards
+                            <Layers className="h-4 w-4" /> {t("library.flashcards")}
                         </TabsTrigger>
                     </TabsList>
 

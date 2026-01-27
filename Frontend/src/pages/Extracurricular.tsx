@@ -67,6 +67,7 @@ const categoryConfig: Record<string, { icon: any; color: string; label: string }
 
 export default function Extracurricular() {
   const { supabase, user } = useAuth();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -310,12 +311,12 @@ export default function Extracurricular() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Extracurricular Tracker</h1>
-            <p className="text-muted-foreground mt-1">Track your activities, hours, and achievements</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("extracurricular.title")}</h1>
+            <p className="text-muted-foreground mt-1">{t("extracurricular.subtitle")}</p>
           </div>
           <Button onClick={handleCreateActivity}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Activity
+            {t("extracurricular.addActivity")}
           </Button>
         </div>
 

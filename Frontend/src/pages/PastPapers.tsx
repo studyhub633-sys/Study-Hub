@@ -63,6 +63,7 @@ interface Paper {
 export default function PastPapers() {
   const { supabase, user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,9 +110,9 @@ export default function PastPapers() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-      fetch(reviewPaper.file_url, { 
+      fetch(reviewPaper.file_url, {
         method: 'HEAD', // Only fetch headers, not full file
-        signal: controller.signal 
+        signal: controller.signal
       })
         .then(res => {
           clearTimeout(timeoutId);
@@ -604,24 +605,27 @@ export default function PastPapers() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Past Papers</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("pastPapers.title")}</h1>
             <p className="text-muted-foreground mt-1">
-              {papers.length} paper{papers.length !== 1 ? "s" : ""} from various exam boards
+              {t("pastPapers.subtitle", {
+                count: papers.length,
+                plural: papers.length !== 1 ? "s" : ""
+              })}
             </p>
           </div>
           <Button onClick={handleCreatePaper}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Paper
+            {t("pastPapers.addPaper")}
           </Button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
           {[
-            { label: "Total Papers", value: papers.length, icon: FileText },
-            { label: "Completed", value: completedCount, icon: CheckCircle },
-            { label: "Average Score", value: `${Math.round(averageScore)}%`, icon: Star },
-            { label: "Study Time", value: formatStudyTime(studyTime), icon: Timer },
+            { label: t("pastPapers.totalPapers"), value: papers.length, icon: FileText },
+            { label: t("pastPapers.completed"), value: completedCount, icon: CheckCircle },
+            { label: t("pastPapers.averageScore"), value: `${Math.round(averageScore)}%`, icon: Star },
+            { label: t("pastPapers.studyTime"), value: formatStudyTime(studyTime), icon: Timer },
           ].map((stat) => (
             <div key={stat.label} className="glass-card p-4">
               <div className="flex items-center gap-3">
@@ -691,13 +695,13 @@ export default function PastPapers() {
         {papers.length === 0 ? (
           <div className="glass-card p-12 text-center">
             <FileText className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No past papers yet</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t("pastPapers.noPapers")}</h3>
             <p className="text-muted-foreground mb-4">
-              Create your first past paper to get started
+              {t("pastPapers.createFirst")}
             </p>
             <Button onClick={handleCreatePaper}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Paper
+              {t("pastPapers.addPaper")}
             </Button>
           </div>
         ) : (

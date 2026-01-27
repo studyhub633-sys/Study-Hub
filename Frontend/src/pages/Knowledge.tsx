@@ -77,6 +77,7 @@ interface KnowledgeOrganizer {
 
 export default function Knowledge() {
   const { supabase, user } = useAuth();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -751,13 +752,13 @@ export default function Knowledge() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Knowledge Organizers</h1>
-            <p className="text-muted-foreground mt-1">Visual summaries to consolidate your learning</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("knowledge.title")}</h1>
+            <p className="text-muted-foreground mt-1">{t("knowledge.subtitle")}</p>
           </div>
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
             <Button variant="outline" onClick={() => setIsAiDialogOpen(true)} className="whitespace-nowrap">
               <Brain className="h-4 w-4 mr-2 flex-shrink-0" />
-              <span className="whitespace-nowrap">Generate with AI</span>
+              <span className="whitespace-nowrap">{t("knowledge.generateAI")}</span>
               {aiUsageCount !== null && (
                 <span className="ml-2 text-xs opacity-70 whitespace-nowrap">
                   {isPremiumUser ? "(∞)" : `(${aiLimit - aiUsageCount})`}
@@ -766,7 +767,7 @@ export default function Knowledge() {
             </Button>
             <Button onClick={handleCreateOrganizer}>
               <Plus className="h-4 w-4 mr-2" />
-              Create Organizer
+              {t("knowledge.createOrganizer")}
             </Button>
           </div>
         </div>

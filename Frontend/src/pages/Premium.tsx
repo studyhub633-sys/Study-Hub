@@ -28,105 +28,17 @@ import {
   Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-const features = [
-  {
-    icon: Brain,
-    title: "Unlimited AI Generated Questions",
-    description: "Generate unlimited AI questions tailored to your exam board and subjects (10/day for free users)",
-  },
-  {
-    icon: Sparkles,
-    title: "Groq AI Study Suggestions",
-    description: "Get personalized study recommendations based on your progress and weak areas",
-  },
-  {
-    icon: Zap,
-    title: "Instant Feedback",
-    description: "Receive detailed explanations and mark scheme breakdowns for every answer",
-  },
-  {
-    icon: Clock,
-    title: "Progress Analytics",
-    description: "Advanced insights into your study patterns and performance trends",
-  },
-  {
-    icon: Shield,
-    title: "Fully Ad-Free Experience",
-    description: "Study without distractions with a completely ad-free interface",
-  },
-  {
-    icon: Users,
-    title: "Priority Support",
-    description: "Get help faster with dedicated premium customer support",
-  },
-  {
-    icon: Brain,
-    title: "Grade 9 Premium Notes",
-    description: "Access exclusive Grade 9 notes and study materials",
-  },
-  {
-    icon: Clock,
-    title: "Homework Tracker",
-    description: "Track assignments with smart notifications when they're due",
-  },
-  {
-    icon: Sparkles,
-    title: "AI-Powered Study Plans",
-    description: "Get personalized study schedules based on your exam dates",
-  },
-  {
-    icon: Brain,
-    title: "AI Mind Map Generator",
-    description: "Transform your notes into visual mind maps instantly with AI",
-  },
-  {
-    icon: GraduationCap,
-    title: "AI Examiner",
-    description: "Upload completed past papers for instant AI marking and grading",
-  },
-  {
-    icon: BarChart3,
-    title: "Performance Heat Map",
-    description: "Visual red/amber/green analytics showing your strengths and weaknesses",
-  },
-];
 
-const plans = [
-  {
-    name: "Monthly",
-    price: "£4.99",
-    period: "/month",
-    description: "Perfect for trying out premium features",
-    features: [
-      "All premium features",
-      "Cancel anytime",
-      "Monthly billing",
-    ],
-    popular: false,
-  },
-  {
-    name: "Yearly",
-    price: "£39.99",
-    period: "/year",
-    description: "Our best value - save over £19 annually!",
-    features: [
-      "All premium features",
-      "4 months free",
-      "Priority new features",
-      "Exclusive content",
-    ],
-    popular: true,
-    savings: "Save £19.89",
-  },
-];
 
 export default function Premium() {
   const { user, supabase } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation(); // Ensure t is destructured here
   const [loading, setLoading] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
@@ -139,6 +51,112 @@ export default function Premium() {
   const [hasPredictedPapers, setHasPredictedPapers] = useState(false);
   const [hasWorkExperience, setHasWorkExperience] = useState(false);
   const [checkingContent, setCheckingContent] = useState(true);
+
+  const features = [
+    {
+      icon: Brain,
+      title: "Unlimited AI Generated Questions",
+      description: "Generate unlimited AI questions tailored to your exam board and subjects (10/day for free users)",
+      key: "unlimitedAI"
+    },
+    {
+      icon: Sparkles,
+      title: "Groq AI Study Suggestions",
+      description: "Get personalized study recommendations based on your progress and weak areas",
+      key: "studySuggestions"
+    },
+    {
+      icon: Zap,
+      title: "Instant Feedback",
+      description: "Receive detailed explanations and mark scheme breakdowns for every answer",
+      key: "instantFeedback"
+    },
+    {
+      icon: Clock,
+      title: "Progress Analytics",
+      description: "Advanced insights into your study patterns and performance trends",
+      key: "progressAnalytics"
+    },
+    {
+      icon: Shield,
+      title: "Fully Ad-Free Experience",
+      description: "Study without distractions with a completely ad-free interface",
+      key: "adFree"
+    },
+    {
+      icon: Users,
+      title: "Priority Support",
+      description: "Get help faster with dedicated premium customer support",
+      key: "prioritySupport"
+    },
+    {
+      icon: Brain,
+      title: "Grade 9 Premium Notes",
+      description: "Access exclusive Grade 9 notes and study materials",
+      key: "grade9Notes"
+    },
+    {
+      icon: Clock,
+      title: "Homework Tracker",
+      description: "Track assignments with smart notifications when they're due",
+      key: "homeworkTracker"
+    },
+    {
+      icon: Sparkles,
+      title: "AI-Powered Study Plans",
+      description: "Get personalized study schedules based on your exam dates",
+      key: "studyPlans"
+    },
+    {
+      icon: Brain,
+      title: "AI Mind Map Generator",
+      description: "Transform your notes into visual mind maps instantly with AI",
+      key: "mindMap"
+    },
+    {
+      icon: GraduationCap,
+      title: "AI Examiner",
+      description: "Upload completed past papers for instant AI marking and grading",
+      key: "aiExaminer"
+    },
+    {
+      icon: BarChart3,
+      title: "Performance Heat Map",
+      description: "Visual red/amber/green analytics showing your strengths and weaknesses",
+      key: "heatmap"
+    },
+  ];
+
+  const plans = [
+    {
+      name: "Monthly",
+      price: "£4.99",
+      period: "/month",
+      description: "Perfect for trying out premium features",
+      features: [
+        "All premium features",
+        "Cancel anytime",
+        "Monthly billing",
+      ],
+      popular: false,
+      key: "monthly"
+    },
+    {
+      name: "Yearly",
+      price: "£39.99",
+      period: "/year",
+      description: "Our best value - save over £19 annually!",
+      features: [
+        "All premium features",
+        "4 months free",
+        "Priority new features",
+        "Exclusive content",
+      ],
+      popular: true,
+      savings: "Save £19.89",
+      key: "yearly"
+    },
+  ];
 
   // Check for Stripe redirect
   useEffect(() => {
@@ -322,8 +340,8 @@ export default function Premium() {
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
             {isPremium
-              ? "You have lifetime access to all premium features during our beta testing phase."
-              : "During beta, premium features are reserved for authorized tester accounts."}
+              ? t("premium.page.descriptionPremium")
+              : t("premium.page.description")}
           </p>
 
           {!isPremium && (
@@ -333,7 +351,7 @@ export default function Premium() {
               onClick={() => handleSubscribe("yearly")}
             >
               <Rocket className="mr-2 h-5 w-5" />
-              UPGRADE NOW
+              {t("premium.page.upgradeNow")}
             </Button>
           )}
         </div>
@@ -388,8 +406,13 @@ export default function Premium() {
               <div className="p-2.5 rounded-xl bg-premium/10 w-fit mb-3">
                 <feature.icon className="h-5 w-5 text-premium" />
               </div>
-              <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
+              <h3 className="font-semibold text-foreground mb-1">
+                {/* Attempt to translate using key if available, else fall back to title */}
+                {feature.key ? t(`premium.features.${feature.key}.title`, feature.title) : feature.title}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {feature.key ? t(`premium.features.${feature.key}.description`, feature.description) : feature.description}
+              </p>
             </div>
           ))}
         </div>
@@ -417,17 +440,25 @@ export default function Premium() {
               )}
 
               <div className="text-center mb-6">
-                <h3 className="text-lg font-semibold text-foreground mb-2">{plan.name}</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {plan.key ? t(`premium.dashboard.${plan.key}`) : plan.name}
+                </h3>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground">{plan.period}</span>
+                  <span className="text-4xl font-bold text-foreground">
+                    {plan.key ? t(`premium.dashboard.${plan.key}Price`) : plan.price}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {plan.key ? t(`premium.dashboard.${plan.key}Period`) : plan.period}
+                  </span>
                 </div>
                 {plan.savings && (
                   <span className="inline-block mt-2 text-sm font-medium text-secondary px-2 py-0.5 bg-secondary/10 rounded-full">
-                    {plan.savings}
+                    {t("premium.dashboard.saveAmount")}
                   </span>
                 )}
-                <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {plan.key ? t(`premium.dashboard.${plan.key}Description`) : plan.description}
+                </p>
               </div>
 
               <ul className="space-y-3 mb-6">
@@ -453,17 +484,17 @@ export default function Premium() {
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Processing...
+                    {t("premium.dashboard.processing")}
                   </>
                 ) : isPremium ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
-                    Already Premium
+                    {t("premium.dashboard.alreadyPremium")}
                   </>
                 ) : (
                   <>
                     {plan.popular && <Rocket className="h-4 w-4 mr-2" />}
-                    Get Lifetime Access (Beta)
+                    {t("premium.dashboard.getLifetimeAccess")}
                   </>
                 )}
               </Button>

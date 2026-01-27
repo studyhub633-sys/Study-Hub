@@ -53,6 +53,7 @@ import {
   Trash2
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 interface Note {
@@ -87,6 +88,7 @@ export default function Notes() {
   const { supabase, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
@@ -521,10 +523,14 @@ export default function Notes() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 animate-fade-in">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Exam Notes</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("notes.title")}</h1>
             <p className="text-muted-foreground mt-1">
-              {notes.length} note{notes.length !== 1 ? "s" : ""} across{" "}
-              {subjects.length || 1} subject{subjects.length !== 1 ? "s" : ""}
+              {t("notes.subtitle", {
+                count: notes.length,
+                plural: notes.length !== 1 ? "s" : "",
+                subjects: subjects.length || 1,
+                subjectPlural: subjects.length !== 1 ? "s" : ""
+              })}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -535,7 +541,7 @@ export default function Notes() {
                 className="border-premium/30 bg-premium/5 hover:bg-premium/10"
               >
                 <Crown className="h-4 w-4 mr-2 text-premium" />
-                Grade 9 Notes
+                {t("notes.grade9Notes")}
               </Button>
             )}
             {!isPremium && !checkingPremium && (
@@ -545,12 +551,12 @@ export default function Notes() {
                 className="border-premium/30 bg-premium/5 hover:bg-premium/10"
               >
                 <Crown className="h-4 w-4 mr-2 text-premium" />
-                Access Grade 9 Notes
+                {t("notes.accessGrade9")}
               </Button>
             )}
             <Button onClick={handleCreateNote} title="Create New Note (Ctrl+N)">
               <Plus className="h-4 w-4 mr-2" />
-              Create Note
+              {t("notes.createNote")}
             </Button>
           </div>
         </div>
@@ -699,62 +705,62 @@ export default function Notes() {
                   </div>
                 )}
                 {Object.entries(groupedNotes).map(([subject, topics]) => (
-                <div key={subject} className="glass-card p-4">
-                  <h3 className="font-semibold text-foreground mb-3">{subject}</h3>
-                  <Accordion type="multiple" className="space-y-2" defaultValue={Object.keys(topics)}>
-                    {Object.entries(topics).map(([topic, topicNotes]) => (
-                      <AccordionItem key={topic} value={topic} className="border-none">
-                        <AccordionTrigger className="py-2 px-3 rounded-lg bg-muted/50 hover:bg-muted text-sm font-medium hover:no-underline">
-                          {topic}
-                          <span className="ml-auto mr-2 text-xs text-muted-foreground">
-                            {topicNotes.length}
-                          </span>
-                        </AccordionTrigger>
-                        <AccordionContent className="pt-2 pb-0">
-                          <div className="space-y-2 pl-2">
-                            {topicNotes.map((note) => (
-                              <button
-                                key={note.id}
-                                onClick={() => setSelectedNote(note)}
-                                className={cn(
-                                  "w-full text-left p-3 rounded-lg transition-all duration-200 group border",
-                                  selectedNote?.id === note.id
-                                    ? "bg-primary/10 border-primary/30 shadow-sm"
-                                    : "bg-card hover:bg-muted/50 border-transparent hover:border-border/50"
-                                )}
-                              >
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="flex-1 min-w-0">
-                                    <p className={cn("font-medium text-sm truncate", selectedNote?.id === note.id ? "text-primary" : "text-foreground")}>
-                                      {note.title}
-                                    </p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <Clock className="h-3 w-3 text-muted-foreground" />
-                                      <span className="text-xs text-muted-foreground">
-                                        {formatTimeAgo(note.updated_at)}
-                                      </span>
-                                    </div>
-                                    {note.tags && note.tags.length > 0 && (
-                                      <div className="flex gap-1 mt-2">
-                                        {note.tags.slice(0, 2).map((tag, i) => (
-                                          <span key={i} className={cn("text-[10px] px-1.5 py-0.5 rounded-full border", getTagColor(tag))}>
-                                            {tag}
-                                          </span>
-                                        ))}
-                                        {note.tags.length > 2 && <span className="text-[10px] text-muted-foreground">...</span>}
+                  <div key={subject} className="glass-card p-4">
+                    <h3 className="font-semibold text-foreground mb-3">{subject}</h3>
+                    <Accordion type="multiple" className="space-y-2" defaultValue={Object.keys(topics)}>
+                      {Object.entries(topics).map(([topic, topicNotes]) => (
+                        <AccordionItem key={topic} value={topic} className="border-none">
+                          <AccordionTrigger className="py-2 px-3 rounded-lg bg-muted/50 hover:bg-muted text-sm font-medium hover:no-underline">
+                            {topic}
+                            <span className="ml-auto mr-2 text-xs text-muted-foreground">
+                              {topicNotes.length}
+                            </span>
+                          </AccordionTrigger>
+                          <AccordionContent className="pt-2 pb-0">
+                            <div className="space-y-2 pl-2">
+                              {topicNotes.map((note) => (
+                                <button
+                                  key={note.id}
+                                  onClick={() => setSelectedNote(note)}
+                                  className={cn(
+                                    "w-full text-left p-3 rounded-lg transition-all duration-200 group border",
+                                    selectedNote?.id === note.id
+                                      ? "bg-primary/10 border-primary/30 shadow-sm"
+                                      : "bg-card hover:bg-muted/50 border-transparent hover:border-border/50"
+                                  )}
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                      <p className={cn("font-medium text-sm truncate", selectedNote?.id === note.id ? "text-primary" : "text-foreground")}>
+                                        {note.title}
+                                      </p>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <Clock className="h-3 w-3 text-muted-foreground" />
+                                        <span className="text-xs text-muted-foreground">
+                                          {formatTimeAgo(note.updated_at)}
+                                        </span>
                                       </div>
-                                    )}
+                                      {note.tags && note.tags.length > 0 && (
+                                        <div className="flex gap-1 mt-2">
+                                          {note.tags.slice(0, 2).map((tag, i) => (
+                                            <span key={i} className={cn("text-[10px] px-1.5 py-0.5 rounded-full border", getTagColor(tag))}>
+                                              {tag}
+                                            </span>
+                                          ))}
+                                          {note.tags.length > 2 && <span className="text-[10px] text-muted-foreground">...</span>}
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </div>
-              ))}
+                                </button>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </div>
+                ))}
               </>
             )}
           </div>

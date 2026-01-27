@@ -58,6 +58,7 @@ interface Flashcard {
 
 export default function Flashcards() {
   const { supabase, user } = useAuth();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const location = useLocation();
   const [cards, setCards] = useState<Flashcard[]>([]);
@@ -479,10 +480,10 @@ export default function Flashcards() {
     } else {
       setScore((prev) => ({ ...prev, incorrect: prev.incorrect + 1 }));
     }
-    
+
     // Move to next card immediately
     handleNext();
-    
+
     // Mark review in background (non-blocking)
     if (currentCard) {
       handleMarkReview(currentCard.id, correct).catch(console.error);
@@ -518,33 +519,36 @@ export default function Flashcards() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Flashcards</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("flashcards.title")}</h1>
             <p className="text-muted-foreground mt-1">
-              {cards.length} card{cards.length !== 1 ? "s" : ""} total
+              {t("flashcards.totalCards", {
+                count: cards.length,
+                plural: cards.length !== 1 ? "s" : ""
+              })}
             </p>
           </div>
           <div className="flex items-center gap-2">
             {!isSelectionMode ? (
               <>
                 <Button variant="outline" onClick={handleToggleSelectMode}>
-                  Select
+                  {t("flashcards.select")}
                 </Button>
                 <Button variant={quizMode ? "default" : "outline"} onClick={() => setQuizMode(!quizMode)}>
                   <Play className="h-4 w-4 mr-2" />
-                  {quizMode ? "Exit Quiz" : "Quiz Mode"}
+                  {quizMode ? t("flashcards.exitQuiz") : t("flashcards.quizMode")}
                 </Button>
                 <Button onClick={handleCreateCard}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Card
+                  {t("flashcards.addCard")}
                 </Button>
               </>
             ) : (
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium mr-2">
-                  {selectedCards.size} selected
+                  {t("flashcards.selected", { count: selectedCards.size })}
                 </span>
                 <Button variant="outline" onClick={handleSelectAll}>
-                  {selectedCards.size === filteredCards.length ? "Deselect All" : "Select All"}
+                  {selectedCards.size === filteredCards.length ? t("flashcards.deselectAll") : t("flashcards.selectAll")}
                 </Button>
                 <Button
                   variant="destructive"
@@ -552,7 +556,7 @@ export default function Flashcards() {
                   disabled={selectedCards.size === 0}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete ({selectedCards.size})
+                  {t("flashcards.deleteSelected", { count: selectedCards.size })}
                 </Button>
                 <Button variant="ghost" onClick={handleToggleSelectMode}>
                   Cancel
@@ -621,13 +625,13 @@ export default function Flashcards() {
         {filteredCards.length === 0 ? (
           <div className="glass-card p-12 text-center">
             <BookOpen className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No flashcards yet</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t("flashcards.noCards")}</h3>
             <p className="text-muted-foreground mb-4">
-              Create your first flashcard to get started
+              {t("flashcards.createFirst")}
             </p>
             <Button onClick={handleCreateCard}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Card
+              {t("flashcards.addCard")}
             </Button>
           </div>
         ) : (
