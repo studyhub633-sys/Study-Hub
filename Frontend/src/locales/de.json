@@ -201,15 +201,44 @@
     },
     "nav": {
         "home": "Startseite",
-        "notes": "Notizen",
+        "notes": "Prüfungsnotizen",
         "flashcards": "Lernkarten",
         "pastPapers": "Prüfungen",
-        "knowledge": "Wissen",
+        "knowledge": "Wissensorganisatoren",
         "extracurricular": "Aktivitäten",
         "aiTutor": "KI-Tutor",
         "premium": "Premium",
         "library": "Bibliothek",
-        "admin": "Admin"
+        "admin": "Admin",
+        "dashboard": "Dashboard"
+    },
+    "sidebar": {
+        "goPremium": "Premium werden",
+        "logout": "Abmelden",
+        "profile": "Profil",
+        "upgradePlan": "Plan upgraden",
+        "freePlan": "Kostenloser Plan",
+        "premiumPlan": "Premium-Plan",
+        "home": "Startseite",
+        "notes": "Prüfungsnotizen",
+        "flashcards": "Lernkarten",
+        "pastPapers": "Prüfungen",
+        "knowledge": "Wissensorganisatoren",
+        "extracurricular": "Aktivitäten",
+        "premium": "Premium",
+        "library": "Bibliothek",
+        "admin": "Admin",
+        "dashboard": "Dashboard",
+        "settings": "Einstellungen",
+        "account": "Konto",
+        "manageProfile": "Profil verwalten",
+        "appPreferences": "App-Einstellungen",
+        "darkMode": "Dunkelmodus",
+        "lightMode": "Hellmodus",
+        "switchToDark": "Zu dunklem Design wechseln",
+        "switchToLight": "Zu hellem Design wechseln",
+        "generateWithAI": "Mit KI generieren",
+        "learnSmarter": "Klüger lernen"
     },
     "auth": {
         "welcomeBack": "Willkommen Zurück",
@@ -223,5 +252,66 @@
         "sendResetLink": "Link Senden",
         "newPassword": "Neues Passwort",
         "createNewPassword": "Erstellen Sie ein neues Passwort für Ihr Konto"
+    },
+    "settings": {
+        "title": "Einstellungen",
+        "subtitle": "Konto und Einstellungen verwalten",
+        "profile": {
+            "title": "Profil",
+            "heading": "Profilinformationen",
+            "firstName": "Vorname",
+            "lastName": "Nachname",
+            "email": "E-Mail",
+            "emailHint": "Um Ihre E-Mail zu ändern, aktualisieren Sie sie hier und speichern Sie. Sie müssen die neue Adresse bestätigen.",
+            "school": "Schule / Institution",
+            "yearGroup": "Klassenstufe",
+            "selectYearGroup": "Klassenstufe auswählen",
+            "subjects": "Fächer (kommagetrennt)",
+            "subjectsPlaceholder": "Biologie, Chemie, Physik, Mathematik",
+            "premiumUser": "Premium-Nutzer",
+            "freePlan": "Kostenloser Plan",
+            "saveChanges": "Änderungen speichern",
+            "saving": "Speichern..."
+        },
+        "notifications": {
+            "title": "Benachrichtigungen",
+            "studyReminders": "Lernerinnerungen",
+            "studyRemindersDesc": "Tägliche Erinnerungen zum Lernen erhalten",
+            "progressUpdates": "Fortschrittsupdates",
+            "progressUpdatesDesc": "Wöchentliche Zusammenfassung Ihres Fortschritts",
+            "newContentAlerts": "Neue Inhalte-Benachrichtigungen",
+            "newContentAlertsDesc": "Wenn neue Prüfungen oder Notizen hinzugefügt werden",
+            "achievementNotifications": "Erfolgsbenachrichtigungen",
+            "achievementNotificationsDesc": "Feiern Sie Ihre Meilensteine"
+        },
+        "appearance": {
+            "title": "Erscheinungsbild",
+            "theme": "Design",
+            "themeDesc": "Wählen Sie zwischen hell und dunkel",
+            "light": "Hell",
+            "dark": "Dunkel",
+            "quickToggle": "Schnellumschaltung",
+            "quickToggleDesc": "Zwischen hell und dunkel wechseln",
+            "switchToDark": "Zu Dunkel wechseln",
+            "switchToLight": "Zu Hell wechseln"
+        },
+        "privacy": {
+            "title": "Datenschutz",
+            "heading": "Datenschutz & Konto",
+            "dangerZone": "Gefahrenzone",
+            "deleteWarning": "Löschen Sie Ihr Konto und alle zugehörigen Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.",
+            "deleteAccount": "Konto löschen",
+            "deleting": "Löschen..."
+        },
+        "subscription": {
+            "title": "Abonnement",
+            "premiumPlan": "Premium-Plan",
+            "freePlan": "Kostenloser Plan",
+            "premiumDesc": "Sie haben vollen Zugriff auf alle Premium-Funktionen.",
+            "freeDesc": "Basisugang zu Lernmaterialien",
+            "upgradeToPremium": "Auf Premium upgraden",
+            "active": "Aktiv",
+            "upgradeHint": "Schalten Sie KI-Funktionen, erweiterte Analysen und werbefreies Lernen mit Premium frei."
+        }
     }
 }

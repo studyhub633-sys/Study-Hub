@@ -201,15 +201,44 @@
     },
     "nav": {
         "home": "Accueil",
-        "notes": "Notes",
-        "flashcards": "Cartes",
-        "pastPapers": "Examens",
-        "knowledge": "Connaissances",
+        "notes": "Notes d'examen",
+        "flashcards": "Cartes mémoire",
+        "pastPapers": "Examens passés",
+        "knowledge": "Organisateurs",
         "extracurricular": "Extrascolaire",
         "aiTutor": "Tuteur IA",
         "premium": "Premium",
         "library": "Bibliothèque",
-        "admin": "Admin"
+        "admin": "Admin",
+        "dashboard": "Tableau de bord"
+    },
+    "sidebar": {
+        "goPremium": "Passer Premium",
+        "logout": "Déconnexion",
+        "profile": "Profil",
+        "upgradePlan": "Améliorer le plan",
+        "freePlan": "Plan gratuit",
+        "premiumPlan": "Plan Premium",
+        "home": "Accueil",
+        "notes": "Notes d'examen",
+        "flashcards": "Cartes mémoire",
+        "pastPapers": "Examens passés",
+        "knowledge": "Organisateurs",
+        "extracurricular": "Extrascolaire",
+        "premium": "Premium",
+        "library": "Bibliothèque",
+        "admin": "Admin",
+        "dashboard": "Tableau de bord",
+        "settings": "Paramètres",
+        "account": "Compte",
+        "manageProfile": "Gérer le profil",
+        "appPreferences": "Préférences de l'app",
+        "darkMode": "Mode sombre",
+        "lightMode": "Mode clair",
+        "switchToDark": "Passer au thème sombre",
+        "switchToLight": "Passer au thème clair",
+        "generateWithAI": "Générer avec l'IA",
+        "learnSmarter": "Apprenez plus intelligemment"
     },
     "auth": {
         "welcomeBack": "Bon Retour",
@@ -223,5 +252,66 @@
         "sendResetLink": "Envoyer le Lien",
         "newPassword": "Nouveau Mot de Passe",
         "createNewPassword": "Créez un nouveau mot de passe pour votre compte"
+    },
+    "settings": {
+        "title": "Paramètres",
+        "subtitle": "Gérer votre compte et vos préférences",
+        "profile": {
+            "title": "Profil",
+            "heading": "Informations du profil",
+            "firstName": "Prénom",
+            "lastName": "Nom",
+            "email": "E-mail",
+            "emailHint": "Pour changer votre e-mail, mettez-le à jour ici et enregistrez. Vous devrez vérifier la nouvelle adresse.",
+            "school": "École / Institution",
+            "yearGroup": "Niveau scolaire",
+            "selectYearGroup": "Sélectionner le niveau",
+            "subjects": "Matières (séparées par des virgules)",
+            "subjectsPlaceholder": "Biologie, Chimie, Physique, Mathématiques",
+            "premiumUser": "Utilisateur Premium",
+            "freePlan": "Plan gratuit",
+            "saveChanges": "Enregistrer les modifications",
+            "saving": "Enregistrement..."
+        },
+        "notifications": {
+            "title": "Notifications",
+            "studyReminders": "Rappels d'étude",
+            "studyRemindersDesc": "Recevoir des rappels quotidiens pour étudier",
+            "progressUpdates": "Mises à jour de progression",
+            "progressUpdatesDesc": "Résumé hebdomadaire de votre progression",
+            "newContentAlerts": "Alertes de nouveau contenu",
+            "newContentAlertsDesc": "Quand de nouveaux examens ou notes sont ajoutés",
+            "achievementNotifications": "Notifications de réussite",
+            "achievementNotificationsDesc": "Célébrez vos accomplissements"
+        },
+        "appearance": {
+            "title": "Apparence",
+            "theme": "Thème",
+            "themeDesc": "Choisissez entre le mode clair et sombre",
+            "light": "Clair",
+            "dark": "Sombre",
+            "quickToggle": "Basculement rapide",
+            "quickToggleDesc": "Basculer entre clair et sombre",
+            "switchToDark": "Passer au mode sombre",
+            "switchToLight": "Passer au mode clair"
+        },
+        "privacy": {
+            "title": "Confidentialité",
+            "heading": "Confidentialité & Compte",
+            "dangerZone": "Zone de danger",
+            "deleteWarning": "Supprimez définitivement votre compte et toutes les données associées. Cette action est irréversible.",
+            "deleteAccount": "Supprimer le compte",
+            "deleting": "Suppression..."
+        },
+        "subscription": {
+            "title": "Abonnement",
+            "premiumPlan": "Plan Premium",
+            "freePlan": "Plan gratuit",
+            "premiumDesc": "Vous avez un accès complet à toutes les fonctionnalités Premium.",
+            "freeDesc": "Accès de base aux ressources d'étude",
+            "upgradeToPremium": "Passer à Premium",
+            "active": "Actif",
+            "upgradeHint": "Débloquez les fonctionnalités IA, les analyses avancées et l'étude sans publicité avec Premium."
+        }
     }
 }

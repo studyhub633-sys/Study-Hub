@@ -370,5 +370,75 @@
         "sendResetLink": "リセットリンクを送信",
         "newPassword": "新しいパスワード",
         "createNewPassword": "アカウントの新しいパスワードを作成"
+    },
+    "settings": {
+        "title": "設定",
+        "subtitle": "アカウントと設定を管理",
+        "profile": {
+            "title": "プロフィール",
+            "heading": "プロフィール情報",
+            "firstName": "名",
+            "lastName": "姓",
+            "email": "メールアドレス",
+            "emailHint": "メールアドレスを変更するには、ここで更新して保存してください。新しいアドレスの確認が必要です。",
+            "school": "学校 / 教育機関",
+            "yearGroup": "学年",
+            "selectYearGroup": "学年を選択",
+            "subjects": "科目（カンマ区切り）",
+            "subjectsPlaceholder": "生物、化学、物理、数学",
+            "premiumUser": "プレミアムユーザー",
+            "freePlan": "フリープラン",
+            "saveChanges": "変更を保存",
+            "saving": "保存中...",
+            "avatarUpdated": "アバターを更新しました",
+            "avatarUpdatedDesc": "プロフィール写真が更新されました。",
+            "profileUpdated": "プロフィールを更新しました",
+            "profileUpdatedDesc": "プロフィール情報が正常に保存されました。",
+            "emailChangeDesc": "プロフィールが更新されました。新しいメールアドレスを確認してください。"
+        },
+        "notifications": {
+            "title": "通知",
+            "studyReminders": "学習リマインダー",
+            "studyRemindersDesc": "毎日の学習リマインダーを受け取る",
+            "progressUpdates": "進捗更新",
+            "progressUpdatesDesc": "週次の進捗サマリー",
+            "newContentAlerts": "新しいコンテンツの通知",
+            "newContentAlertsDesc": "新しい問題やノートが追加されたとき",
+            "achievementNotifications": "達成通知",
+            "achievementNotificationsDesc": "マイルストーンをお祝い"
+        },
+        "appearance": {
+            "title": "外観",
+            "theme": "テーマ",
+            "themeDesc": "ライトモードとダークモードを選択",
+            "light": "ライト",
+            "dark": "ダーク",
+            "quickToggle": "クイック切り替え",
+            "quickToggleDesc": "ライトモードとダークモードを切り替え",
+            "switchToDark": "ダークに切り替え",
+            "switchToLight": "ライトに切り替え"
+        },
+        "privacy": {
+            "title": "プライバシー",
+            "heading": "プライバシーとアカウント",
+            "dangerZone": "危険ゾーン",
+            "deleteWarning": "アカウントと関連するすべてのデータを完全に削除します。この操作は元に戻せません。",
+            "deleteAccount": "アカウントを削除",
+            "deleting": "削除中...",
+            "deleteConfirm1": "アカウントを削除してもよろしいですか？この操作は元に戻せず、すべてのデータが完全に削除されます。",
+            "deleteConfirm2": "これが最後のチャンスです。本当によろしいですか？",
+            "deletionInitiated": "アカウント削除を開始しました",
+            "deletionInitiatedDesc": "ローカルデータが削除されました。アカウント削除を完了するにはサポートにお問い合わせください。"
+        },
+        "subscription": {
+            "title": "サブスクリプション",
+            "premiumPlan": "プレミアムプラン",
+            "freePlan": "フリープラン",
+            "premiumDesc": "すべてのプレミアム機能にフルアクセスできます。",
+            "freeDesc": "学習教材への基本アクセス",
+            "upgradeToPremium": "プレミアムにアップグレード",
+            "active": "有効",
+            "upgradeHint": "AI機能、高度な分析、広告なしの学習をプレミアムで解除。"
+        }
     }
 }

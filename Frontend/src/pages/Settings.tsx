@@ -29,22 +29,24 @@ import {
   User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-
-const settingsSections = [
-  { icon: User, label: "Profile", id: "profile" },
-  { icon: Bell, label: "Notifications", id: "notifications" },
-  { icon: Palette, label: "Appearance", id: "appearance" },
-  { icon: Shield, label: "Privacy", id: "privacy" },
-  { icon: CreditCard, label: "Subscription", id: "subscription" },
-];
+import { useTranslation } from "react-i18next";
 
 export default function Settings() {
   const { supabase, user } = useAuth();
   const { theme, toggleTheme, setTheme } = useTheme();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState("profile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const settingsSections = [
+    { icon: User, label: t("settings.profile.title"), id: "profile" },
+    { icon: Bell, label: t("settings.notifications.title"), id: "notifications" },
+    { icon: Palette, label: t("settings.appearance.title"), id: "appearance" },
+    { icon: Shield, label: t("settings.privacy.title"), id: "privacy" },
+    { icon: CreditCard, label: t("settings.subscription.title"), id: "subscription" },
+  ];
 
   // Profile form state
   const [profileData, setProfileData] = useState({
@@ -317,7 +319,7 @@ export default function Settings() {
                 {/* Profile Section */}
                 {activeSection === "profile" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
-                    <h2 className="text-lg font-semibold text-foreground mb-6">Profile Information</h2>
+                    <h2 className="text-lg font-semibold text-foreground mb-6">{t("settings.profile.heading")}</h2>
 
                     <div className="flex items-center gap-6 mb-6">
                       <div className="relative">
@@ -343,10 +345,10 @@ export default function Settings() {
                         <div className="flex items-center gap-1 mt-1">
                           {profileData.is_premium ? (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-white font-medium flex items-center gap-1">
-                              <Crown className="w-3 h-3" /> Premium User
+                              <Crown className="w-3 h-3" /> {t("settings.profile.premiumUser")}
                             </span>
                           ) : (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">Free Plan</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">{t("settings.profile.freePlan")}</span>
                           )}
                         </div>
                       </div>
@@ -354,7 +356,7 @@ export default function Settings() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
+                        <Label htmlFor="firstName">{t("settings.profile.firstName")}</Label>
                         <Input
                           id="firstName"
                           value={profileData.first_name}
@@ -362,7 +364,7 @@ export default function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
+                        <Label htmlFor="lastName">{t("settings.profile.lastName")}</Label>
                         <Input
                           id="lastName"
                           value={profileData.last_name}
@@ -370,7 +372,7 @@ export default function Settings() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">{t("settings.profile.email")}</Label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
@@ -382,11 +384,11 @@ export default function Settings() {
                           />
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          To change your email, update it here and save. You'll need to verify the new email address.
+                          {t("settings.profile.emailHint")}
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="school">School / Institution</Label>
+                        <Label htmlFor="school">{t("settings.profile.school")}</Label>
                         <div className="relative">
                           <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
@@ -398,13 +400,13 @@ export default function Settings() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="year">Year Group</Label>
+                        <Label htmlFor="year">{t("settings.profile.yearGroup")}</Label>
                         <Select
                           value={profileData.year_group}
                           onValueChange={(value) => setProfileData({ ...profileData, year_group: value })}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select year group" />
+                            <SelectValue placeholder={t("settings.profile.selectYearGroup")} />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="10">Year 10</SelectItem>
@@ -415,12 +417,12 @@ export default function Settings() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="subjects">Subjects (comma separated)</Label>
+                        <Label htmlFor="subjects">{t("settings.profile.subjects")}</Label>
                         <Input
                           id="subjects"
                           value={profileData.subjects}
                           onChange={(e) => setProfileData({ ...profileData, subjects: e.target.value })}
-                          placeholder="Biology, Chemistry, Physics, Maths"
+                          placeholder={t("settings.profile.subjectsPlaceholder")}
                         />
                       </div>
                     </div>
@@ -430,10 +432,10 @@ export default function Settings() {
                         {saving ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Saving...
+                            {t("settings.profile.saving")}
                           </>
                         ) : (
-                          "Save Changes"
+                          t("settings.profile.saveChanges")
                         )}
                       </Button>
                     </div>
@@ -443,29 +445,29 @@ export default function Settings() {
                 {/* Notifications Section */}
                 {activeSection === "notifications" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
-                    <h2 className="text-lg font-semibold text-foreground mb-6">Notifications</h2>
+                    <h2 className="text-lg font-semibold text-foreground mb-6">{t("settings.notifications.title")}</h2>
 
                     <div className="space-y-4">
                       {[
                         {
                           key: "studyReminders",
-                          label: "Study reminders",
-                          description: "Get daily reminders to study"
+                          label: t("settings.notifications.studyReminders"),
+                          description: t("settings.notifications.studyRemindersDesc")
                         },
                         {
                           key: "progressUpdates",
-                          label: "Progress updates",
-                          description: "Weekly summary of your progress"
+                          label: t("settings.notifications.progressUpdates"),
+                          description: t("settings.notifications.progressUpdatesDesc")
                         },
                         {
                           key: "newContentAlerts",
-                          label: "New content alerts",
-                          description: "When new papers or notes are added"
+                          label: t("settings.notifications.newContentAlerts"),
+                          description: t("settings.notifications.newContentAlertsDesc")
                         },
                         {
                           key: "achievementNotifications",
-                          label: "Achievement notifications",
-                          description: "Celebrate your milestones"
+                          label: t("settings.notifications.achievementNotifications"),
+                          description: t("settings.notifications.achievementNotificationsDesc")
                         },
                       ].map((notification) => (
                         <div key={notification.key} className="flex items-center justify-between">
@@ -488,14 +490,14 @@ export default function Settings() {
                 {/* Appearance Section */}
                 {activeSection === "appearance" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
-                    <h2 className="text-lg font-semibold text-foreground mb-6">Appearance</h2>
+                    <h2 className="text-lg font-semibold text-foreground mb-6">{t("settings.appearance.title")}</h2>
 
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-foreground">Theme</p>
+                          <p className="font-medium text-foreground">{t("settings.appearance.theme")}</p>
                           <p className="text-sm text-muted-foreground">
-                            Choose between light and dark mode
+                            {t("settings.appearance.themeDesc")}
                           </p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -504,23 +506,23 @@ export default function Settings() {
                             size="sm"
                             onClick={() => setTheme("light")}
                           >
-                            Light
+                            {t("settings.appearance.light")}
                           </Button>
                           <Button
                             variant={theme === "dark" ? "default" : "outline"}
                             size="sm"
                             onClick={() => setTheme("dark")}
                           >
-                            Dark
+                            {t("settings.appearance.dark")}
                           </Button>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between pt-4 border-t border-border">
                         <div>
-                          <p className="font-medium text-foreground">Quick Toggle</p>
+                          <p className="font-medium text-foreground">{t("settings.appearance.quickToggle")}</p>
                           <p className="text-sm text-muted-foreground">
-                            Toggle between light and dark mode
+                            {t("settings.appearance.quickToggleDesc")}
                           </p>
                         </div>
                         <Button
@@ -531,11 +533,11 @@ export default function Settings() {
                         >
                           {theme === "light" ? (
                             <>
-                              <span>🌙</span> Switch to Dark
+                              <span>🌙</span> {t("settings.appearance.switchToDark")}
                             </>
                           ) : (
                             <>
-                              <span>☀️</span> Switch to Light
+                              <span>☀️</span> {t("settings.appearance.switchToLight")}
                             </>
                           )}
                         </Button>
@@ -547,22 +549,22 @@ export default function Settings() {
                 {/* Privacy Section */}
                 {activeSection === "privacy" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
-                    <h2 className="text-lg font-semibold text-foreground mb-6">Privacy & Account</h2>
+                    <h2 className="text-lg font-semibold text-foreground mb-6">{t("settings.privacy.heading")}</h2>
 
                     <div className="space-y-6">
                       <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-                        <h3 className="font-semibold text-foreground mb-2">Danger Zone</h3>
+                        <h3 className="font-semibold text-foreground mb-2">{t("settings.privacy.dangerZone")}</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Permanently delete your account and all associated data. This action cannot be undone.
+                          {t("settings.privacy.deleteWarning")}
                         </p>
                         <Button
                           variant="destructive"
                           onClick={async () => {
-                            if (!confirm("Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.")) {
+                            if (!confirm(t("settings.privacy.deleteConfirm1"))) {
                               return;
                             }
 
-                            if (!confirm("This is your last chance. Are you absolutely sure?")) {
+                            if (!confirm(t("settings.privacy.deleteConfirm2"))) {
                               return;
                             }
 
@@ -584,8 +586,8 @@ export default function Settings() {
                               // Note: We can't delete the auth user directly from client
                               // The user will need to contact support or we need a backend endpoint
                               toast({
-                                title: "Account Deletion Initiated",
-                                description: "Your local data has been deleted. Please contact support to complete account deletion, or your account will be automatically cleaned up.",
+                                title: t("settings.privacy.deletionInitiated"),
+                                description: t("settings.privacy.deletionInitiatedDesc"),
                               });
 
                               // Redirect to landing
@@ -593,7 +595,7 @@ export default function Settings() {
                             } catch (error: any) {
                               console.error("Error deleting account:", error);
                               toast({
-                                title: "Error",
+                                title: t("common.error"),
                                 description: error.message || "Failed to delete account. Please contact support.",
                                 variant: "destructive",
                               });
@@ -606,12 +608,12 @@ export default function Settings() {
                           {saving ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Deleting...
+                              {t("settings.privacy.deleting")}
                             </>
                           ) : (
                             <>
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Delete Account
+                              {t("settings.privacy.deleteAccount")}
                             </>
                           )}
                         </Button>
@@ -623,30 +625,30 @@ export default function Settings() {
                 {/* Subscription Section */}
                 {activeSection === "subscription" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.4s", opacity: 0 }}>
-                    <h2 className="text-lg font-semibold text-foreground mb-6">Subscription</h2>
+                    <h2 className="text-lg font-semibold text-foreground mb-6">{t("settings.subscription.title")}</h2>
 
                     <div className="p-4 rounded-xl bg-muted/50 border border-border mb-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-semibold text-foreground">
-                            {profileData.is_premium ? "Premium Plan" : "Free Plan"}
+                            {profileData.is_premium ? t("settings.subscription.premiumPlan") : t("settings.subscription.freePlan")}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {profileData.is_premium
-                              ? "You have full access to all premium features."
-                              : "Basic access to study materials"}
+                              ? t("settings.subscription.premiumDesc")
+                              : t("settings.subscription.freeDesc")}
                           </p>
                         </div>
                         {!profileData.is_premium && (
                           <Button className="bg-premium hover:bg-premium/90 text-premium-foreground">
                             <Crown className="h-4 w-4 mr-2" />
-                            Upgrade to Premium
+                            {t("settings.subscription.upgradeToPremium")}
                           </Button>
                         )}
                         {profileData.is_premium && (
                           <div className="flex items-center text-green-500 font-medium">
                             <Shield className="h-4 w-4 mr-2" />
-                            Active
+                            {t("settings.subscription.active")}
                           </div>
                         )}
                       </div>
@@ -654,7 +656,7 @@ export default function Settings() {
 
                     {!profileData.is_premium && (
                       <p className="text-sm text-muted-foreground">
-                        Unlock AI-powered features, advanced analytics, and ad-free studying with Premium.
+                        {t("settings.subscription.upgradeHint")}
                       </p>
                     )}
                   </div>

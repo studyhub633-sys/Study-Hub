@@ -585,5 +585,75 @@
         "questionPrompt": "Here's a practice question based on your context",
         "typeAnswerPrompt": "Type your answer below, and I'll evaluate it!",
         "generationError": "I couldn't generate a question. Please try again."
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Manage your account and preferences",
+        "profile": {
+            "title": "Profile",
+            "heading": "Profile Information",
+            "firstName": "First Name",
+            "lastName": "Last Name",
+            "email": "Email",
+            "emailHint": "To change your email, update it here and save. You'll need to verify the new email address.",
+            "school": "School / Institution",
+            "yearGroup": "Year Group",
+            "selectYearGroup": "Select year group",
+            "subjects": "Subjects (comma separated)",
+            "subjectsPlaceholder": "Biology, Chemistry, Physics, Maths",
+            "premiumUser": "Premium User",
+            "freePlan": "Free Plan",
+            "saveChanges": "Save Changes",
+            "saving": "Saving...",
+            "avatarUpdated": "Avatar updated",
+            "avatarUpdatedDesc": "Your profile picture has been updated.",
+            "profileUpdated": "Profile updated",
+            "profileUpdatedDesc": "Your profile information has been saved successfully.",
+            "emailChangeDesc": "Your profile has been updated. Please check your email to verify the new address."
+        },
+        "notifications": {
+            "title": "Notifications",
+            "studyReminders": "Study reminders",
+            "studyRemindersDesc": "Get daily reminders to study",
+            "progressUpdates": "Progress updates",
+            "progressUpdatesDesc": "Weekly summary of your progress",
+            "newContentAlerts": "New content alerts",
+            "newContentAlertsDesc": "When new papers or notes are added",
+            "achievementNotifications": "Achievement notifications",
+            "achievementNotificationsDesc": "Celebrate your milestones"
+        },
+        "appearance": {
+            "title": "Appearance",
+            "theme": "Theme",
+            "themeDesc": "Choose between light and dark mode",
+            "light": "Light",
+            "dark": "Dark",
+            "quickToggle": "Quick Toggle",
+            "quickToggleDesc": "Toggle between light and dark mode",
+            "switchToDark": "Switch to Dark",
+            "switchToLight": "Switch to Light"
+        },
+        "privacy": {
+            "title": "Privacy",
+            "heading": "Privacy & Account",
+            "dangerZone": "Danger Zone",
+            "deleteWarning": "Permanently delete your account and all associated data. This action cannot be undone.",
+            "deleteAccount": "Delete Account",
+            "deleting": "Deleting...",
+            "deleteConfirm1": "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.",
+            "deleteConfirm2": "This is your last chance. Are you absolutely sure?",
+            "deletionInitiated": "Account Deletion Initiated",
+            "deletionInitiatedDesc": "Your local data has been deleted. Please contact support to complete account deletion, or your account will be automatically cleaned up."
+        },
+        "subscription": {
+            "title": "Subscription",
+            "premiumPlan": "Premium Plan",
+            "freePlan": "Free Plan",
+            "premiumDesc": "You have full access to all premium features.",
+            "freeDesc": "Basic access to study materials",
+            "upgradeToPremium": "Upgrade to Premium",
+            "active": "Active",
+            "upgradeHint": "Unlock AI-powered features, advanced analytics, and ad-free studying with Premium."
+        }
     }
 }
