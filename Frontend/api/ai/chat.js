@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { message, context, language } = req.body;
+        const { message, context, history, language } = req.body;
 
         if (!message) {
             return res.status(400).json({ error: "Message is required" });
@@ -57,10 +57,34 @@ export default async function handler(req, res) {
             ? `IMPORTANT: You MUST respond in ${langName}. All your responses should be in ${langName}.`
             : "";
 
-        let systemPrompt = `You are a helpful, encouraging, and knowledgeable AI tutor. Your goal is to help students learn and understand concepts clearly. Keep answers concise but informative. ${langInstruction}`;
+        let systemPrompt = `You are a helpful, encouraging, and knowledgeable AI tutor assistant. Your goal is to help students learn and understand concepts clearly. Keep answers concise but informative. 
+
+CRITICAL: Always maintain context from the conversation. When the user refers to previous topics, questions, or answers, make sure to connect your response to what was discussed earlier. Pay close attention to follow-up questions and clarifications.
+
+${langInstruction}`;
+
         if (context) {
             systemPrompt += `\n\nContext/Notes provided by student:\n${context}`;
         }
+
+        // Build the messages array with conversation history
+        const messages = [{ role: "system", content: systemPrompt }];
+
+        // Add conversation history if provided (limit to last 10 exchanges for token management)
+        if (history && Array.isArray(history) && history.length > 0) {
+            // Filter and validate history entries
+            const validHistory = history
+                .filter(msg => msg && msg.role && msg.content)
+                .map(msg => ({
+                    role: msg.role === "assistant" ? "assistant" : "user",
+                    content: String(msg.content).slice(0, 2000) // Limit each message to prevent token overflow
+                }));
+
+            messages.push(...validHistory);
+        }
+
+        // Add the current user message
+        messages.push({ role: "user", content: message });
 
         const response = await fetch(GROQ_CHAT_URL, {
             method: "POST",
@@ -70,11 +94,8 @@ export default async function handler(req, res) {
             },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: message }
-                ],
-                max_tokens: 500,
+                messages: messages,
+                max_tokens: 1000,
                 temperature: 0.7,
                 top_p: 0.9,
             }),
@@ -113,3 +134,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: error.message || "Internal server error" });
     }
 }
+
