@@ -210,21 +210,17 @@ export default function PremiumDashboard() {
         },
     ];
 
-    // Feature Benefits list (merged; highlight Unlimited AI Questions + AI Tutor)
-    // Feature Benefits list (merged; highlight Unlimited AI Questions + AI Tutor)
+    // Feature Benefits list - all uniform, non-clickable display cards
     const benefitFeatures = [
         {
             icon: Brain,
             title: t('premium.features.aiQuestions.title'),
             description: t('premium.dashboard.unlimitedAIDescription'),
-            highlight: true,
         },
         {
             icon: Bot,
             title: t('premium.features.aiTutor.title'),
             description: t('premium.features.aiTutor.description'),
-            highlight: true,
-            path: "/ai-tutor",
         },
         {
             icon: Sparkles,
@@ -244,7 +240,7 @@ export default function PremiumDashboard() {
         {
             icon: Shield,
             title: t('premium.features.focusMode.title'),
-            description: t('premium.features.focusMode.description'), // Using focus mode description for now or generic
+            description: t('premium.features.focusMode.description'),
         },
         {
             icon: Users,
@@ -285,14 +281,12 @@ export default function PremiumDashboard() {
             icon: Users,
             title: t('premium.features.workExperience.title'),
             description: t('premium.features.workExperience.description'),
-            path: "/premium/work-experience",
             badgeKey: "workExperience" as const,
         },
         {
             icon: FileText,
             title: t('premium.features.predictedPapers.title'),
             description: t('premium.features.predictedPapers.description'),
-            path: "/premium/predicted-papers",
             badgeKey: "predictedPapers" as const,
         },
     ];
@@ -540,19 +534,13 @@ export default function PremiumDashboard() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {benefitFeatures.map((feature, index) => {
-                            const f = feature as typeof feature & { highlight?: boolean; path?: string; badgeKey?: "workExperience" | "predictedPapers" };
+                            const f = feature as typeof feature & { badgeKey?: "workExperience" | "predictedPapers" };
                             const badge = f.badgeKey === "workExperience" ? (hasWorkExperience ? t('premium.dashboard.available') : t('premium.dashboard.comingSoon')) : f.badgeKey === "predictedPapers" ? (hasPredictedPapers ? t('premium.dashboard.available') : t('premium.dashboard.comingSoon')) : null;
                             return (
                                 <div
                                     key={index}
-                                    className={cn(
-                                        "glass-card p-5 hover-lift animate-slide-up",
-                                        f.highlight && "ring-2 ring-premium/60 border-2 border-premium/30 bg-premium/5",
-                                        f.path && "cursor-pointer"
-                                    )}
+                                    className="glass-card p-5 animate-slide-up"
                                     style={{ animationDelay: `${0.1 * index}s`, opacity: 0 }}
-                                    onClick={() => f.path && navigate(f.path)}
-                                    role={f.path ? "button" : undefined}
                                 >
                                     <div className="flex items-start justify-between gap-2 mb-3">
                                         <div className="p-2.5 rounded-xl bg-premium/10 w-fit">
