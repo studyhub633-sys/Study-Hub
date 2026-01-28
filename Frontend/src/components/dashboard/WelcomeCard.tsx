@@ -39,74 +39,77 @@ export function WelcomeCard() {
           setProfile(profileData);
         }
 
-        // Fetch counts and activity for streak from MULTIPLE sources
+        // Fetch counts and activity for streak from ALL study sources
         const [
           notesResult,
           flashcardsResult,
           papersResult,
-          // Activity dates from various sources
+          // Activity dates from ALL sources for comprehensive streak tracking
           notesDates,
           flashcardsDates,
           aiUsageDates,
+          aiChatSessionsDates,
           knowledgeOrganizersDates,
           pastPapersDates,
-          // Optional: study_sessions if table exists
-          sessionsResult
+          homeworkDates,
+          tasksDates,
+          mindMapsDates,
+          examSubmissionsDates,
+          studySessionsDates,
+          extracurricularsDates,
         ] = await Promise.all([
-          // Counts
+          // Counts for display
           supabase.from("notes").select("*", { count: "exact", head: true }).eq("user_id", user.id),
           supabase.from("flashcards").select("*", { count: "exact", head: true }).eq("user_id", user.id),
           supabase.from("past_papers").select("*", { count: "exact", head: true }).eq("user_id", user.id),
-          // Activity dates for streak calculation
+          // Activity dates for streak calculation - ALL sources
           supabase.from("notes").select("created_at, updated_at").eq("user_id", user.id),
-          supabase.from("flashcards").select("created_at, updated_at").eq("user_id", user.id),
+          supabase.from("flashcards").select("created_at, updated_at, last_reviewed").eq("user_id", user.id),
           supabase.from("ai_usage_tracking").select("created_at").eq("user_id", user.id),
+          supabase.from("ai_chat_sessions").select("created_at, updated_at").eq("user_id", user.id),
           supabase.from("knowledge_organizers").select("created_at, updated_at").eq("user_id", user.id),
-          supabase.from("past_papers").select("created_at, updated_at").eq("user_id", user.id),
-          // Study sessions (gracefully handles if table doesn't exist - will return empty/error)
-          supabase.from("study_sessions").select("date").eq("user_id", user.id),
+          supabase.from("past_papers").select("created_at, updated_at, completed_at").eq("user_id", user.id),
+          supabase.from("homework").select("created_at, updated_at").eq("user_id", user.id),
+          supabase.from("tasks").select("created_at, updated_at").eq("user_id", user.id),
+          supabase.from("mind_maps").select("created_at, updated_at").eq("user_id", user.id),
+          supabase.from("exam_submissions").select("created_at, submission_date").eq("user_id", user.id),
+          supabase.from("study_sessions").select("date, created_at").eq("user_id", user.id),
+          supabase.from("extracurriculars").select("created_at, updated_at").eq("user_id", user.id),
         ]);
 
         // Convert date to YYYY-MM-DD format
         const toYMD = (d: Date) =>
           `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-        // Collect all activity dates into a Set
+        // Collect ALL activity dates into a Set
         const dates = new Set<string>();
 
-        // Add study sessions dates
-        (sessionsResult?.data || []).forEach((r: any) => {
-          if (r.date) dates.add(toYMD(new Date(r.date)));
-        });
+        // Helper to safely add dates
+        const addDates = (data: any[] | null, fields: string[]) => {
+          (data || []).forEach((r: any) => {
+            fields.forEach(field => {
+              if (r[field]) {
+                try {
+                  dates.add(toYMD(new Date(r[field])));
+                } catch (e) { /* ignore invalid dates */ }
+              }
+            });
+          });
+        };
 
-        // Add notes activity (both created and updated)
-        (notesDates.data || []).forEach((r: any) => {
-          if (r.created_at) dates.add(toYMD(new Date(r.created_at)));
-          if (r.updated_at) dates.add(toYMD(new Date(r.updated_at)));
-        });
-
-        // Add flashcards activity
-        (flashcardsDates.data || []).forEach((r: any) => {
-          if (r.created_at) dates.add(toYMD(new Date(r.created_at)));
-          if (r.updated_at) dates.add(toYMD(new Date(r.updated_at)));
-        });
-
-        // Add AI usage activity (chat, questions, etc.)
-        (aiUsageDates.data || []).forEach((r: any) => {
-          if (r.created_at) dates.add(toYMD(new Date(r.created_at)));
-        });
-
-        // Add knowledge organizers activity
-        (knowledgeOrganizersDates.data || []).forEach((r: any) => {
-          if (r.created_at) dates.add(toYMD(new Date(r.created_at)));
-          if (r.updated_at) dates.add(toYMD(new Date(r.updated_at)));
-        });
-
-        // Add past papers activity
-        (pastPapersDates.data || []).forEach((r: any) => {
-          if (r.created_at) dates.add(toYMD(new Date(r.created_at)));
-          if (r.updated_at) dates.add(toYMD(new Date(r.updated_at)));
-        });
+        // Add dates from all sources
+        addDates(notesDates.data, ["created_at", "updated_at"]);
+        addDates(flashcardsDates.data, ["created_at", "updated_at", "last_reviewed"]);
+        addDates(aiUsageDates.data, ["created_at"]);
+        addDates(aiChatSessionsDates.data, ["created_at", "updated_at"]);
+        addDates(knowledgeOrganizersDates.data, ["created_at", "updated_at"]);
+        addDates(pastPapersDates.data, ["created_at", "updated_at", "completed_at"]);
+        addDates(homeworkDates.data, ["created_at", "updated_at"]);
+        addDates(tasksDates.data, ["created_at", "updated_at"]);
+        addDates(mindMapsDates.data, ["created_at", "updated_at"]);
+        addDates(examSubmissionsDates.data, ["created_at", "submission_date"]);
+        addDates(studySessionsDates.data, ["date", "created_at"]);
+        addDates(extracurricularsDates.data, ["created_at", "updated_at"]);
 
         // Calculate streak: count consecutive days from today/yesterday backwards
         const streak = (() => {

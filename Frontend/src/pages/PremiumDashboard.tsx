@@ -98,6 +98,7 @@ export default function PremiumDashboard() {
             path: "/ai-tutor",
             color: "text-amber-500",
             bg: "bg-amber-500/10",
+            hoverBg: "bg-amber-500",
         },
         {
             title: t('premium.features.homeworkSolver.title'),
@@ -106,6 +107,7 @@ export default function PremiumDashboard() {
             path: "/premium/homework-solver",
             color: "text-purple-500",
             bg: "bg-purple-500/10",
+            hoverBg: "bg-purple-500",
         },
         {
             title: t('premium.features.noteCondenser.title'),
@@ -114,6 +116,7 @@ export default function PremiumDashboard() {
             path: "/premium/note-condenser",
             color: "text-blue-500",
             bg: "bg-blue-500/10",
+            hoverBg: "bg-blue-500",
         },
         {
             title: t('premium.features.predictedGrades.title'),
@@ -122,6 +125,7 @@ export default function PremiumDashboard() {
             path: "/premium/predicted-grades",
             color: "text-green-500",
             bg: "bg-green-500/10",
+            hoverBg: "bg-green-500",
         },
         {
             title: t('premium.features.focusMode.title'),
@@ -130,6 +134,7 @@ export default function PremiumDashboard() {
             path: "/premium/focus-mode",
             color: "text-red-500",
             bg: "bg-red-500/10",
+            hoverBg: "bg-red-500",
         },
         {
             title: t('premium.features.leaderboards.title'),
@@ -138,6 +143,7 @@ export default function PremiumDashboard() {
             path: "/premium/leaderboard",
             color: "text-orange-500",
             bg: "bg-orange-500/10",
+            hoverBg: "bg-orange-500",
         },
         {
             title: t('premium.features.virtualSessions.title'),
@@ -146,6 +152,7 @@ export default function PremiumDashboard() {
             path: "/premium/virtual-sessions",
             color: "text-indigo-500",
             bg: "bg-indigo-500/10",
+            hoverBg: "bg-indigo-500",
         },
         {
             title: t('premium.features.homeworkTracker.title'),
@@ -154,6 +161,7 @@ export default function PremiumDashboard() {
             path: "/premium/homework-tracker",
             color: "text-pink-500",
             bg: "bg-pink-500/10",
+            hoverBg: "bg-pink-500",
         },
         {
             title: t('premium.features.studyPlans.title'),
@@ -162,6 +170,7 @@ export default function PremiumDashboard() {
             path: "/premium/study-plans",
             color: "text-cyan-500",
             bg: "bg-cyan-500/10",
+            hoverBg: "bg-cyan-500",
         },
         {
             title: t('premium.features.mindMap.title'),
@@ -170,6 +179,7 @@ export default function PremiumDashboard() {
             path: "/premium/mind-map-generator",
             color: "text-purple-500",
             bg: "bg-purple-500/10",
+            hoverBg: "bg-purple-500",
         },
         {
             title: t('premium.features.aiExaminer.title'),
@@ -178,6 +188,7 @@ export default function PremiumDashboard() {
             path: "/premium/ai-examiner",
             color: "text-blue-500",
             bg: "bg-blue-500/10",
+            hoverBg: "bg-blue-500",
         },
         {
             title: t('premium.features.performanceHeatmap.title'),
@@ -186,6 +197,7 @@ export default function PremiumDashboard() {
             path: "/premium/performance-heatmap",
             color: "text-orange-500",
             bg: "bg-orange-500/10",
+            hoverBg: "bg-orange-500",
         },
         {
             title: t('premium.features.grade9Notes.title'),
@@ -194,6 +206,7 @@ export default function PremiumDashboard() {
             path: "/premium/grade-9-notes",
             color: "text-emerald-500",
             bg: "bg-emerald-500/10",
+            hoverBg: "bg-emerald-500",
         },
     ];
 
@@ -486,7 +499,7 @@ export default function PremiumDashboard() {
                             className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-primary/10 bg-card/50 backdrop-blur-sm cursor-pointer"
                             onClick={() => navigate(feature.path)}
                         >
-                            <div className={`absolute top-0 left-0 w-1 h-full ${feature.bg.replace('/10', '')} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                            <div className={`absolute top-0 left-0 w-1 h-full ${feature.hoverBg} opacity-0 group-hover:opacity-100 transition-opacity`} />
 
                             <CardHeader>
                                 <div className={`w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center mb-4 group-hover:bg-opacity-20 transition-all`}>
