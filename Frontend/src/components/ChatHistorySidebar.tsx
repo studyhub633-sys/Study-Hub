@@ -23,14 +23,15 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
+    EyeOff,
     MessageSquare,
-    MoreHorizontal,
+    MoreVertical,
     Pencil,
     Plus,
     Trash2,
     X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ChatHistorySidebarProps {
     sessions: ChatSession[];
@@ -56,6 +57,21 @@ export function ChatHistorySidebar({
     const [editTitle, setEditTitle] = useState("");
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+
+    // Persistent hidden sessions state
+    const [hiddenSessionIds, setHiddenSessionIds] = useState<string[]>(() => {
+        try {
+            const stored = localStorage.getItem("hidden_chat_sessions");
+            return stored ? JSON.parse(stored) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+
+    // Save hidden sessions to localStorage whenever they change
+    useEffect(() => {
+        localStorage.setItem("hidden_chat_sessions", JSON.stringify(hiddenSessionIds));
+    }, [hiddenSessionIds]);
 
     // Format relative time
     const formatRelativeTime = (dateString: string) => {
@@ -131,6 +147,13 @@ export function ChatHistorySidebar({
         setDeleteDialogOpen(true);
     };
 
+    const handleHideClick = (id: string) => {
+        setHiddenSessionIds(prev => [...prev, id]);
+        // If the current session is hidden, user probably wants to stay on it or go to new chat?
+        // Usually stick to it or let onSelectSession handle it.
+        // But if it disappears from list, that's fine.
+    };
+
     const handleConfirmDelete = async () => {
         if (sessionToDelete) {
             await onDeleteSession(sessionToDelete);
@@ -139,7 +162,9 @@ export function ChatHistorySidebar({
         setSessionToDelete(null);
     };
 
-    const groupedSessions = groupSessionsByDate(sessions);
+    // Filter out hidden sessions before grouping
+    const visibleSessions = sessions.filter(s => !hiddenSessionIds.includes(s.id));
+    const groupedSessions = groupSessionsByDate(visibleSessions);
 
     if (isCollapsed) {
         return (
@@ -199,7 +224,7 @@ export function ChatHistorySidebar({
                             <div className="text-center text-muted-foreground text-sm py-8">
                                 Loading...
                             </div>
-                        ) : sessions.length === 0 ? (
+                        ) : visibleSessions.length === 0 ? (
                             <div className="text-center text-muted-foreground text-sm py-8">
                                 <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
                                 <p>No chat history yet</p>
@@ -273,7 +298,7 @@ export function ChatHistorySidebar({
                                                                 size="icon"
                                                                 className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
                                                             >
-                                                                <MoreHorizontal className="h-4 w-4" />
+                                                                <MoreVertical className="h-4 w-4" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
@@ -282,6 +307,12 @@ export function ChatHistorySidebar({
                                                             >
                                                                 <Pencil className="h-4 w-4 mr-2" />
                                                                 Rename
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleHideClick(session.id)}
+                                                            >
+                                                                <EyeOff className="h-4 w-4 mr-2" />
+                                                                Hide
                                                             </DropdownMenuItem>
                                                             <DropdownMenuItem
                                                                 className="text-destructive focus:text-destructive"
@@ -309,7 +340,7 @@ export function ChatHistorySidebar({
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Chat?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete this chat and all its messages. This
+                            Do you want to permanently delete this chat? This
                             action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
