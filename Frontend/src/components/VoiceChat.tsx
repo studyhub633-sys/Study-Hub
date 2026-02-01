@@ -21,12 +21,13 @@ declare global {
 }
 
 export function VoiceChat({ isOpen, onClose, onSendMessage, isProcessing }: VoiceChatProps) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [status, setStatus] = useState<"idle" | "listening" | "processing" | "speaking">("idle");
     const [transcript, setTranscript] = useState("");
     const [error, setError] = useState<string | null>(null);
     const recognitionRef = useRef<any>(null);
     const synthesisRef = useRef<SpeechSynthesis>(window.speechSynthesis);
+    const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
     // Initialize Speech Recognition
     useEffect(() => {
@@ -41,7 +42,7 @@ export function VoiceChat({ isOpen, onClose, onSendMessage, isProcessing }: Voic
         const recognition = new SpeechRecognition();
         recognition.continuous = false;
         recognition.interimResults = true;
-        recognition.lang = "en-US"; // Should ideally match i18n language
+        recognition.lang = i18n.language || "en-US";
 
         recognition.onstart = () => {
             setStatus("listening");
@@ -74,7 +75,24 @@ export function VoiceChat({ isOpen, onClose, onSendMessage, isProcessing }: Voic
                 synthesisRef.current.cancel();
             }
         };
-    }, [isOpen]);
+    }, [isOpen, i18n.language]);
+
+    // Load Voices properly
+    useEffect(() => {
+        const loadVoices = () => {
+            const vs = window.speechSynthesis.getVoices();
+            setVoices(vs);
+        };
+
+        loadVoices();
+
+        // Chrome loads voices asynchronously
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        return () => { window.speechSynthesis.onvoiceschanged = null; };
+    }, []);
 
     const startListening = () => {
         if (recognitionRef.current && status !== "listening" && status !== "speaking" && status !== "processing") {
@@ -96,27 +114,51 @@ export function VoiceChat({ isOpen, onClose, onSendMessage, isProcessing }: Voic
     const speakResponse = (text: string) => {
         if (!synthesisRef.current) return;
 
-        // Clean text (remove markdown mostly)
-        const cleanText = text.replace(/[*#_`]/g, "");
+        // Better Text Cleaning for Speech
+        // 1. Remove markdown links [text](url) -> text
+        // 2. Remove bold/italic markers
+        // 3. Replace newlines with pauses
+        const cleanText = text
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+            .replace(/[*#_`]/g, "")
+            .replace(/\n+/g, ". ");
 
         const utterance = new SpeechSynthesisUtterance(cleanText);
         utterance.onstart = () => setStatus("speaking");
         utterance.onend = () => {
-            setStatus("idle");
-            // Auto-restart listening after speaking? 
+            // Avoid immediate restart if closed
             if (isOpen) {
+                setStatus("idle");
+                // Auto-restart listening after speaking for continuous conversation
                 setTimeout(startListening, 500);
             }
         };
         utterance.onerror = () => setStatus("idle");
 
-        // Pick a nice voice if available
-        const voices = synthesisRef.current.getVoices();
-        const preferredVoice = voices.find(v => v.name.includes("Google US English") || v.name.includes("Samantha")) || voices[0];
-        if (preferredVoice) utterance.voice = preferredVoice;
+        // Smart Voice Selection
+        if (voices.length > 0) {
+            // Priority:
+            // 1. "Natural" voices (Edge/modern Windows/Android)
+            // 2. Google voices (Chrome)
+            // 3. Samantha (macOS)
+            // 4. Match language
+            const preferredVoice =
+                voices.find(v => v.name.includes("Natural") && v.lang.startsWith("en")) ||
+                voices.find(v => v.name.includes("Google US English")) ||
+                voices.find(v => v.name.includes("Samantha")) ||
+                voices.find(v => v.lang === (i18n.language || "en-US")) ||
+                voices[0];
+
+            if (preferredVoice) utterance.voice = preferredVoice;
+        }
 
         setStatus("speaking");
-        synthesisRef.current.speak(utterance);
+        try {
+            synthesisRef.current.speak(utterance);
+        } catch (e) {
+            console.error("Speech synthesis failed", e);
+            setStatus("idle");
+        }
     };
 
     // Trigger send when recognition ends with content
@@ -125,7 +167,6 @@ export function VoiceChat({ isOpen, onClose, onSendMessage, isProcessing }: Voic
 
         recognitionRef.current.onend = async () => {
             // Only convert to message if we have transcript and we were listening
-            // Note: simple check on transcript might check partials, but onend implies final
             if (transcript.trim().length > 0 && status === "listening") {
                 setStatus("processing");
                 try {
@@ -142,7 +183,7 @@ export function VoiceChat({ isOpen, onClose, onSendMessage, isProcessing }: Voic
                 }
             }
         };
-    }, [transcript, onSendMessage, status]);
+    }, [transcript, onSendMessage, status, voices]); // Add voices dependency to ensure latest voices are used
 
     // Effect to start listening when opening
     useEffect(() => {
@@ -179,8 +220,8 @@ export function VoiceChat({ isOpen, onClose, onSendMessage, isProcessing }: Voic
                         {status === "speaking" && "Speaking..."}
                         {status === "idle" && "Tap to speak"}
                     </h2>
-                    <p className="text-muted-foreground h-6 flex items-center justify-center">
-                        {transcript || (status === "processing" ? "Processing your request..." : "")}
+                    <p className="text-muted-foreground h-6 flex items-center justify-center px-4 text-center line-clamp-1">
+                        {transcript || (status === "processing" ? "Processing..." : "")}
                     </p>
                 </div>
 
@@ -219,7 +260,7 @@ export function VoiceChat({ isOpen, onClose, onSendMessage, isProcessing }: Voic
                         {status === "listening" ? (
                             <Mic className="h-12 w-12 text-white" />
                         ) : status === "speaking" ? (
-                            <Volume2 className="h-12 w-12 text-white" />
+                            <Volume2 className="h-12 w-12 text-white animate-pulse" />
                         ) : (
                             <MicOff className="h-12 w-12 text-white" />
                         )}
