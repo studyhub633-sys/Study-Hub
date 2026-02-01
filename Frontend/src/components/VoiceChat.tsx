@@ -59,6 +59,12 @@ export function VoiceChat({ isOpen, onClose, onSendMessage, isProcessing }: Voic
             console.error("Speech recognition error", event.error);
             if (event.error === "no-speech") {
                 setStatus("idle");
+            } else if (event.error === "network") {
+                setError("Network error: Please check your connection. If using Brave, enable Google Services.");
+                setStatus("idle");
+            } else if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+                setError("Microphone access denied. Please allow microphone permissions in your browser.");
+                setStatus("idle");
             } else {
                 setError("Error accessing microphone: " + event.error);
                 setStatus("idle");
