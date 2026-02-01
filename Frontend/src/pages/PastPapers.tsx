@@ -710,7 +710,7 @@ export default function PastPapers() {
             </SelectContent>
           </Select>
           <Select value={selectedTier} onValueChange={setSelectedTier}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
