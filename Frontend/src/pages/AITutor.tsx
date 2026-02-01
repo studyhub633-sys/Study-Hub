@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { VoiceChat } from "@/components/VoiceChat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useChatSessions, type ChatMessage } from "@/hooks/useChatSessions";
 import { chatWithAI } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
-import { Bot, Loader2, Menu, Send, Sparkles, User } from "lucide-react";
+import { Bot, Headphones, Loader2, Menu, Send, Sparkles, User } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
@@ -68,6 +69,7 @@ export default function AITutor() {
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const [isVoiceMode, setIsVoiceMode] = useState(false);
 
     // Flag to prevent double session creation
     const sessionCreatedRef = useRef(false);
@@ -146,20 +148,16 @@ export default function AITutor() {
         }));
     }, []);
 
-    const handleSend = async () => {
-        if (!input.trim() || loading) return;
-
+    const processMessage = async (text: string): Promise<string> => {
         const userMessage: Message = {
             id: Date.now().toString(),
             role: "user",
-            content: input,
+            content: text,
             timestamp: new Date(),
         };
 
         const newMessages = [...messages, userMessage];
         setMessages(newMessages);
-        const userInput = input;
-        setInput("");
         setLoading(true);
 
         try {
@@ -168,7 +166,7 @@ export default function AITutor() {
 
             const result = await chatWithAI(
                 {
-                    message: userInput,
+                    message: text,
                     history: history,
                     language: i18n.language,
                 },
@@ -201,28 +199,42 @@ export default function AITutor() {
                     setLoadedSessionId(session.id);
                     await updateSession(session.id, {
                         messages: finalMessages.map(toChatMessage),
-                        title: userInput.slice(0, 50) + (userInput.length > 50 ? "..." : ""),
+                        title: text.slice(0, 50) + (text.length > 50 ? "..." : ""),
                     });
                 }
             } else if (currentSession) {
                 await saveMessages(finalMessages);
             }
+
+            return responseContent;
         } catch (error: any) {
             console.error("Error:", error);
+            const errorMessage = error.message || "Failed to get response. Please try again.";
+
             toast({
                 title: "Error",
-                description: error.message || "Failed to get response. Please try again.",
+                description: errorMessage,
                 variant: "destructive",
             });
+
             setMessages((prev) => [...prev, {
                 id: (Date.now() + 1).toString(),
                 role: "assistant",
                 content: "I'm sorry, I encountered an error. Please try again.",
                 timestamp: new Date(),
             }]);
+
+            return "I'm sorry, I encountered an error.";
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSend = async () => {
+        if (!input.trim() || loading) return;
+        const text = input;
+        setInput("");
+        await processMessage(text);
     };
 
     return (
@@ -277,6 +289,15 @@ export default function AITutor() {
                                 <span className="font-semibold text-lg">{t("nav.aiTutor")}</span>
                             </div>
                         </div>
+
+                        <Button
+                            variant={isVoiceMode ? "secondary" : "ghost"}
+                            size="icon"
+                            onClick={() => setIsVoiceMode(true)}
+                            title="Voice Mode"
+                        >
+                            <Headphones className="h-5 w-5" />
+                        </Button>
                     </div>
 
                     {/* Chat Messages */}
@@ -338,7 +359,7 @@ export default function AITutor() {
                                         )}
                                     </div>
                                 ))}
-                                {loading && (
+                                {loading && !isVoiceMode && (
                                     <div className="flex gap-4">
                                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                                             <Bot className="h-4 w-4 text-primary" />
@@ -394,6 +415,13 @@ export default function AITutor() {
                         </div>
                     </div>
                 </div>
+
+                <VoiceChat
+                    isOpen={isVoiceMode}
+                    onClose={() => setIsVoiceMode(false)}
+                    onSendMessage={processMessage}
+                    isProcessing={loading}
+                />
             </div>
         </AppLayout>
     );
