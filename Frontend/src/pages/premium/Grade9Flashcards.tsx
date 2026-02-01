@@ -109,15 +109,47 @@ export default function Grade9Flashcards() {
                     </div>
                 </div>
 
-                {/* Content */}
-                <Card className="p-12 text-center border-dashed">
+                {/* Coming Soon Content with Feature Preview */}
+                <Card className="p-8 md:p-12 text-center border-dashed">
                     <div className="flex flex-col items-center justify-center">
-                        <Sparkles className="h-16 w-16 text-yellow-500/50 mb-4 animate-pulse" />
+                        <div className="relative mb-6">
+                            <Sparkles className="h-20 w-20 text-yellow-500/50 animate-pulse" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Layers className="h-10 w-10 text-yellow-500" />
+                            </div>
+                        </div>
                         <h2 className="text-2xl font-bold mb-2">Coming Soon</h2>
-                        <p className="text-muted-foreground max-w-md">
-                            We are currently curating the best Grade 9 flashcards for you. Check back soon for updates!
+                        <p className="text-muted-foreground max-w-lg mb-8">
+                            We're curating the best Grade 9 flashcard sets to help you commit key concepts to memory
+                            and achieve top marks in your exams. Check back soon!
                         </p>
-                        <Button className="mt-6" variant="outline" onClick={() => navigate("/premium-dashboard")}>
+
+                        {/* Feature Preview */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl mb-8">
+                            <div className="p-4 rounded-xl bg-muted/50 text-left">
+                                <div className="p-2 rounded-lg bg-blue-500/10 w-fit mb-3">
+                                    <Layers className="h-6 w-6 text-blue-500" />
+                                </div>
+                                <h3 className="font-semibold text-foreground mb-1">Spaced Repetition</h3>
+                                <p className="text-sm text-muted-foreground">Smart algorithm to optimise your review schedule</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-muted/50 text-left">
+                                <div className="p-2 rounded-lg bg-purple-500/10 w-fit mb-3">
+                                    <Crown className="h-6 w-6 text-purple-500" />
+                                </div>
+                                <h3 className="font-semibold text-foreground mb-1">Expert Content</h3>
+                                <p className="text-sm text-muted-foreground">Created by top GCSE tutors and examiners</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-muted/50 text-left">
+                                <div className="p-2 rounded-lg bg-green-500/10 w-fit mb-3">
+                                    <Sparkles className="h-6 w-6 text-green-500" />
+                                </div>
+                                <h3 className="font-semibold text-foreground mb-1">All Subjects</h3>
+                                <p className="text-sm text-muted-foreground">Maths, Science, English, and more coming</p>
+                            </div>
+                        </div>
+
+                        <Button variant="outline" onClick={() => navigate("/premium-dashboard")}>
                             Back to Dashboard
                         </Button>
                     </div>
