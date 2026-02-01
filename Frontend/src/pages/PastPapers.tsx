@@ -547,13 +547,37 @@ export default function PastPapers() {
   };
 
   const filteredPapers = papers.filter((paper) => {
-
     const matchesSearch = (paper.title || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = selectedSubject === "All Subjects" || paper.subject === selectedSubject;
     const matchesBoard = selectedBoard === "All Boards" || paper.exam_board === selectedBoard;
+
+    // Smart Tier Filtering: Check implicit tags (metadata) OR explicit title keywords
+    let paperTier = paper.tier;
+
+    // If no explicit tier is set, try to infer from title
+    if (!paperTier && paper.title) {
+      const titleLower = paper.title.toLowerCase();
+
+      const isFoundation =
+        titleLower.includes("foundation") ||
+        titleLower.includes(" 1f") || titleLower.includes(" 2f") || titleLower.includes(" 3f") ||
+        titleLower.endsWith("1f") || titleLower.endsWith("2f") || titleLower.endsWith("3f") ||
+        /\b[1-3]f\b/.test(titleLower);
+
+      const isHigher =
+        titleLower.includes("higher") ||
+        titleLower.includes(" 1h") || titleLower.includes(" 2h") || titleLower.includes(" 3h") ||
+        titleLower.endsWith("1h") || titleLower.endsWith("2h") || titleLower.endsWith("3h") ||
+        /\b[1-3]h\b/.test(titleLower);
+
+      if (isFoundation) paperTier = "Foundation";
+      else if (isHigher) paperTier = "Higher";
+    }
+
     const matchesTier = selectedTier === "All Tiers" ||
-      (selectedTier === "Unassigned" && !paper.tier) ||
-      (paper.tier?.toLowerCase() === selectedTier.toLowerCase());
+      (selectedTier === "Unassigned" && !paperTier) ||
+      (paperTier?.toLowerCase() === selectedTier.toLowerCase());
+
     return matchesSearch && matchesSubject && matchesBoard && matchesTier;
   });
 
