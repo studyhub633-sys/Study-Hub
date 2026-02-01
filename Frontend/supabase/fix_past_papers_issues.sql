@@ -26,7 +26,7 @@
 -- ============================================
 DELETE FROM public.past_papers
 WHERE id NOT IN (
-  SELECT MIN(id)
+  SELECT MIN(id::text)::uuid
   FROM public.past_papers
   GROUP BY user_id, file_url
 );

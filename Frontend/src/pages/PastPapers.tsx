@@ -747,7 +747,7 @@ export default function PastPapers() {
                   {isCompleted && paper.score !== null && paper.max_score !== null ? (
                     <div className="mb-4">
                       <div className="flex items-center justify-between text-sm mb-1">
-                        <span className="text-muted-foreground">Your Score</span>
+                        <span className="text-muted-foreground">{t("pastPapers.yourScore")}</span>
                         <span
                           className={cn(
                             "font-bold",
@@ -785,7 +785,7 @@ export default function PastPapers() {
                       ) : (
                         <>
                           <Play className="h-4 w-4 mr-2" />
-                          {t("flashcards.startQuiz")}
+                          {t("pastPapers.startQuiz")}
                         </>
                       )}
                     </Button>
@@ -793,7 +793,7 @@ export default function PastPapers() {
                       variant="outline"
                       size="icon"
                       onClick={() => handleGenerateFlashcards(paper)}
-                      title="Generate Flashcards"
+                      title={t("pastPapers.generateFlashcards")}
                     >
                       <Layers className="h-4 w-4" />
                     </Button>
