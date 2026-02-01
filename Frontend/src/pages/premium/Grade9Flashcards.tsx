@@ -1190,8 +1190,8 @@ export default function Grade9Flashcards() {
                             )}>
                                 {/* Front - Question */}
                                 <Card className={cn(
-                                    "flashcard-face p-6 sm:p-8 flex flex-col",
-                                    "bg-gradient-to-br from-background to-muted/30 border-2"
+                                    "flashcard-face p-6 sm:p-8 flex flex-col rounded-xl shadow-lg",
+                                    "bg-card border-2 border-border"
                                 )}>
                                     <div className="flex items-center gap-2 mb-4">
                                         <Badge variant="secondary" className="text-xs">
@@ -1211,8 +1211,8 @@ export default function Grade9Flashcards() {
 
                                 {/* Back - Answer */}
                                 <Card className={cn(
-                                    "flashcard-face flashcard-back p-6 sm:p-8 flex flex-col",
-                                    "bg-gradient-to-br from-yellow-500/5 to-amber-500/10 border-2 border-yellow-500/30"
+                                    "flashcard-face flashcard-back p-6 sm:p-8 flex flex-col rounded-xl shadow-lg",
+                                    "bg-gradient-to-br from-yellow-500/10 to-amber-500/15 border-2 border-yellow-500/40"
                                 )}>
                                     <div className="flex items-center gap-2 mb-4">
                                         <Badge className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30 text-xs">
