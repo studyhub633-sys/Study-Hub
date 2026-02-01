@@ -31,7 +31,6 @@ import { EXAM_BOARDS } from "@/lib/constants";
 import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
-  Bot,
   Brain,
   CheckCircle,
   CheckCircle2,
@@ -1435,42 +1434,6 @@ export default function Knowledge() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Floating AI Tutor Button */}
-      <button
-        onClick={handleTestKnowledge}
-        className="fixed z-50 group
-          bottom-24 right-4 md:bottom-8 md:right-8
-          w-14 h-14 md:w-16 md:h-16
-          bg-gradient-to-br from-primary via-primary to-primary/80
-          hover:from-primary/90 hover:via-primary hover:to-primary
-          rounded-full shadow-lg hover:shadow-xl
-          flex items-center justify-center
-          transition-all duration-300 ease-out
-          hover:scale-110 active:scale-95
-          border-2 border-primary/20
-          animate-fade-in"
-        aria-label="AI Tutor"
-        title="Ask AI Tutor"
-      >
-        {/* Pulse ring animation */}
-        <span className="absolute inset-0 rounded-full bg-primary/30 animate-ping opacity-75" style={{ animationDuration: '2s' }} />
-
-        {/* Icon container */}
-        <span className="relative flex items-center justify-center">
-          <Bot className="w-6 h-6 md:w-7 md:h-7 text-primary-foreground transition-transform group-hover:scale-110" />
-        </span>
-
-        {/* Tooltip - Desktop only */}
-        <span className="absolute right-full mr-3 px-3 py-1.5 bg-popover text-popover-foreground text-sm font-medium rounded-lg shadow-md
-          opacity-0 group-hover:opacity-100 transition-opacity duration-200
-          pointer-events-none whitespace-nowrap
-          hidden md:block"
-        >
-          AI Tutor
-          <span className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-popover rotate-45" />
-        </span>
-      </button>
     </AppLayout>
   );
 }

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   Award,
   BookOpen,
+  Bot,
   Brain,
   ChevronLeft,
   ChevronRight,
@@ -40,6 +41,7 @@ export function Sidebar() {
     { icon: Layers, label: t("nav.flashcards"), path: "/flashcards" },
     { icon: FileText, label: t("nav.pastPapers"), path: "/past-papers" },
     { icon: Brain, label: t("nav.knowledge"), path: "/knowledge" },
+    { icon: Bot, label: t("nav.aiTutor"), path: "/ai-tutor" },
     { icon: Library, label: t("nav.library"), path: "/library" },
     { icon: Award, label: t("nav.extracurricular"), path: "/extracurricular" },
     { icon: Zap, label: "Cram Mode", path: "/cram-mode", badge: "Coming Soon" },
