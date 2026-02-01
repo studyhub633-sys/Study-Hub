@@ -204,14 +204,31 @@ export default function MindMapGenerator() {
             // Wait a bit to ensure the mind map is fully rendered
             await new Promise(resolve => setTimeout(resolve, 100));
 
-            const canvas = await html2canvas(mindMapRef.current, {
+            const element = mindMapRef.current;
+            const clone = element.cloneNode(true) as HTMLElement;
+
+            // Setup clone styles to ensure full capture
+            clone.style.position = 'fixed';
+            clone.style.left = '-10000px';
+            clone.style.top = '0';
+            clone.style.zIndex = '-1000';
+            clone.style.height = 'auto'; // Allow height to expand
+            clone.style.width = `${element.scrollWidth}px`; // Match full width
+            clone.style.maxHeight = 'none'; // Remove any height constraints
+            clone.style.overflow = 'visible'; // Show all content
+
+            document.body.appendChild(clone);
+
+            const canvas = await html2canvas(clone, {
                 backgroundColor: '#ffffff',
                 scale: 2,
                 useCORS: true,
                 logging: false,
-                width: mindMapRef.current.scrollWidth,
-                height: mindMapRef.current.scrollHeight,
+                windowWidth: clone.scrollWidth,
+                windowHeight: clone.scrollHeight,
             });
+
+            document.body.removeChild(clone);
 
             if (format === 'png') {
                 // Download as PNG
@@ -226,19 +243,19 @@ export default function MindMapGenerator() {
                 const imgData = canvas.toDataURL('image/png', 1.0);
                 const imgWidth = canvas.width;
                 const imgHeight = canvas.height;
-                
+
                 // Convert pixels to mm (1px = 0.264583mm at 96 DPI)
                 const mmWidth = imgWidth * 0.264583;
                 const mmHeight = imgHeight * 0.264583;
-                
+
                 // Use A4 dimensions as max, scale if needed
                 const a4Width = 210; // mm
                 const a4Height = 297; // mm
-                
+
                 let pdfWidth = mmWidth;
                 let pdfHeight = mmHeight;
                 let orientation: 'portrait' | 'landscape' = 'portrait';
-                
+
                 // If image is larger than A4, scale it down
                 if (mmWidth > a4Width || mmHeight > a4Height) {
                     const scaleX = a4Width / mmWidth;
@@ -247,20 +264,20 @@ export default function MindMapGenerator() {
                     pdfWidth = mmWidth * scale;
                     pdfHeight = mmHeight * scale;
                 }
-                
+
                 // Determine orientation
                 if (pdfWidth > pdfHeight) {
                     orientation = 'landscape';
                     // Swap dimensions for landscape
                     [pdfWidth, pdfHeight] = [pdfHeight, pdfWidth];
                 }
-                
+
                 const pdf = new jsPDF({
                     orientation: orientation,
                     unit: 'mm',
                     format: [pdfWidth, pdfHeight]
                 });
-                
+
                 // Add image, scaling to fit
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
                 pdf.save(`${title || 'mind-map'}.pdf`);
@@ -434,7 +451,7 @@ export default function MindMapGenerator() {
                         </CardHeader>
                         <CardContent>
                             {mindMapData ? (
-                                <div ref={mindMapRef} className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg p-6 min-h-[400px] overflow-auto">
+                                <div ref={mindMapRef} className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg p-6 min-h-[400px] max-h-[600px] overflow-auto">
                                     <MindMapVisualization data={mindMapData} />
                                 </div>
                             ) : (
@@ -496,7 +513,7 @@ function MindMapVisualization({ data }: { data: MindMapNode }) {
     };
 
     return (
-        <div className="overflow-auto max-h-[500px]">
+        <div className="">
             {renderNode(data)}
         </div>
     );

@@ -19,12 +19,15 @@ import {
   LogOut,
   Moon,
   Settings,
+  Shield,
   Sun,
   Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+
+import { isAdmin } from "@/lib/premium";
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -34,6 +37,13 @@ export function Sidebar() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      isAdmin(supabase, user.id).then(setIsUserAdmin);
+    }
+  }, [user, supabase]);
 
   const navItems = [
     { icon: LayoutDashboard, label: t("nav.dashboard"), path: "/" },
@@ -45,6 +55,7 @@ export function Sidebar() {
     { icon: Library, label: t("nav.library"), path: "/library" },
     { icon: Award, label: t("nav.extracurricular"), path: "/extracurricular" },
     { icon: Zap, label: "Cram Mode", path: "/cram-mode", badge: "Coming Soon" },
+    ...(isUserAdmin ? [{ icon: Shield, label: "Admin", path: "/admin" }] : []),
   ];
 
   const bottomNavItems = [

@@ -424,6 +424,16 @@ export default function PremiumDashboard() {
         toast.info("Subscriptions are currently disabled during beta testing.");
     };
 
+    if (checking) {
+        return (
+            <AppLayout>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        );
+    }
+
     return (
         <AppLayout>
             <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-10">
