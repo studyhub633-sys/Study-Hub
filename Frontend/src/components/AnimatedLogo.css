@@ -270,6 +270,20 @@
   .studyhub-logo-shell {
     padding: 28px 20px 36px;
     min-height: 320px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .studyhub-logo {
+    width: 100%;
+  }
+
+  .book-icon {
+    width: 100%;
+    max-width: 220px;
+    height: auto;
+    aspect-ratio: 350/270;
   }
 
   .brand-name {
@@ -278,5 +292,6 @@
 
   .tagline {
     letter-spacing: 2px;
+    font-size: 14px;
   }
 }
