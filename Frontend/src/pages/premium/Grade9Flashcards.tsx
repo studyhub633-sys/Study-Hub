@@ -1181,18 +1181,22 @@ export default function Grade9Flashcards() {
                 {currentCard && (
                     <div className="mb-6">
                         <div
-                            className="flashcard-container relative w-full min-h-[350px] sm:min-h-[400px] cursor-pointer"
+                            className="relative w-full min-h-[350px] sm:min-h-[400px] cursor-pointer"
+                            style={{ perspective: '1200px' }}
                             onClick={() => setIsFlipped(!isFlipped)}
                         >
-                            <div className={cn(
-                                "flashcard-inner absolute inset-0",
-                                isFlipped && "flipped"
-                            )}>
+                            <div
+                                className="absolute inset-0 transition-transform duration-[1000ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+                                style={{
+                                    transformStyle: 'preserve-3d',
+                                    transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                                }}
+                            >
                                 {/* Front - Question */}
-                                <Card className={cn(
-                                    "flashcard-face p-6 sm:p-8 flex flex-col rounded-xl shadow-lg",
-                                    "bg-card border-2 border-border"
-                                )}>
+                                <Card
+                                    className="absolute inset-0 p-6 sm:p-8 flex flex-col bg-card border-2 border-border rounded-xl shadow-lg"
+                                    style={{ backfaceVisibility: 'hidden' }}
+                                >
                                     <div className="flex items-center gap-2 mb-4">
                                         <Badge variant="secondary" className="text-xs">
                                             {currentCard.topic}
@@ -1210,10 +1214,13 @@ export default function Grade9Flashcards() {
                                 </Card>
 
                                 {/* Back - Answer */}
-                                <Card className={cn(
-                                    "flashcard-face flashcard-back p-6 sm:p-8 flex flex-col rounded-xl shadow-lg",
-                                    "bg-gradient-to-br from-yellow-500/10 to-amber-500/15 border-2 border-yellow-500/40"
-                                )}>
+                                <Card
+                                    className="absolute inset-0 p-6 sm:p-8 flex flex-col bg-gradient-to-br from-yellow-500/10 to-amber-500/15 border-2 border-yellow-500/40 rounded-xl shadow-lg"
+                                    style={{
+                                        backfaceVisibility: 'hidden',
+                                        transform: 'rotateY(180deg)'
+                                    }}
+                                >
                                     <div className="flex items-center gap-2 mb-4">
                                         <Badge className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30 text-xs">
                                             {currentCard.topic}
