@@ -1181,18 +1181,17 @@ export default function Grade9Flashcards() {
                 {currentCard && (
                     <div className="mb-6">
                         <div
-                            className="relative w-full min-h-[350px] sm:min-h-[400px] cursor-pointer perspective-1000"
+                            className="flashcard-container relative w-full min-h-[350px] sm:min-h-[400px] cursor-pointer"
                             onClick={() => setIsFlipped(!isFlipped)}
                         >
                             <div className={cn(
-                                "absolute inset-0 transition-all duration-500 transform-style-3d",
-                                isFlipped && "rotate-y-180"
+                                "flashcard-inner absolute inset-0",
+                                isFlipped && "flipped"
                             )}>
                                 {/* Front - Question */}
                                 <Card className={cn(
-                                    "absolute inset-0 p-6 sm:p-8 flex flex-col backface-hidden",
-                                    "bg-gradient-to-br from-background to-muted/30 border-2",
-                                    isFlipped && "invisible"
+                                    "flashcard-face p-6 sm:p-8 flex flex-col",
+                                    "bg-gradient-to-br from-background to-muted/30 border-2"
                                 )}>
                                     <div className="flex items-center gap-2 mb-4">
                                         <Badge variant="secondary" className="text-xs">
@@ -1212,9 +1211,8 @@ export default function Grade9Flashcards() {
 
                                 {/* Back - Answer */}
                                 <Card className={cn(
-                                    "absolute inset-0 p-6 sm:p-8 flex flex-col backface-hidden rotate-y-180",
-                                    "bg-gradient-to-br from-yellow-500/5 to-amber-500/10 border-2 border-yellow-500/30",
-                                    !isFlipped && "invisible"
+                                    "flashcard-face flashcard-back p-6 sm:p-8 flex flex-col",
+                                    "bg-gradient-to-br from-yellow-500/5 to-amber-500/10 border-2 border-yellow-500/30"
                                 )}>
                                     <div className="flex items-center gap-2 mb-4">
                                         <Badge className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30 text-xs">
