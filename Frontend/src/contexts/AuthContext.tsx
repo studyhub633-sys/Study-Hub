@@ -23,15 +23,38 @@ const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
   "";
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    "Supabase URL and Anon Key must be set in environment variables. " +
-    "Please check your .env file. " +
-    "You can use either VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY for the anon key."
-  );
-}
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Helper to safely log env var status
+const checkEnvVar = (val: string | undefined, name: string) => {
+  if (!val) console.error(`[AuthContext] Missing ${name}`);
+  else console.log(`[AuthContext] Found ${name} (length: ${val.length})`);
+};
+
+checkEnvVar(supabaseUrl, "VITE_SUPABASE_URL");
+checkEnvVar(supabaseAnonKey, "Anon Key");
+
+let supabase: SupabaseClient;
+
+try {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Supabase credentials missing. Check .env file and ensure variables start with VITE_");
+  }
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+} catch (error) {
+  console.error("[AuthContext] Failed to initialize Supabase:", error);
+  // Fallback mock to allow app to render error UI instead of white screening
+  supabase = {
+    auth: {
+      getSession: () => Promise.reject("Supabase not initialized"),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => { } } } }),
+      signUp: () => Promise.reject("Supabase not initialized"),
+      signInWithPassword: () => Promise.reject("Supabase not initialized"),
+      signOut: () => Promise.reject("Supabase not initialized"),
+      resetPasswordForEmail: () => Promise.reject("Supabase not initialized"),
+      updateUser: () => Promise.reject("Supabase not initialized"),
+    }
+  } as unknown as SupabaseClient;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
