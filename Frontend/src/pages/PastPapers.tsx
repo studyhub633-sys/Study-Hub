@@ -749,7 +749,7 @@ export default function PastPapers() {
                   style={{ animationDelay: `${0.1 * index}s` }}
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {paper.subject && (
                         <Badge variant="outline">{paper.subject}</Badge>
                       )}

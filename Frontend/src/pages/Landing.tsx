@@ -150,8 +150,8 @@ export default function Landing() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 landing-grid-bg relative">
       {/* Header */}
       <header className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between relative">
+          <div className="flex items-center gap-3 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:transform-none">
             <AnimatedLogoIcon />
             <h1 className="font-bold text-xl">Scientia.ai</h1>
           </div>
@@ -181,7 +181,7 @@ export default function Landing() {
           </div>
 
           {/* Mobile Menu */}
-          <div className="md:hidden">
+          <div className="md:hidden ml-auto">
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">

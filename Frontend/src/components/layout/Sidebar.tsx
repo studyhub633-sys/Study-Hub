@@ -149,6 +149,28 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        {/* Premium Section */}
+        <div className={cn("mb-2 pb-2 border-b border-sidebar-border", collapsed && "border-none mb-0 pb-0")}>
+          <NavLink
+            to="/premium-dashboard"
+            className={cn(
+              "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-300 group relative overflow-hidden",
+              location.pathname === "/premium-dashboard"
+                ? "bg-premium text-premium-foreground shadow-lg shadow-premium/20"
+                : "text-muted-foreground hover:text-premium hover:bg-premium/10 border border-transparent hover:border-premium/20",
+              collapsed && "justify-center px-2"
+            )}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-premium/0 via-white/5 to-premium/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            <Crown className={cn("h-5 w-5 flex-shrink-0 z-10", location.pathname === "/premium-dashboard" && "animate-pulse")} />
+            {!collapsed && (
+              <div className="flex items-center justify-between w-full z-10">
+                <span className="font-bold text-sm tracking-tight text-sidebar-foreground group-hover:text-premium transition-colors">{t("sidebar.goPremium")}</span>
+                <span className="premium-badge animate-bounce-subtle">LIFETIME</span>
+              </div>
+            )}
+          </NavLink>
+        </div>
         {navItems.map((item, index) => {
           const isActive = location.pathname === item.path;
           return (
@@ -180,33 +202,7 @@ export function Sidebar() {
           );
         })}
 
-        {/* Premium Section */}
-        <div className={cn("mt-6 pt-4 border-t border-sidebar-border", collapsed && "border-none mt-4 pt-2")}>
-          {!collapsed && (
-            <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-fade-in">
-              {t("sidebar.goPremium")}
-            </p>
-          )}
-          <NavLink
-            to="/premium-dashboard"
-            className={cn(
-              "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-300 group relative overflow-hidden",
-              location.pathname === "/premium-dashboard"
-                ? "bg-premium text-premium-foreground shadow-lg shadow-premium/20"
-                : "text-muted-foreground hover:text-premium hover:bg-premium/10 border border-transparent hover:border-premium/20",
-              collapsed && "justify-center px-2"
-            )}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-premium/0 via-white/5 to-premium/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-            <Crown className={cn("h-5 w-5 flex-shrink-0 z-10", location.pathname === "/premium-dashboard" && "animate-pulse")} />
-            {!collapsed && (
-              <div className="flex items-center justify-between w-full z-10">
-                <span className="font-bold text-sm tracking-tight text-sidebar-foreground group-hover:text-premium transition-colors">{t("sidebar.goPremium")}</span>
-                <span className="premium-badge animate-bounce-subtle">LIFETIME</span>
-              </div>
-            )}
-          </NavLink>
-        </div>
+
       </nav>
 
       {/* Bottom Section */}
