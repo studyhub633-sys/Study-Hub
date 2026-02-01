@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
-import { AlertCircle, BarChart3, CheckCircle2 } from "lucide-react";
+import { AlertCircle, BarChart3, CheckCircle2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface PerformanceData {
@@ -21,18 +21,31 @@ export default function PerformanceHeatMap() {
     const [isPremium, setIsPremium] = useState(false);
     const [performanceData, setPerformanceData] = useState<PerformanceData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [checking, setChecking] = useState(true);
 
     useEffect(() => {
         if (user) {
             checkPremiumStatus();
             fetchPerformanceData();
+        } else {
+            setChecking(false);
+            setLoading(false);
         }
     }, [user]);
 
     const checkPremiumStatus = async () => {
-        if (!user || !supabase) return;
-        const premium = await hasPremium(supabase);
-        setIsPremium(premium);
+        if (!user || !supabase) {
+            setChecking(false);
+            return;
+        }
+        try {
+            const premium = await hasPremium(supabase);
+            setIsPremium(premium);
+        } catch (error) {
+            console.error("Error checking premium status:", error);
+        } finally {
+            setChecking(false);
+        }
     };
 
     const fetchPerformanceData = async () => {
@@ -122,6 +135,16 @@ export default function PerformanceHeatMap() {
             default: return null;
         }
     };
+
+    if (checking) {
+        return (
+            <AppLayout>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        );
+    }
 
     if (!isPremium) {
         return (
