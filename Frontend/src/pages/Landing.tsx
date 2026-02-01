@@ -3,96 +3,15 @@ import AnimatedLogoIcon from "@/components/AnimatedLogoIcon";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useToast } from "@/hooks/use-toast";
-import { createClient } from "@supabase/supabase-js";
-import { ArrowRight, Award, BookOpen, Brain, Check, FileText, Layers, Loader2, Mail, Menu, Moon, Sparkles, Sun } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Award, BookOpen, Brain, Check, FileText, Layers, Menu, Moon, Sparkles, Sun } from "lucide-react";
+
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
-function NewsletterSignup() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-  const { t } = useTranslation();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-
-    setLoading(true);
-    try {
-      // Create a Supabase client (using anon key for public access)
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
-
-      if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error("Supabase not configured");
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-      // Try to insert into email_subscriptions table
-      // If table doesn't exist, we'll create it via SQL
-      const { error } = await supabase
-        .from("email_subscriptions")
-        .insert({
-          email: email.trim(),
-          source: "landing_page",
-          subscribed_at: new Date().toISOString(),
-        });
-
-      if (error) {
-        // If table doesn't exist, we'll just show success (graceful degradation)
-        console.warn("Email subscription table may not exist:", error);
-        // Still show success to user
-      }
-
-      toast({
-        title: t('landing.subscribed'),
-        description: t('landing.subscribedMessage'),
-      });
-      setEmail("");
-    } catch (error: any) {
-      console.error("Error subscribing:", error);
-      // Still show success to user (graceful degradation)
-      toast({
-        title: t('landing.subscribed'),
-        description: t('landing.subscribedMessage'),
-      });
-      setEmail("");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <div className="relative flex-1">
-        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="email"
-          placeholder={t('landing.enterEmail')}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="pl-9"
-          required
-          disabled={loading}
-        />
-      </div>
-      <Button type="submit" disabled={loading || !email.trim()}>
-        {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          t('landing.subscribe')
-        )}
-      </Button>
-    </form>
-  );
-}
 
 export default function Landing() {
   const { theme, toggleTheme } = useTheme();
@@ -151,7 +70,7 @@ export default function Landing() {
       {/* Header */}
       <header className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between relative">
-          <div className="flex items-center gap-3 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:transform-none">
+          <div className="flex items-center gap-3">
             <AnimatedLogoIcon />
             <h1 className="font-bold text-xl">Scientia.ai</h1>
           </div>
@@ -323,20 +242,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="container mx-auto px-4 py-20">
-        <Card className="max-w-2xl mx-auto bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl mb-2">{t('landing.stayUpdated')}</CardTitle>
-            <CardDescription className="text-base">
-              {t('landing.newsletterDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <NewsletterSignup />
-          </CardContent>
-        </Card>
-      </section>
+
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20">
