@@ -41,6 +41,9 @@ const MindMapGenerator = lazy(() => import("./pages/premium/MindMapGenerator"));
 const AIExaminer = lazy(() => import("./pages/premium/AIExaminer"));
 const PerformanceHeatMap = lazy(() => import("./pages/premium/PerformanceHeatMap"));
 const Grade9Notes = lazy(() => import("./pages/premium/Grade9Notes"));
+const Grade9Flashcards = lazy(() => import("./pages/premium/Grade9Flashcards"));
+const CramMode = lazy(() => import("./pages/premium/CramMode"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const PremiumDashboard = lazy(() => import("./pages/PremiumDashboard"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Returns = lazy(() => import("./pages/Returns"));
@@ -80,6 +83,7 @@ const App = () => {
                     <Route path="/faq" element={<FAQ />} />
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/returns" element={<Returns />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
                     <Route
                       path="/"
                       element={
@@ -257,6 +261,22 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <Grade9Notes />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/grade-9-flashcards"
+                      element={
+                        <ProtectedRoute>
+                          <Grade9Flashcards />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/cram-mode"
+                      element={
+                        <ProtectedRoute>
+                          <CramMode />
                         </ProtectedRoute>
                       }
                     />

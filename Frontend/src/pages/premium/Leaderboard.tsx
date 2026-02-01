@@ -122,36 +122,36 @@ export default function Leaderboard() {
                     <>
                         {/* Top 3 Podium (Visual) */}
                         {users.length >= 3 && (
-                            <div className="grid grid-cols-3 gap-4 h-48 items-end mb-12 px-4">
+                            <div className="flex items-end justify-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 h-56 sm:h-52 md:h-48 mb-8 sm:mb-10 md:mb-12 px-4 sm:px-6 md:px-8">
                                 {/* 2nd Place */}
-                                <div className="flex flex-col items-center">
-                                    <Avatar className="w-16 h-16 border-4 border-slate-300 mb-2">
+                                <div className="flex flex-col items-center w-[28%] sm:w-[30%] md:flex-1 min-w-[80px] sm:min-w-[100px] md:max-w-[140px] lg:max-w-none">
+                                    <Avatar className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 border-2 sm:border-4 border-slate-300 mb-1 sm:mb-2">
                                         <AvatarImage src={users[1]?.avatar || undefined} />
                                         <AvatarFallback>{users[1]?.name[0] || "2"}</AvatarFallback>
                                     </Avatar>
-                                    <div className="w-full h-24 bg-slate-200 dark:bg-slate-800 rounded-t-xl flex items-center justify-center text-2xl font-bold text-slate-400">2</div>
-                                    <span className="font-semibold text-sm mt-2">{users[1]?.name || "User"}</span>
+                                    <div className="w-full h-20 sm:h-22 md:h-24 bg-slate-200 dark:bg-slate-800 rounded-t-xl flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold text-slate-400">2</div>
+                                    <span className="font-semibold text-[10px] sm:text-xs md:text-sm mt-1 sm:mt-2 truncate max-w-full text-center px-1">{users[1]?.name || "User"}</span>
                                 </div>
 
                                 {/* 1st Place */}
-                                <div className="flex flex-col items-center">
-                                    <Flame className="w-8 h-8 text-orange-500 absolute -mt-12 animate-bounce" />
-                                    <Avatar className="w-20 h-20 border-4 border-yellow-400 mb-2 ring-4 ring-yellow-400/20">
+                                <div className="flex flex-col items-center w-[32%] sm:w-[34%] md:flex-1 min-w-[90px] sm:min-w-[110px] md:max-w-[160px] lg:max-w-none z-10 relative">
+                                    <Flame className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-orange-500 absolute -top-7 sm:-top-8 md:-top-10 left-1/2 -translate-x-1/2 animate-bounce" />
+                                    <Avatar className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 border-2 sm:border-4 border-yellow-400 mb-1 sm:mb-2 ring-2 sm:ring-4 ring-yellow-400/20">
                                         <AvatarImage src={users[0]?.avatar || undefined} />
                                         <AvatarFallback>{users[0]?.name[0] || "1"}</AvatarFallback>
                                     </Avatar>
-                                    <div className="w-full h-32 bg-yellow-400/20 border border-yellow-400 rounded-t-xl flex items-center justify-center text-4xl font-bold text-yellow-600">1</div>
-                                    <span className="font-semibold text-sm mt-2">{users[0]?.name || "User"}</span>
+                                    <div className="w-full h-28 sm:h-30 md:h-32 bg-yellow-400/20 border border-yellow-400 rounded-t-xl flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-600">1</div>
+                                    <span className="font-semibold text-[10px] sm:text-xs md:text-sm mt-1 sm:mt-2 truncate max-w-full text-center px-1">{users[0]?.name || "User"}</span>
                                 </div>
 
                                 {/* 3rd Place */}
-                                <div className="flex flex-col items-center">
-                                    <Avatar className="w-16 h-16 border-4 border-amber-600 mb-2">
+                                <div className="flex flex-col items-center w-[28%] sm:w-[30%] md:flex-1 min-w-[80px] sm:min-w-[100px] md:max-w-[140px] lg:max-w-none">
+                                    <Avatar className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 border-2 sm:border-4 border-amber-600 mb-1 sm:mb-2">
                                         <AvatarImage src={users[2]?.avatar || undefined} />
                                         <AvatarFallback>{users[2]?.name[0] || "3"}</AvatarFallback>
                                     </Avatar>
-                                    <div className="w-full h-20 bg-amber-700/20 rounded-t-xl flex items-center justify-center text-2xl font-bold text-amber-700">3</div>
-                                    <span className="font-semibold text-sm mt-2">{users[2]?.name || "User"}</span>
+                                    <div className="w-full h-16 sm:h-18 md:h-20 bg-amber-700/20 rounded-t-xl flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold text-amber-700">3</div>
+                                    <span className="font-semibold text-[10px] sm:text-xs md:text-sm mt-1 sm:mt-2 truncate max-w-full text-center px-1">{users[2]?.name || "User"}</span>
                                 </div>
                             </div>
                         )}

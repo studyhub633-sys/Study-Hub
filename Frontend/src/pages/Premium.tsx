@@ -17,6 +17,7 @@ import {
   Crown,
   FileText,
   GraduationCap,
+  Layers,
   Loader2,
   Rocket,
   Shield,
@@ -356,6 +357,43 @@ export default function Premium() {
           )}
         </div>
 
+        {/* 🎉 PROMOTION BANNER */}
+        {!isPremium && (
+          <div className="mb-12 animate-slide-up">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 p-1">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 animate-pulse opacity-50"></div>
+              <div className="relative rounded-xl bg-background/95 backdrop-blur-sm p-6 md:p-8">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 animate-bounce">
+                      <Sparkles className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="text-center md:text-left">
+                      <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start">
+                        <span className="text-sm font-semibold text-emerald-500 uppercase tracking-wide">🎉 Limited Time Offer</span>
+                      </div>
+                      <h3 className="text-2xl md:text-3xl font-bold text-foreground mt-1">
+                        <span className="text-emerald-500">£25</span> for the full 2026 GCSE Season!
+                      </h3>
+                      <p className="text-muted-foreground mt-1">
+                        Get complete access to all premium features until your exams are done
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/30 whitespace-nowrap"
+                    onClick={() => handleSubscribe("yearly")}
+                  >
+                    <Crown className="mr-2 h-5 w-5" />
+                    Claim Offer
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Current Subscription Status */}
         {isPremium && subscription && (
           <div className="glass-card p-6 mb-8 animate-slide-up">
@@ -652,6 +690,78 @@ export default function Premium() {
                   </span>
                 </div>
               )}
+            </div>
+
+            {/* Grade 9 Notes Card */}
+            <div
+              className="glass-card p-6 hover-lift cursor-pointer group relative overflow-hidden transition-all duration-300"
+              onClick={() => navigate("/premium/grade-9-notes")}
+            >
+              <div className="absolute top-0 left-0 w-1 h-full bg-premium opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 rounded-xl bg-premium/10 group-hover:bg-premium/20 transition-colors">
+                  <FileText className="h-6 w-6 text-premium" />
+                </div>
+                <Badge className="bg-premium/20 text-premium border-premium/30 text-xs font-semibold">
+                  Available
+                </Badge>
+              </div>
+              <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
+                Grade 9 Premium Notes
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Exclusive study notes designed for achieving top marks in your GCSEs
+              </p>
+              <div className="mt-4 pt-4 border-t border-border/50">
+                <span className="text-xs text-premium font-medium flex items-center gap-1">
+                  View Notes
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Grade 9 Flashcards Card */}
+            <div
+              className="glass-card p-6 hover-lift cursor-pointer group relative overflow-hidden transition-all duration-300"
+              onClick={() => navigate("/premium/grade-9-flashcards")}
+            >
+              <div className="absolute top-0 left-0 w-1 h-full bg-premium opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 rounded-xl bg-premium/10 group-hover:bg-premium/20 transition-colors">
+                  <Layers className="h-6 w-6 text-premium" />
+                </div>
+                <Badge className="bg-muted/50 text-muted-foreground text-xs font-semibold">
+                  Coming Soon
+                </Badge>
+              </div>
+              <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
+                Grade 9 Flashcards
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Premium flashcard sets to help you commit key concepts to memory
+              </p>
+            </div>
+
+            {/* Cram Mode Card */}
+            <div
+              className="glass-card p-6 hover-lift cursor-pointer group relative overflow-hidden transition-all duration-300"
+              onClick={() => navigate("/cram-mode")}
+            >
+              <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
+                  <Zap className="h-6 w-6 text-orange-500" />
+                </div>
+                <Badge className="bg-muted/50 text-muted-foreground text-xs font-semibold">
+                  Coming Soon
+                </Badge>
+              </div>
+              <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-orange-500 transition-colors">
+                Cram Mode
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Intensive study sessions designed to maximize revision efficiency before exams
+              </p>
             </div>
           </div>
         </div>

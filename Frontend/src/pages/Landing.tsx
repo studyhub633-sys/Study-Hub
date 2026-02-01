@@ -252,6 +252,22 @@ export default function Landing() {
                 <Link to="/login">{t('landing.signIn')}</Link>
               </Button>
             </div>
+
+            {/* 🎉 GCSE Season Promotion */}
+            <div className="mt-8 p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 border border-emerald-500/20">
+              <div className="flex items-center gap-3 flex-wrap justify-center lg:justify-start">
+                <span className="text-2xl">🎉</span>
+                <div>
+                  <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Limited Offer: </span>
+                  <span className="font-bold text-foreground">£25 for full 2026 GCSE Season access!</span>
+                </div>
+                <Link to="/premium-dashboard">
+                  <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white">
+                    Get Premium
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
           <AnimatedLogo />
         </div>

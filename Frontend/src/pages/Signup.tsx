@@ -8,6 +8,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +24,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -47,6 +49,11 @@ export default function Signup() {
 
     if (password.length < 6) {
       setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    if (!agreed) {
+      setError("You must agree to the privacy policy to create an account");
       return;
     }
 
@@ -179,6 +186,29 @@ export default function Signup() {
                         <Eye className="h-4 w-4 text-muted-foreground" />
                       )}
                     </Button>
+                  </div>
+                </div>
+                <div className="items-top flex space-x-2">
+                  <Checkbox
+                    id="terms"
+                    checked={agreed}
+                    onCheckedChange={(checked) => setAgreed(checked as boolean)}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <label
+                      htmlFor="terms"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      I agree to the{" "}
+                      <Link
+                        to="/privacy"
+                        target="_blank"
+                        className="text-primary hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Privacy Policy
+                      </Link>
+                    </label>
                   </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>

@@ -18,7 +18,8 @@ import {
   LogOut,
   Moon,
   Settings,
-  Sun
+  Sun,
+  Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,6 +42,7 @@ export function Sidebar() {
     { icon: Brain, label: t("nav.knowledge"), path: "/knowledge" },
     { icon: Library, label: t("nav.library"), path: "/library" },
     { icon: Award, label: t("nav.extracurricular"), path: "/extracurricular" },
+    { icon: Zap, label: "Cram Mode", path: "/cram-mode", badge: "Coming Soon" },
   ];
 
   const bottomNavItems = [
@@ -164,7 +166,16 @@ export function Sidebar() {
               style={{ opacity: 0 }}
             >
               <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive && "animate-bounce-subtle")} />
-              {!collapsed && <span className="font-medium text-sm">{item.label}</span>}
+              {!collapsed && (
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="font-medium text-sm">{item.label}</span>
+                  {(item as any).badge && (
+                    <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-semibold uppercase">
+                      {(item as any).badge}
+                    </span>
+                  )}
+                </div>
+              )}
             </NavLink>
           );
         })}

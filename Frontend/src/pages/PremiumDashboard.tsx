@@ -208,6 +208,15 @@ export default function PremiumDashboard() {
             bg: "bg-emerald-500/10",
             hoverBg: "bg-emerald-500",
         },
+        {
+            title: "Grade 9 Flashcards",
+            description: "Premium flashcards for rapid revision and retention",
+            icon: Layers,
+            path: "/premium/grade-9-flashcards",
+            color: "text-pink-500",
+            bg: "bg-pink-500/10",
+            hoverBg: "bg-pink-500",
+        },
     ];
 
     // Feature Benefits list - all uniform, non-clickable display cards
@@ -431,6 +440,22 @@ export default function PremiumDashboard() {
                                     ? t('premium.dashboard.premiumDescription')
                                     : t('premium.dashboard.freeDescription')}
                             </p>
+
+                            {/* PROMOTION BANNER */}
+                            {!isPremium && (
+                                <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-500/30 animate-pulse-subtle">
+                                    <h3 className="text-lg font-bold text-red-500 flex items-center gap-2">
+                                        <Zap className="h-5 w-5" />
+                                        LIMITED TIME OFFER
+                                    </h3>
+                                    <p className="text-foreground font-medium">
+                                        Get full 2026 GCSE Season Access for just <span className="text-xl font-bold text-red-500">£25</span>!
+                                    </p>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Unlock everything you need for your exams.
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         {!isPremium && (
