@@ -43,7 +43,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface Paper {
   id: string;
@@ -66,12 +66,13 @@ export default function PastPapers() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const [selectedBoard, setSelectedBoard] = useState("All Boards");
-  const [selectedTier, setSelectedTier] = useState("All Tiers");
+  const [selectedTier, setSelectedTier] = useState(searchParams.get("tier") || "All Tiers");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPaper, setEditingPaper] = useState<Paper | null>(null);
   const [formData, setFormData] = useState({

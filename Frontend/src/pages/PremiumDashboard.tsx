@@ -218,6 +218,15 @@ export default function PremiumDashboard() {
             bg: "bg-pink-500/10",
             hoverBg: "bg-pink-500",
         },
+        {
+            title: "Foundation Past Papers",
+            description: "Access a curated collection of foundation tier past papers for GCSE Maths and Science.",
+            icon: FileText,
+            path: "/past-papers?tier=Foundation",
+            color: "text-teal-500",
+            bg: "bg-teal-500/10",
+            hoverBg: "bg-teal-500",
+        },
     ];
 
     // Feature Benefits list - all uniform, non-clickable display cards
