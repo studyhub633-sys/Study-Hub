@@ -580,12 +580,17 @@ export default function PastPapers() {
     }
   }, [formData.year, formData.subject, formData.tier, formData.exam_board, editingPaper]);
 
-  // Make existing paper titles more concise
+  // Make existing paper titles more concise while keeping paper number
   const getConciseTitle = (paper: Paper) => {
     if (paper.year && paper.subject && paper.tier) {
       const tierShort = paper.tier === "Higher" ? "H" : "F";
       const examBoardShort = paper.exam_board ? ` ${paper.exam_board}` : "";
-      return `${paper.year}${tierShort} ${paper.subject}${examBoardShort}`;
+
+      // Extract paper number from title (e.g., "Paper 1", "Paper 2", "Component 1")
+      const paperMatch = paper.title.match(/(?:Paper|Component)\s*(\d+)/i);
+      const paperNumber = paperMatch ? ` P${paperMatch[1]}` : "";
+
+      return `${paper.year}${tierShort} ${paper.subject}${paperNumber}${examBoardShort}`;
     }
     return paper.title;
   };

@@ -388,50 +388,11 @@ VALUES
 ('Biology Paper 2 - June 2023', 'Biology', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/OCR-A/Paper-2/June%202023%20QP%20-%20Paper%202%20(H)%20OCR%20Biology%20A%20GCSE.pdf', 'link'),
 ('Chemistry Paper 2 - June 2023', 'Chemistry', 2023, 'OCR', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/OCR-A/Paper-2/June%202023%20QP%20-%20Paper%202%20(H)%20OCR%20Chemistry%20A%20GCSE.pdf', 'link'),
 
--- Additional Subjects
+-- Additional Subjects (Languages only - verified working)
 ('French Paper 1 - June 2023', 'French', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/French/GCSE/Past-Papers/AQA/Paper-1/QP/June%202023%20QP.pdf', 'link'),
 ('French Paper 2 - June 2023', 'French', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/French/GCSE/Past-Papers/AQA/Paper-2/QP/June%202023%20QP.pdf', 'link'),
 ('Spanish Paper 1 - June 2023', 'Spanish', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Spanish/GCSE/Past-Papers/AQA/Paper-1/QP/June%202023%20QP.pdf', 'link'),
-('Spanish Paper 2 - June 2023', 'Spanish', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Spanish/GCSE/Past-Papers/AQA/Paper-2/QP/June%202023%20QP.pdf', 'link'),
-('Computer Science Paper 1 - June 2023', 'Computer Science', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/AQA/Paper-1/QP/June%202023%20QP.pdf', 'link'),
-('Computer Science Paper 2 - June 2023', 'Computer Science', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/AQA/Paper-2/QP/June%202023%20QP.pdf', 'link'),
-('Business Paper 1 - June 2023', 'Business', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Business/GCSE/Past-Papers/AQA/Paper-1/QP/June%202023%20QP.pdf', 'link'),
-('Business Paper 2 - June 2023', 'Business', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Business/GCSE/Past-Papers/AQA/Paper-2/QP/June%202023%20QP.pdf', 'link'),
-
--- =====================
--- ADDITIONAL PAST PAPERS (20+ more)
--- =====================
--- AQA Additional Years - More Papers
-('Maths Paper 1H - November 2021', 'Mathematics', 2021, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-1H/QP/November%202021%20QP.pdf', 'link'),
-('Maths Paper 2H - November 2021', 'Mathematics', 2021, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-2H/QP/November%202021%20QP.pdf', 'link'),
-('Maths Paper 3H - November 2021', 'Mathematics', 2021, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-3H/QP/November%202021%20QP.pdf', 'link'),
-('Maths Paper 1H - November 2020', 'Mathematics', 2020, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-1H/QP/November%202020%20QP.pdf', 'link'),
-('Maths Paper 2H - November 2020', 'Mathematics', 2020, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-2H/QP/November%202020%20QP.pdf', 'link'),
-('Maths Paper 3H - November 2020', 'Mathematics', 2020, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-3H/QP/November%202020%20QP.pdf', 'link'),
-
--- Biology Additional Papers
-('Biology Paper 1H - November 2023', 'Biology', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-1H/QP/November%202023%20QP.pdf', 'link'),
-('Biology Paper 2H - November 2023', 'Biology', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-2H/QP/November%202023%20QP.pdf', 'link'),
-('Biology Paper 1H - November 2022', 'Biology', 2022, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-1H/QP/November%202022%20QP.pdf', 'link'),
-('Biology Paper 2H - November 2022', 'Biology', 2022, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-2H/QP/November%202022%20QP.pdf', 'link'),
-
--- Chemistry Additional Papers
-('Chemistry Paper 1H - November 2023', 'Chemistry', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-1H/QP/November%202023%20QP.pdf', 'link'),
-('Chemistry Paper 2H - November 2023', 'Chemistry', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-2H/QP/November%202023%20QP.pdf', 'link'),
-('Chemistry Paper 1H - November 2022', 'Chemistry', 2022, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-1H/QP/November%202022%20QP.pdf', 'link'),
-('Chemistry Paper 2H - November 2022', 'Chemistry', 2022, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-2H/QP/November%202022%20QP.pdf', 'link'),
-
--- Physics Additional Papers
-('Physics Paper 1H - November 2023', 'Physics', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-1H/QP/November%202023%20QP.pdf', 'link'),
-('Physics Paper 2H - November 2023', 'Physics', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-2H/QP/November%202023%20QP.pdf', 'link'),
-('Physics Paper 1H - November 2022', 'Physics', 2022, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-1H/QP/November%202022%20QP.pdf', 'link'),
-('Physics Paper 2H - November 2022', 'Physics', 2022, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-2H/QP/November%202022%20QP.pdf', 'link'),
-
--- English Literature Additional Papers
-('English Literature Paper 1 - November 2023', 'English Literature', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/AQA/Paper-1/QP/November%202023%20QP.pdf', 'link'),
-('English Literature Paper 2 - November 2023', 'English Literature', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/AQA/Paper-2/QP/November%202023%20QP.pdf', 'link'),
-('English Literature Paper 1 - June 2024', 'English Literature', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/AQA/Paper-1/QP/June%202024%20QP.pdf', 'link'),
-('English Literature Paper 2 - June 2024', 'English Literature', 2024, 'AQA', 'https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/AQA/Paper-2/QP/June%202024%20QP.pdf', 'link');
+('Spanish Paper 2 - June 2023', 'Spanish', 2023, 'AQA', 'https://pmt.physicsandmathstutor.com/download/Spanish/GCSE/Past-Papers/AQA/Paper-2/QP/June%202023%20QP.pdf', 'link');
 
 
 -- ============================================
