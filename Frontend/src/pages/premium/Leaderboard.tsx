@@ -85,7 +85,12 @@ export default function Leaderboard() {
     return (
         <AppLayout>
             <div className="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12">
-                <div className="flex items-center gap-3 mb-6">
+                {/* Add margin-bottom to the podium section */}
+                <div className="podium-section mb-8">
+                    {/* Your podium content here */}
+                </div>
+
+                <div className="flex items-center gap-4">
                     <div className="p-3 rounded-xl bg-orange-500/10 text-orange-500">
                         <Trophy className="w-8 h-8" />
                     </div>
