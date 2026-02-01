@@ -239,7 +239,7 @@ export default function AITutor() {
 
     return (
         <AppLayout fullWidth>
-            <div className="flex h-[calc(100vh-3.5rem)] md:h-screen overflow-hidden bg-background">
+            <div className="flex h-[calc(100vh-3.5rem)] md:h-screen overflow-hidden bg-background pb-20 md:pb-0">
                 {/* Desktop History Sidebar */}
                 <div className="hidden lg:flex shrink-0">
                     <ChatHistorySidebar
