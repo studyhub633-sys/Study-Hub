@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import {
   Award,
   BookOpen,
+  Bot,
   Brain,
   FileText,
   Layers,
@@ -15,6 +16,7 @@ const mobileNavItems = [
   { icon: Layers, label: "Cards", path: "/flashcards" },
   { icon: FileText, label: "Papers", path: "/past-papers" },
   { icon: Brain, label: "Knowledge", path: "/knowledge" },
+  { icon: Bot, label: "AI Tutor", path: "/ai-tutor" },
   { icon: Award, label: "Extra", path: "/extracurricular" },
 ];
 
