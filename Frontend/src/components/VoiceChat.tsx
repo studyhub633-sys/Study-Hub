@@ -60,7 +60,7 @@ export function VoiceChat({ isOpen, onClose, onSendMessage, isProcessing }: Voic
             if (event.error === "no-speech") {
                 setStatus("idle");
             } else if (event.error === "network") {
-                setError("Network error: Please check your connection. If using Brave, enable Google Services.");
+                setError("Network error: Browser blocked the connection. If you are using Brave, please switch to Chrome or Edge for voice features.");
                 setStatus("idle");
             } else if (event.error === "not-allowed" || event.error === "service-not-allowed") {
                 setError("Microphone access denied. Please allow microphone permissions in your browser.");

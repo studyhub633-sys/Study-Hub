@@ -290,14 +290,6 @@ export default function AITutor() {
                             </div>
                         </div>
 
-                        <Button
-                            variant={isVoiceMode ? "secondary" : "ghost"}
-                            size="icon"
-                            onClick={() => setIsVoiceMode(true)}
-                            title="Voice Mode"
-                        >
-                            <Headphones className="h-5 w-5" />
-                        </Button>
                     </div>
 
                     {/* Chat Messages */}
@@ -393,6 +385,15 @@ export default function AITutor() {
                                     disabled={loading}
                                     className="border-0 focus-visible:ring-0 bg-transparent min-h-[44px] py-3 px-2 shadow-none resize-none"
                                 />
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-9 mb-1 shrink-0 rounded-lg text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                                    onClick={() => setIsVoiceMode(true)}
+                                    title="Voice Mode"
+                                >
+                                    <Headphones className="h-5 w-5" />
+                                </Button>
                                 <Button
                                     onClick={handleSend}
                                     disabled={loading || !input.trim()}
