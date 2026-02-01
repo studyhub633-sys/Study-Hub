@@ -41,6 +41,7 @@ interface ChatHistorySidebarProps {
     onDeleteSession: (id: string) => Promise<void>;
     onRenameSession: (id: string, title: string) => Promise<void>;
     loading?: boolean;
+    onClose?: () => void;
 }
 
 export function ChatHistorySidebar({
@@ -51,6 +52,7 @@ export function ChatHistorySidebar({
     onDeleteSession,
     onRenameSession,
     loading,
+    onClose,
 }: ChatHistorySidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -199,9 +201,13 @@ export function ChatHistorySidebar({
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => setIsCollapsed(true)}
+                        onClick={onClose ? onClose : () => setIsCollapsed(true)}
                     >
-                        <ChevronLeft className="h-4 w-4" />
+                        {onClose ? (
+                            <X className="h-4 w-4" />
+                        ) : (
+                            <ChevronLeft className="h-4 w-4" />
+                        )}
                     </Button>
                 </div>
 

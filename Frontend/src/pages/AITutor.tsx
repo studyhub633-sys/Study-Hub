@@ -265,7 +265,7 @@ export default function AITutor() {
                                         <Menu className="h-5 w-5" />
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent side="left" className="p-0 w-80">
+                                <SheetContent side="left" className="p-0 w-64 [&>button]:hidden">
                                     <ChatHistorySidebar
                                         sessions={sessions}
                                         currentSessionId={currentSession?.id || null}
@@ -280,6 +280,7 @@ export default function AITutor() {
                                         onDeleteSession={deleteSession}
                                         onRenameSession={renameSession}
                                         loading={sessionsLoading}
+                                        onClose={() => setIsHistoryOpen(false)}
                                     />
                                 </SheetContent>
                             </Sheet>
