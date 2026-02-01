@@ -86,10 +86,6 @@ export default function Leaderboard() {
         <AppLayout>
             <div className="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12">
                 {/* Add margin-bottom to the podium section */}
-                <div className="podium-section mb-8">
-                    {/* Your podium content here */}
-                </div>
-
                 <div className="flex items-center gap-4">
                     <div className="p-3 rounded-xl bg-orange-500/10 text-orange-500">
                         <Trophy className="w-8 h-8" />
@@ -127,7 +123,7 @@ export default function Leaderboard() {
                     <>
                         {/* Top 3 Podium (Visual) */}
                         {users.length >= 3 && (
-                            <div className="flex items-end justify-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 h-56 sm:h-52 md:h-48 mb-8 sm:mb-10 md:mb-12 px-4 sm:px-6 md:px-8">
+                            <div className="flex items-end justify-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 h-64 sm:h-64 md:h-64 mt-8 sm:mt-12 mb-8 sm:mb-10 md:mb-12 px-4 sm:px-6 md:px-8">
                                 {/* 2nd Place */}
                                 <div className="flex flex-col items-center w-[28%] sm:w-[30%] md:flex-1 min-w-[80px] sm:min-w-[100px] md:max-w-[140px] lg:max-w-none">
                                     <Avatar className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 border-2 sm:border-4 border-slate-300 mb-1 sm:mb-2">
