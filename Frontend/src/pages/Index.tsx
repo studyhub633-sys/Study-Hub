@@ -66,11 +66,10 @@ export default function Dashboard() {
       icon: Sparkles,
       title: t('features.aiQuestions.title'),
       description: t('features.aiQuestions.description'),
-      count: 500,
       countLabel: t('features.aiQuestions.title').split(" ").pop()?.toLowerCase() || "questions",
       path: "/ai-tutor",
       color: "premium" as const,
-      isPremium: false, // Available to all users
+      tableName: "ai_usage_tracking",
     },
   ];
 
@@ -83,7 +82,7 @@ export default function Dashboard() {
 
         // Fetch counts for each module that has a table
         for (const module of modules) {
-          if (module.tableName && !module.isPremium) {
+          if (module.tableName) {
             const { count, error } = await supabase
               .from(module.tableName)
               .select("*", { count: "exact", head: true })
@@ -107,9 +106,6 @@ export default function Dashboard() {
   }, [user, supabase]);
 
   const modulesWithCounts = modules.map((module) => {
-    if (module.isPremium) {
-      return module;
-    }
     const count = module.tableName ? (moduleCounts[module.tableName] || 0) : 0;
     return {
       ...module,
