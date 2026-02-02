@@ -28,49 +28,57 @@ export interface MindMapExportHandle {
     exportAsImage: () => Promise<string>;
 }
 
-// Bubble Map Colors (Inspired by the Coffee Beans example)
+// Enhanced Bubble Map Colors with better hierarchy and visual appeal
 const BUBBLE_COLORS = [
-    { bg: 'bg-blue-100', border: 'border-blue-300', text: 'text-slate-700' },
-    { bg: 'bg-emerald-100', border: 'border-emerald-300', text: 'text-slate-700' },
-    { bg: 'bg-amber-100', border: 'border-amber-300', text: 'text-slate-700' },
-    { bg: 'bg-rose-100', border: 'border-rose-300', text: 'text-slate-700' },
-    { bg: 'bg-violet-100', border: 'border-violet-300', text: 'text-slate-700' },
-    { bg: 'bg-cyan-100', border: 'border-cyan-300', text: 'text-slate-700' },
+    { bg: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-800', shadow: 'shadow-blue-100' },
+    { bg: 'bg-emerald-50', border: 'border-emerald-400', text: 'text-emerald-800', shadow: 'shadow-emerald-100' },
+    { bg: 'bg-amber-50', border: 'border-amber-400', text: 'text-amber-800', shadow: 'shadow-amber-100' },
+    { bg: 'bg-rose-50', border: 'border-rose-400', text: 'text-rose-800', shadow: 'shadow-rose-100' },
+    { bg: 'bg-violet-50', border: 'border-violet-400', text: 'text-violet-800', shadow: 'shadow-violet-100' },
+    { bg: 'bg-cyan-50', border: 'border-cyan-400', text: 'text-cyan-800', shadow: 'shadow-cyan-100' },
+    { bg: 'bg-indigo-50', border: 'border-indigo-400', text: 'text-indigo-800', shadow: 'shadow-indigo-100' },
+    { bg: 'bg-pink-50', border: 'border-pink-400', text: 'text-pink-800', shadow: 'shadow-pink-100' },
 ];
 
-// Bubble Node Component
+// Bubble Node Component with improved styling
 const BubbleNode = ({ data, isConnectable }: any) => {
     const isRoot = data.level === 0;
 
-    // Base styles for the bubble
-    let containerClass = "flex items-center justify-center text-center rounded-full shadow-sm border-2 transition-all duration-300 hover:shadow-md hover:scale-105 aspect-square";
+    // Base styles for the bubble with better visual hierarchy
+    let containerClass = "flex items-center justify-center text-center rounded-full shadow-lg border-2 transition-all duration-300 hover:shadow-xl hover:scale-110 hover:z-50 aspect-square relative overflow-hidden";
     let textClass = "";
 
-    // Dynamic sizing based on level
-    // Root: Large
-    // Level 1: Medium
-    // Level 2+: Small
+    // Dynamic sizing based on level - improved spacing
+    // Root: Extra Large (central focus)
+    // Level 1: Large (primary concepts)
+    // Level 2: Medium (sub-concepts)
+    // Level 3+: Small (details)
     const sizeStyle = isRoot
-        ? "w-40 h-40"
+        ? "w-44 h-44"
         : data.level === 1
-            ? "w-32 h-32"
-            : "w-24 h-24";
+            ? "w-36 h-36"
+            : data.level === 2
+                ? "w-28 h-28"
+                : "w-24 h-24";
 
     if (isRoot) {
-        // Deep Blue Center like the Coffee Beans example
-        containerClass += ` ${sizeStyle} bg-blue-600 border-blue-700 text-white z-50`;
-        textClass += "text-lg font-bold px-2";
+        // Root node - Deep, primary color for central focus
+        containerClass += ` ${sizeStyle} bg-gradient-to-br from-blue-600 to-blue-700 border-blue-800 text-white z-50 shadow-blue-200`;
+        textClass += "text-base font-bold px-3 leading-tight";
     } else {
-        // Child Bubbles
+        // Child Bubbles with better visual distinction
         const color = BUBBLE_COLORS[data.rootIndex % BUBBLE_COLORS.length];
 
-        // Level 1 vs deeper levels distinction (optional, keeping it subtle)
+        // Level 1 vs deeper levels distinction with better contrast
         if (data.level === 1) {
-            containerClass += ` ${sizeStyle} bg-white ${color.border} ${color.text} z-40`;
-            textClass += "text-sm font-semibold px-4";
+            containerClass += ` ${sizeStyle} ${color.bg} ${color.border} ${color.text} z-40 ${color.shadow} border-[2.5px]`;
+            textClass += "text-sm font-semibold px-3 leading-snug";
+        } else if (data.level === 2) {
+            containerClass += ` ${sizeStyle} ${color.bg} ${color.border} ${color.text} z-30 ${color.shadow} border-2`;
+            textClass += "text-xs font-semibold px-2 leading-snug";
         } else {
-            containerClass += ` ${sizeStyle} bg-white ${color.border} ${color.text} z-30`;
-            textClass += "text-xs font-medium px-2";
+            containerClass += ` ${sizeStyle} ${color.bg} ${color.border} ${color.text} z-20 ${color.shadow} border-2`;
+            textClass += "text-xs font-medium px-2 leading-tight";
         }
     }
 
@@ -86,9 +94,11 @@ const BubbleNode = ({ data, isConnectable }: any) => {
                 />
             )}
 
-            <span className={`break-words ${textClass} pointer-events-none`}>
-                {data.label}
-            </span>
+            <div className="flex flex-col items-center justify-center h-full px-1">
+                <span className={`break-words ${textClass} pointer-events-none line-clamp-4 w-full`}>
+                    {data.label}
+                </span>
+            </div>
 
             {/* Source Handle */}
             <Handle
@@ -222,10 +232,11 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
                     id: `${parentId}-${id}`,
                     source: parentId,
                     target: id,
-                    type: 'straight', // The key change for "Coffee Beans" look
+                    type: 'straight',
                     style: {
-                        stroke: '#64748b', // Slate-500
-                        strokeWidth: 2,
+                        stroke: '#94a3b8', // Slate-400 for better visibility
+                        strokeWidth: 2.5,
+                        opacity: 0.7,
                     },
                     animated: false,
                 });
@@ -234,17 +245,21 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
             if (node.children && node.children.length > 0) {
                 let currentAngle = startAngle;
 
-                // Radius needs to be larger for circles
-                // Root (160px) -> L1 (128px). Gap should be at least 100px.
-                // 80(half root) + 64(half L1) + 100 = ~250
+                // Improved radius calculation for better spacing
+                // Root (176px/88 half) -> L1 (144px/72 half). Gap should be at least 150px.
+                // Base spacing starts larger and increases per level for better visual hierarchy
 
-                const baseRadius = 350;
-                const levelRadiusStep = 300;
+                const baseRadius = 400;  // Increased from 350 for more breathing room
+                const levelRadiusStep = 340; // Increased from 300 for better separation
                 const actualRadius = level === 0 ? baseRadius : baseRadius + (level * levelRadiusStep);
+
+                // More intelligent angle distribution to prevent overlap
+                const totalChildren = node.children.length;
+                const minAngle = 0.6; // Minimum angle between nodes (radians) to prevent overlap
 
                 node.children.forEach((child: any, idx: number) => {
                     const childWeight = child.weight;
-                    const childAngleSlice = (childWeight / node.weight) * (endAngle - startAngle);
+                    const childAngleSlice = Math.max(minAngle, (childWeight / node.weight) * (endAngle - startAngle));
 
                     const childMidAngle = currentAngle + childAngleSlice / 2;
 
@@ -283,10 +298,10 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
             attributionPosition="bottom-right"
             minZoom={0.1}
             maxZoom={4}
-            className="bg-white"
+            className="bg-gradient-to-br from-slate-50 via-white to-slate-50"
         >
-            <Background gap={20} size={1} color="#e2e8f0" className="opacity-40" />
-            <Controls showInteractive={false} className="!bg-white !shadow-lg rounded-lg border border-slate-200 text-slate-700" />
+            <Background gap={16} size={1} color="#cbd5e1" className="opacity-30" />
+            <Controls showInteractive={false} className="!bg-white !shadow-md rounded-lg border border-slate-300 text-slate-600 hover:!bg-slate-50" />
         </ReactFlow>
     );
 }

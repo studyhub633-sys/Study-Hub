@@ -883,15 +883,41 @@ async function handleGenerateMindMap(req, res) {
             throw error;
         }
 
-        const systemPrompt = `You are an expert mind map generator. 
+        const systemPrompt = `You are an expert mind map generator that creates clean, readable, and well-organized visual hierarchies.
 Create a hierarchical JSON mind map from the provided text.
 Structure must be: { "title": "Main Topic", "children": [ { "title": "Subtopic", "children": [...] } ] }
-- Extract key concepts as branches
-- Limit depth to 3-4 levels maximum
-- Each node must have "title" and "children" properties
-- Return ONLY the JSON, no explanations`;
 
-        const userPrompt = `Create a mind map structure from these study notes:\n\n${content.substring(0, 5000)}`;
+CRITICAL RULES for readability:
+- Limit root node to maximum 5-7 main branches (children)
+- Limit depth to 3 levels maximum
+- Each branch should have 2-5 sub-items maximum
+- Keep titles CONCISE: 2-5 words per node maximum
+- Extract only the MOST IMPORTANT concepts
+- Use clear, academic language
+- Each node must have "title" (string) and "children" (array) properties
+- Return ONLY the JSON, no explanations
+
+Example structure:
+{
+  "title": "Photosynthesis",
+  "children": [
+    {
+      "title": "Light Reactions",
+      "children": [
+        { "title": "Photosystem II", "children": [] },
+        { "title": "Electron Transport", "children": [] }
+      ]
+    },
+    {
+      "title": "Calvin Cycle",
+      "children": [
+        { "title": "Carbon Fixation", "children": [] }
+      ]
+    }
+  ]
+}`;
+
+        const userPrompt = `Create a clean, readable mind map structure from these study notes. Focus on the 5-7 most important concepts. Keep all node titles to 2-5 words maximum:\n\n${content.substring(0, 5000)}`;
 
         let generatedText;
         try {

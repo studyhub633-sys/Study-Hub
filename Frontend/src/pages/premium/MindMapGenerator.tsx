@@ -454,26 +454,26 @@ Other objects in the solar system include dwarf planets like Pluto, asteroids in
                     </Card>
 
                     {/* Mind Map Display */}
-                    <Card className={`animate-slide-up ${mindMapData ? 'border-purple-500/20 bg-purple-500/5' : ''}`} style={{ animationDelay: '0.1s', opacity: 0 }}>
-                        <CardHeader>
+                    <Card className={`animate-slide-up border-2 transition-all ${mindMapData ? 'border-blue-500/30 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20' : 'border-slate-200/50'}`} style={{ animationDelay: '0.1s', opacity: 0 }}>
+                        <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <CardTitle>Generated Mind Map</CardTitle>
+                                    <CardTitle className="text-lg">Your Mind Map</CardTitle>
                                     <CardDescription>
-                                        {mindMapData ? "Ready to save" : "Mind map will appear here"}
+                                        {mindMapData ? "Clean, interactive visualization of your concepts" : "Your mind map will appear here after generation"}
                                     </CardDescription>
                                 </div>
                                 {mindMapData && (
                                     <div className="flex gap-2">
-                                        <Button variant="outline" size="sm" onClick={() => handleDownload('png')} disabled={downloading}>
+                                        <Button variant="outline" size="sm" onClick={() => handleDownload('png')} disabled={downloading} className="hover:bg-blue-50">
                                             {downloading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileImage className="w-4 h-4 mr-2" />}
                                             PNG
                                         </Button>
-                                        <Button variant="outline" size="sm" onClick={() => handleDownload('pdf')} disabled={downloading}>
+                                        <Button variant="outline" size="sm" onClick={() => handleDownload('pdf')} disabled={downloading} className="hover:bg-blue-50">
                                             {downloading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
                                             PDF
                                         </Button>
-                                        <Button variant="outline" size="sm" onClick={handleSave}>
+                                        <Button variant="outline" size="sm" onClick={handleSave} className="hover:bg-blue-50">
                                             <Save className="w-4 h-4 mr-2" />
                                             Save
                                         </Button>
@@ -481,18 +481,19 @@ Other objects in the solar system include dwarf planets like Pluto, asteroids in
                                 )}
                             </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pb-4">
                             {mindMapData ? (
-                                <div ref={mindMapRef} className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg h-[600px] overflow-hidden">
+                                <div ref={mindMapRef} className="bg-white rounded-lg h-[650px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                                     <RadialMindMap
                                         data={mindMapData}
                                         onExportReady={(fn) => setExportMindMap(() => fn)}
                                     />
                                 </div>
                             ) : (
-                                <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground opacity-50">
-                                    <Network className="w-16 h-16 mb-4" />
-                                    <p>Your mind map will appear here</p>
+                                <div className="h-[450px] flex flex-col items-center justify-center text-muted-foreground opacity-40 rounded-lg bg-slate-50 dark:bg-slate-900/20 border border-dashed border-slate-200 dark:border-slate-700">
+                                    <Network className="w-16 h-16 mb-3 opacity-50" />
+                                    <p className="font-medium">No mind map yet</p>
+                                    <p className="text-sm mt-1">Enter notes and click "Generate Mind Map" to create one</p>
                                 </div>
                             )}
                         </CardContent>
