@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import RadialMindMap from "@/components/RadialMindMap";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { BookOpen, FileImage, FileText, Loader2, Network, Save, Sparkles } from "lucide-react";
+import { BookOpen, FileImage, FileText, FlaskConical, Loader2, Network, Save, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface MindMapNode {
@@ -310,6 +311,72 @@ export default function MindMapGenerator() {
         }
     };
 
+    const handleLoadSample = () => {
+        setTitle("The Solar System");
+        setSubject("Astronomy");
+        setNotesContent(`The Solar System consists of the Sun and the objects that orbit it, including eight planets.
+
+The four inner planets are Mercury, Venus, Earth, and Mars. They are called terrestrial planets because they have solid, rocky surfaces.
+- Mercury is the closest planet to the Sun and the smallest.
+- Venus is the hottest planet due to its thick atmosphere.
+- Earth is the only known planet to support life and has one moon.
+- Mars is known as the Red Planet and has two moons, Phobos and Deimos.
+
+The four outer planers are gas giants: Jupiter and Saturn, and ice giants: Uranus and Neptune.
+- Jupiter is the largest planet and has the Great Red Spot.
+- Saturn is famous for its prominent ring system.
+- Uranus spins on its side.
+- Neptune is the furthest planet from the Sun and has strong winds.
+
+Other objects in the solar system include dwarf planets like Pluto, asteroids in the asteroid belt between Mars and Jupiter, and comets which have tails when they get close to the Sun.`);
+
+        // Directly set sample data for testing visualization
+        setMindMapData({
+            title: "The Solar System",
+            children: [
+                {
+                    title: "Inner Planets",
+                    children: [
+                        { title: "Mercury", children: [] },
+                        { title: "Venus", children: [] },
+                        { title: "Earth", children: [{ title: "Moon", children: [] }] },
+                        { title: "Mars", children: [{ title: "Phobos", children: [] }, { title: "Deimos", children: [] }] }
+                    ]
+                },
+                {
+                    title: "Outer Planets",
+                    children: [
+                        {
+                            title: "Gas Giants", children: [
+                                { title: "Jupiter", children: [] },
+                                { title: "Saturn", children: [] }
+                            ]
+                        },
+                        {
+                            title: "Ice Giants", children: [
+                                { title: "Uranus", children: [] },
+                                { title: "Neptune", children: [] }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    title: "Other Objects",
+                    children: [
+                        { title: "Dwarf Planets", children: [{ title: "Pluto", children: [] }] },
+                        { title: "Asteroids", children: [] },
+                        { title: "Comets", children: [] }
+                    ]
+                }
+            ]
+        });
+
+        toast({
+            title: "Sample Loaded",
+            description: "Sample data loaded for testing.",
+        });
+    };
+
     if (checking) {
         return (
             <AppLayout>
@@ -422,23 +489,29 @@ export default function MindMapGenerator() {
                                     onChange={(e) => setNotesContent(e.target.value)}
                                 />
                             </div>
-                            <Button
-                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                                onClick={handleGenerate}
-                                disabled={loading || !notesContent.trim()}
-                            >
-                                {loading ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Generating...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Sparkles className="w-4 h-4 mr-2" />
-                                        Generate Mind Map
-                                    </>
-                                )}
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                                    onClick={handleGenerate}
+                                    disabled={loading || !notesContent.trim()}
+                                >
+                                    {loading ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Generating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                            Generate Mind Map
+                                        </>
+                                    )}
+                                </Button>
+                                <Button variant="outline" onClick={handleLoadSample} title="Load sample data to test visualization">
+                                    <FlaskConical className="w-4 h-4 mr-2" />
+                                    Test Sample
+                                </Button>
+                            </div>
                         </CardContent>
                     </Card>
 
@@ -472,8 +545,8 @@ export default function MindMapGenerator() {
                         </CardHeader>
                         <CardContent>
                             {mindMapData ? (
-                                <div ref={mindMapRef} className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg p-6 min-h-[400px] max-h-[600px] overflow-auto">
-                                    <MindMapVisualization data={mindMapData} />
+                                <div ref={mindMapRef} className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg h-[600px] overflow-hidden">
+                                    <RadialMindMap data={mindMapData} />
                                 </div>
                             ) : (
                                 <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground opacity-50">
