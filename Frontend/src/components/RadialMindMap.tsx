@@ -1,10 +1,11 @@
 import { toPng } from 'html-to-image';
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react';
 import ReactFlow, {
     Background,
     Controls,
     Edge,
     Handle,
+    MarkerType,
     Node,
     Position,
     ReactFlowProvider,
@@ -29,28 +30,61 @@ export interface MindMapExportHandle {
     exportAsImage: () => Promise<string>;
 }
 
-// Custom Node Component for a cleaner look
+// Enhanced Custom Node Component
 const CustomNode = ({ data, isConnectable }: any) => {
+    const getNodeSize = (level: number) => {
+        if (level === 0) return 'w-48 h-48'; // Large root node
+        if (level === 1) return 'w-36 h-36'; // Medium for first level
+        if (level === 2) return 'w-28 h-28'; // Smaller for second level
+        return 'w-24 h-24'; // Smallest for deeper levels
+    };
+
+    const getFontSize = (level: number) => {
+        if (level === 0) return 'text-xl font-bold';
+        if (level === 1) return 'text-base font-semibold';
+        return 'text-sm font-medium';
+    };
+
+    const size = getNodeSize(data.level);
+    const fontSize = getFontSize(data.level);
+
     return (
-        <div className={`px-4 py-2 rounded-full shadow-md border-2 min-w-[100px] text-center font-medium transition-all hover:scale-105 ${data.className}`}>
+        <div
+            className={`${size} rounded-full shadow-lg flex items-center justify-center p-4 transition-all hover:scale-105 ${data.className}`}
+            style={{
+                border: 'none',
+            }}
+        >
             {/* Target Handle (Input) */}
             {data.level > 0 && (
                 <Handle
                     type="target"
                     position={data.targetPosition || Position.Left}
                     isConnectable={isConnectable}
-                    className="w-2 h-2 !bg-gray-400"
+                    style={{
+                        background: 'transparent',
+                        border: 'none',
+                        width: '1px',
+                        height: '1px',
+                    }}
                 />
             )}
 
-            <div className="text-sm">{data.label}</div>
+            <div className={`text-center ${fontSize} px-2 break-words`}>
+                {data.label}
+            </div>
 
             {/* Source Handle (Output) */}
             <Handle
                 type="source"
                 position={data.sourcePosition || Position.Right}
                 isConnectable={isConnectable}
-                className="w-2 h-2 !bg-gray-400"
+                style={{
+                    background: 'transparent',
+                    border: 'none',
+                    width: '1px',
+                    height: '1px',
+                }}
             />
         </div>
     );
@@ -66,14 +100,46 @@ const calculateWeights = (node: MindMapNode): any => {
     return { ...node, children: childrenWithWeights, weight: totalWeight };
 };
 
-// Colors for different branches/levels
-const COLORS = [
-    'bg-white border-purple-500 text-purple-900',
-    'bg-purple-50 border-purple-400 text-purple-800',
-    'bg-pink-50 border-pink-400 text-pink-800',
-    'bg-blue-50 border-blue-400 text-blue-800',
-    'bg-green-50 border-green-400 text-green-800',
-    'bg-amber-50 border-amber-400 text-amber-800',
+// Modern color palette - vibrant and clean
+const LEVEL_COLORS = [
+    // Root node - bold primary color
+    'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl',
+    // Level 1 - varied colors
+    [
+        'bg-gradient-to-br from-purple-400 to-purple-500 text-white shadow-lg',
+        'bg-gradient-to-br from-pink-400 to-pink-500 text-white shadow-lg',
+        'bg-gradient-to-br from-green-400 to-green-500 text-white shadow-lg',
+        'bg-gradient-to-br from-amber-400 to-amber-500 text-white shadow-lg',
+        'bg-gradient-to-br from-cyan-400 to-cyan-500 text-white shadow-lg',
+        'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-lg',
+    ],
+    // Level 2 - lighter shades
+    [
+        'bg-purple-100 text-purple-900 border-2 border-purple-300 shadow-md',
+        'bg-pink-100 text-pink-900 border-2 border-pink-300 shadow-md',
+        'bg-green-100 text-green-900 border-2 border-green-300 shadow-md',
+        'bg-amber-100 text-amber-900 border-2 border-amber-300 shadow-md',
+        'bg-cyan-100 text-cyan-900 border-2 border-cyan-300 shadow-md',
+        'bg-rose-100 text-rose-900 border-2 border-rose-300 shadow-md',
+    ],
+    // Level 3+ - even lighter
+    [
+        'bg-purple-50 text-purple-800 border-2 border-purple-200 shadow-sm',
+        'bg-pink-50 text-pink-800 border-2 border-pink-200 shadow-sm',
+        'bg-green-50 text-green-800 border-2 border-green-200 shadow-sm',
+        'bg-amber-50 text-amber-800 border-2 border-amber-200 shadow-sm',
+        'bg-cyan-50 text-cyan-800 border-2 border-cyan-200 shadow-sm',
+        'bg-rose-50 text-rose-800 border-2 border-rose-200 shadow-sm',
+    ],
+];
+
+const EDGE_COLORS = [
+    '#8b5cf6', // purple
+    '#ec4899', // pink
+    '#10b981', // green
+    '#f59e0b', // amber
+    '#06b6d4', // cyan
+    '#f43f5e', // rose
 ];
 
 function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
@@ -113,6 +179,7 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
         const newEdges: Edge[] = [];
 
         const weightedData = calculateWeights(data);
+        let branchIndex = 0; // Track which main branch we're in for coloring
 
         // Recursive layout function
         const processNode = (
@@ -122,38 +189,43 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
             startAngle: number,
             endAngle: number,
             level: number,
-            parentId: string | null = null
+            parentId: string | null = null,
+            parentBranchIndex: number = 0
         ) => {
             const id = node.title + "-" + level + "-" + Math.random().toString(36).substr(2, 9);
 
-            // Determine positions
-            // Root is usually distinct styling
-            const colorClass = level === 0
-                ? 'bg-purple-600 border-purple-700 text-white'
-                : COLORS[Math.min(level, COLORS.length - 1)];
+            // Determine color based on level and branch
+            let colorClass: string;
+            if (level === 0) {
+                colorClass = LEVEL_COLORS[0] as string;
+            } else {
+                const levelColors = LEVEL_COLORS[Math.min(level, LEVEL_COLORS.length - 1)];
+                if (Array.isArray(levelColors)) {
+                    colorClass = levelColors[parentBranchIndex % levelColors.length];
+                } else {
+                    colorClass = levelColors;
+                }
+            }
 
-            // Determine handle positions based on angle (relative to center)
-            // Angle is in radians. 0 is Right, PI/2 is Down.
+            // Determine handle positions based on angle
             const angle = startAngle + (endAngle - startAngle) / 2;
             let sourcePos = Position.Right;
             let targetPos = Position.Left;
 
-            // Adjust handles based on quadrant if not root
             if (level > 0) {
-                // Normalize angle to 0-2PI
                 let normAngle = angle % (2 * Math.PI);
                 if (normAngle < 0) normAngle += 2 * Math.PI;
 
-                if (normAngle >= 7 * Math.PI / 4 || normAngle < Math.PI / 4) { // Right
+                if (normAngle >= 7 * Math.PI / 4 || normAngle < Math.PI / 4) {
                     sourcePos = Position.Right;
                     targetPos = Position.Left;
-                } else if (normAngle >= Math.PI / 4 && normAngle < 3 * Math.PI / 4) { // Bottom
+                } else if (normAngle >= Math.PI / 4 && normAngle < 3 * Math.PI / 4) {
                     sourcePos = Position.Bottom;
                     targetPos = Position.Top;
-                } else if (normAngle >= 3 * Math.PI / 4 && normAngle < 5 * Math.PI / 4) { // Left
+                } else if (normAngle >= 3 * Math.PI / 4 && normAngle < 5 * Math.PI / 4) {
                     sourcePos = Position.Left;
                     targetPos = Position.Right;
-                } else { // Top
+                } else {
                     sourcePos = Position.Top;
                     targetPos = Position.Bottom;
                 }
@@ -175,20 +247,31 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
             });
 
             if (parentId) {
+                const edgeColor = EDGE_COLORS[parentBranchIndex % EDGE_COLORS.length];
                 newEdges.push({
                     id: `${parentId}-${id}`,
                     source: parentId,
                     target: id,
-                    type: 'default', // 'smoothstep', 'step', 'straight', 'default' (bezier)
-                    style: { stroke: '#94a3b8', strokeWidth: 2 },
+                    type: 'smoothstep', // Smooth curved edges
+                    style: {
+                        stroke: edgeColor,
+                        strokeWidth: level === 1 ? 3 : 2,
+                        opacity: 0.6
+                    },
+                    markerEnd: {
+                        type: MarkerType.ArrowClosed,
+                        color: edgeColor,
+                        width: 20,
+                        height: 20,
+                    },
                 });
             }
 
             if (node.children && node.children.length > 0) {
                 let currentAngle = startAngle;
-                const radius = 250; // Distance between levels
+                const radius = level === 0 ? 300 : 220; // Increased spacing
 
-                node.children.forEach((child: any) => {
+                node.children.forEach((child: any, idx: number) => {
                     // Allocate angle proportional to weight
                     const childAngleSlice = (child.weight / node.weight) * (endAngle - startAngle);
 
@@ -200,7 +283,10 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
                     const childX = r * Math.cos(childMidAngle);
                     const childY = r * Math.sin(childMidAngle);
 
-                    processNode(child, childX, childY, currentAngle, currentAngle + childAngleSlice, level + 1, id);
+                    // Determine branch index for coloring
+                    const childBranchIndex = level === 0 ? idx : parentBranchIndex;
+
+                    processNode(child, childX, childY, currentAngle, currentAngle + childAngleSlice, level + 1, id, childBranchIndex);
 
                     currentAngle += childAngleSlice;
                 });
@@ -208,8 +294,6 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
         };
 
         // Start layout
-        // Root at (0,0)
-        // Full 360 degrees (0 to 2PI)
         processNode(weightedData, 0, 0, 0, 2 * Math.PI, 0);
 
         setNodes(newNodes);
@@ -224,12 +308,27 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
             fitView
+            fitViewOptions={{
+                padding: 0.2,
+                minZoom: 0.5,
+                maxZoom: 1.5,
+            }}
             attributionPosition="bottom-right"
             minZoom={0.1}
             maxZoom={4}
+            nodesDraggable={true}
+            nodesConnectable={false}
+            elementsSelectable={true}
         >
-            <Background gap={16} size={1} />
-            <Controls />
+            <Background
+                gap={20}
+                size={1}
+                color="#e5e7eb"
+                style={{ backgroundColor: '#fafafa' }}
+            />
+            <Controls
+                showInteractive={false}
+            />
         </ReactFlow>
     );
 }
@@ -237,7 +336,7 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
 const MindMapWithRef = forwardRef(MindMapInner);
 
 export default function RadialMindMap(props: RadialMindMapProps) {
-    const exportRef = useRef<MindMapExportHandle>(null);
+    const exportRef = React.useRef<MindMapExportHandle>(null);
 
     useEffect(() => {
         if (props.onExportReady && exportRef.current) {
