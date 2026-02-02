@@ -28,72 +28,74 @@ export interface MindMapExportHandle {
     exportAsImage: () => Promise<string>;
 }
 
-// Modern, Premium Color Palette
-const COLORS = [
-    { bg: 'bg-indigo-600', text: 'text-white', border: 'border-indigo-700', gradient: 'from-indigo-500 to-indigo-700' },
-    { bg: 'bg-rose-500', text: 'text-white', border: 'border-rose-600', gradient: 'from-rose-400 to-rose-600' },
-    { bg: 'bg-sky-500', text: 'text-white', border: 'border-sky-600', gradient: 'from-sky-400 to-sky-600' },
-    { bg: 'bg-emerald-500', text: 'text-white', border: 'border-emerald-600', gradient: 'from-emerald-400 to-emerald-600' },
-    { bg: 'bg-amber-500', text: 'text-white', border: 'border-amber-600', gradient: 'from-amber-400 to-amber-600' },
-    { bg: 'bg-violet-500', text: 'text-white', border: 'border-violet-600', gradient: 'from-violet-400 to-violet-600' },
+// Bubble Map Colors (Inspired by the Coffee Beans example)
+const BUBBLE_COLORS = [
+    { bg: 'bg-blue-100', border: 'border-blue-300', text: 'text-slate-700' },
+    { bg: 'bg-emerald-100', border: 'border-emerald-300', text: 'text-slate-700' },
+    { bg: 'bg-amber-100', border: 'border-amber-300', text: 'text-slate-700' },
+    { bg: 'bg-rose-100', border: 'border-rose-300', text: 'text-slate-700' },
+    { bg: 'bg-violet-100', border: 'border-violet-300', text: 'text-slate-700' },
+    { bg: 'bg-cyan-100', border: 'border-cyan-300', text: 'text-slate-700' },
 ];
 
-const LIGHT_COLORS = [
-    { bg: 'bg-white', text: 'text-indigo-950', border: 'border-indigo-200' },
-    { bg: 'bg-white', text: 'text-rose-950', border: 'border-rose-200' },
-    { bg: 'bg-white', text: 'text-sky-950', border: 'border-sky-200' },
-    { bg: 'bg-white', text: 'text-emerald-950', border: 'border-emerald-200' },
-    { bg: 'bg-white', text: 'text-amber-950', border: 'border-amber-200' },
-    { bg: 'bg-white', text: 'text-violet-950', border: 'border-violet-200' },
-];
-
-// Premium Custom Node
-const PremiumNode = ({ data, isConnectable }: any) => {
+// Bubble Node Component
+const BubbleNode = ({ data, isConnectable }: any) => {
     const isRoot = data.level === 0;
-    const isMainBranch = data.level === 1;
 
-    // determine style based on level
-    let containerClass = "shadow-lg transition-all hover:scale-105 duration-300";
+    // Base styles for the bubble
+    let containerClass = "flex items-center justify-center text-center rounded-full shadow-sm border-2 transition-all duration-300 hover:shadow-md hover:scale-105 aspect-square";
     let textClass = "";
 
+    // Dynamic sizing based on level
+    // Root: Large
+    // Level 1: Medium
+    // Level 2+: Small
+    const sizeStyle = isRoot
+        ? "w-40 h-40"
+        : data.level === 1
+            ? "w-32 h-32"
+            : "w-24 h-24";
+
     if (isRoot) {
-        containerClass += ` rounded-xl border-0 !bg-gradient-to-br from-slate-900 to-slate-800 text-white min-w-[160px] py-4 px-6 z-50`;
-        textClass += "text-xl font-bold tracking-tight";
-    } else if (isMainBranch) {
-        const color = COLORS[data.index % COLORS.length];
-        containerClass += ` rounded-full border-0 !bg-gradient-to-r ${color.gradient} ${color.text} min-w-[140px] py-3 px-6 z-40`;
-        textClass += "text-md font-bold";
+        // Deep Blue Center like the Coffee Beans example
+        containerClass += ` ${sizeStyle} bg-blue-600 border-blue-700 text-white z-50`;
+        textClass += "text-lg font-bold px-2";
     } else {
-        // Leaf/Sub nodes
-        // Use tint of the parent branch color if possible, or just clean white cards
-        const parentIndex = data.rootIndex || 0;
-        const color = LIGHT_COLORS[parentIndex % LIGHT_COLORS.length];
-        containerClass += ` rounded-lg border-2 ${color.bg} ${color.border} ${color.text} min-w-[100px] py-2 px-4 shadow-sm hover:shadow-md z-30`;
-        textClass += "text-sm font-medium";
+        // Child Bubbles
+        const color = BUBBLE_COLORS[data.rootIndex % BUBBLE_COLORS.length];
+
+        // Level 1 vs deeper levels distinction (optional, keeping it subtle)
+        if (data.level === 1) {
+            containerClass += ` ${sizeStyle} bg-white ${color.border} ${color.text} z-40`;
+            textClass += "text-sm font-semibold px-4";
+        } else {
+            containerClass += ` ${sizeStyle} bg-white ${color.border} ${color.text} z-30`;
+            textClass += "text-xs font-medium px-2";
+        }
     }
 
     return (
-        <div className={`flex items-center justify-center relative ${containerClass}`}>
+        <div className={`${containerClass}`}>
             {/* Target Handle */}
             {data.level > 0 && (
                 <Handle
                     type="target"
-                    position={data.targetPosition || Position.Left}
+                    position={data.targetPosition || Position.Top}
                     isConnectable={isConnectable}
-                    className="!w-1 !h-1 !bg-transparent !border-0"
+                    className="!w-1 !h-1 !bg-transparent !border-0 opacity-0"
                 />
             )}
 
-            <div className={`text-center leading-tight ${textClass}`}>
+            <span className={`break-words ${textClass} pointer-events-none`}>
                 {data.label}
-            </div>
+            </span>
 
             {/* Source Handle */}
             <Handle
                 type="source"
-                position={data.sourcePosition || Position.Right}
+                position={data.sourcePosition || Position.Top}
                 isConnectable={isConnectable}
-                className="!w-1 !h-1 !bg-transparent !border-0"
+                className="!w-1 !h-1 !bg-transparent !border-0 opacity-0"
             />
         </div>
     );
@@ -115,30 +117,21 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
     const { fitView } = useReactFlow();
 
     const nodeTypes = useMemo(() => ({
-        custom: PremiumNode,
+        custom: BubbleNode,
     }), []);
 
     useImperativeHandle(ref, () => ({
         exportAsImage: async () => {
-            // Wait a bit to ensure everything is rendered
             await new Promise(resolve => setTimeout(resolve, 500));
-
-            // Select only the viewport to avoid UI controls
             const viewport = document.querySelector('.react-flow__viewport') as HTMLElement;
-            if (!viewport) {
-                // Fallback to the main container if viewport is elusive (unlikely)
-                return "";
-            }
+            if (!viewport) return "";
 
             const dataUrl = await toPng(viewport, {
-                backgroundColor: '#ffffff', // Clean white background for PDF/PNG
-                pixelRatio: 2, // High res
+                backgroundColor: '#ffffff',
+                pixelRatio: 2,
                 cacheBust: true,
-                style: {
-                    transform: `translate(${viewport.style.transform})`, // Preserve transform
-                }
+                style: { transform: `translate(${viewport.style.transform})` }
             });
-
             return dataUrl;
         }
     }));
@@ -150,7 +143,7 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
         const newEdges: Edge[] = [];
         const weightedData = calculateWeights(data);
 
-        // Advanced Radial Layout
+        // Bubble Layout Logic
         const processNode = (
             node: any,
             x: number,
@@ -163,85 +156,91 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
         ) => {
             const id = `node-${level}-${node.title}-${Math.random().toString(36).substr(2, 5)}`;
 
-            // Calculate center angle for this node
+            // Calculate center angle
             const angle = startAngle + (endAngle - startAngle) / 2;
 
-            // Handle placement
+            // For straight lines in a radial map, handles are best at the center usually,
+            // or we use specific perimeter points. 
+            // In ReactFlow for 'straight' edges to look right with circles, Center to Center often works best
+            // if we want the line to stop at the edge. 
+            // However, ReactFlow's default handles are strictly directional (Top/Bottom/Left/Right).
+            // For a bubble map, dynamic handles or Center handles are best.
+            // We set Position.Center conceptually, but physically we need to pick a side 
+            // based on the angle to avoid the line going THROUGH the bubble.
+
+            // Actually, for pure straight lines radiating out, Center handles + proper z-indexing 
+            // (line behind node) is the easiest trick.
+            // Let's try Center-like positioning logic.
+
             let sourcePos = Position.Right;
             let targetPos = Position.Left;
 
-            // Determine handle positions for smoother curves
-            if (level > 0) {
-                // Normalize angle to 0-2PI
-                let normAngle = angle % (2 * Math.PI);
-                if (normAngle < 0) normAngle += 2 * Math.PI;
+            // Normalize angle
+            let normAngle = angle % (2 * Math.PI);
+            if (normAngle < 0) normAngle += 2 * Math.PI;
 
-                if (normAngle >= 7 * Math.PI / 4 || normAngle < Math.PI / 4) { // Right side
-                    sourcePos = Position.Right;
-                    targetPos = Position.Left;
-                } else if (normAngle >= Math.PI / 4 && normAngle < 3 * Math.PI / 4) { // Bottom
-                    sourcePos = Position.Bottom;
-                    targetPos = Position.Top;
-                } else if (normAngle >= 3 * Math.PI / 4 && normAngle < 5 * Math.PI / 4) { // Left
-                    sourcePos = Position.Left;
-                    targetPos = Position.Right;
-                } else { // Top
-                    sourcePos = Position.Top;
-                    targetPos = Position.Bottom;
-                }
-            } else {
-                // Root node handles
-                // We don't really use handles on root for radial, edges just go out from center
-                // But for ReactFlow data model, we assign them.
-                sourcePos = Position.Bottom;
+            // Basic Quadrant logic for handles if we weren't using center-center
+            if (normAngle >= 7 * Math.PI / 4 || normAngle < Math.PI / 4) { // Right
+                sourcePos = Position.Right; targetPos = Position.Left;
+            } else if (normAngle >= Math.PI / 4 && normAngle < 3 * Math.PI / 4) { // Bottom
+                sourcePos = Position.Bottom; targetPos = Position.Top;
+            } else if (normAngle >= 3 * Math.PI / 4 && normAngle < 5 * Math.PI / 4) { // Left
+                sourcePos = Position.Left; targetPos = Position.Right;
+            } else { // Top
+                sourcePos = Position.Top; targetPos = Position.Bottom;
             }
 
-            // Push Node
             newNodes.push({
                 id,
                 type: 'custom',
                 data: {
                     label: node.title,
                     level,
-                    index: level === 1 ? newNodes.filter(n => n.data.level === 1).length : 0,
                     rootIndex: rootIndex,
+                    // We simply pass these for consistency, though we might rely on Center handles in CSS
                     sourcePosition: sourcePos,
                     targetPosition: targetPos
                 },
-                position: { x, y },
+                position: { x, y: y },
+                // Centering the node on the coordinate
+                // Bubble sizes are roughly: Root=160px(40rem?), L1=128px, L2=96px
+                // ReactFlow positions are top-left. We need to offset by half width/height to center.
+                // We'll leave that to the CSS centering or adjust here.
+                // It's cleaner to let the node be top-left anchored and just position it correct relative to that.
+                // But for radial math, (x,y) is center.
+                // Let's apply a hook to center:
+                style: {
+                    transform: 'translate(-50%, -50%)',
+                },
                 sourcePosition: sourcePos,
                 targetPosition: targetPos,
-                // Add z-index based on level so root is on top
                 zIndex: 100 - level
             });
 
-            // Push Edge
             if (parentId) {
                 newEdges.push({
                     id: `${parentId}-${id}`,
                     source: parentId,
                     target: id,
-                    type: 'default', // Bezier usually looks best for mind maps
+                    type: 'straight', // The key change for "Coffee Beans" look
                     style: {
-                        stroke: level === 1 ? '#cbd5e1' : '#e2e8f0', // Slate-300 / Slate-200
-                        strokeWidth: level === 1 ? 3 : 2,
+                        stroke: '#64748b', // Slate-500
+                        strokeWidth: 2,
                     },
                     animated: false,
                 });
             }
 
-            // Process Children
             if (node.children && node.children.length > 0) {
                 let currentAngle = startAngle;
 
-                // Radius increases with level. 
-                // Level 1: 300px
-                // Level 2: +250px
-                // Level 3: +200px
-                const radiusIncrement = Math.max(200, 350 - (level * 50));
-                const r = level === 0 ? 0 : Math.sqrt(x * x + y * y) + radiusIncrement;
-                // For root (level 0), the children are at radius 300
-                const actualRadius = level === 0 ? 300 : r;
+                // Radius needs to be larger for circles
+                // Root (160px) -> L1 (128px). Gap should be at least 100px.
+                // 80(half root) + 64(half L1) + 100 = ~250
+
+                const baseRadius = 350;
+                const levelRadiusStep = 300;
+                const actualRadius = level === 0 ? baseRadius : baseRadius + (level * levelRadiusStep);
 
                 node.children.forEach((child: any, idx: number) => {
                     const childWeight = child.weight;
@@ -252,7 +251,6 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
                     const childX = actualRadius * Math.cos(childMidAngle);
                     const childY = actualRadius * Math.sin(childMidAngle);
 
-                    // Pass down root index for coloring sub-branches
                     const nextRootIndex = level === 0 ? idx : rootIndex;
 
                     processNode(child, childX, childY, currentAngle, currentAngle + childAngleSlice, level + 1, id, nextRootIndex);
@@ -262,13 +260,12 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
             }
         };
 
-        // Initialize Layout
+        // Root at (0,0)
         processNode(weightedData, 0, 0, 0, 2 * Math.PI, 0);
 
         setNodes(newNodes);
         setEdges(newEdges);
 
-        // Fit view after a brief delay to allow rendering
         setTimeout(() => {
             fitView({ padding: 0.2 });
         }, 100);
@@ -286,10 +283,10 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
             attributionPosition="bottom-right"
             minZoom={0.1}
             maxZoom={4}
-            className="bg-slate-50 dark:bg-slate-900"
+            className="bg-white"
         >
-            <Background gap={20} size={1} color="#94a3b8" className="opacity-20" />
-            <Controls showInteractive={false} className="!bg-white dark:!bg-slate-800 !border-slate-200 dark:!border-slate-700 !shadow-lg rounded-lg overflow-hidden" />
+            <Background gap={20} size={1} color="#e2e8f0" className="opacity-40" />
+            <Controls showInteractive={false} className="!bg-white !shadow-lg rounded-lg border border-slate-200 text-slate-700" />
         </ReactFlow>
     );
 }
@@ -306,7 +303,7 @@ export default function RadialMindMap(props: RadialMindMapProps) {
     }, [props.onExportReady]);
 
     return (
-        <div className="w-full h-full min-h-[500px]">
+        <div className="w-full h-full min-h-[500px] bg-white">
             <ReactFlowProvider>
                 <MindMapWithRef {...props} ref={exportRef} />
             </ReactFlowProvider>
