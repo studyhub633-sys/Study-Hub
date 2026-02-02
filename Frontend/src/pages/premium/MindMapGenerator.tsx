@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
-import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { BookOpen, FileImage, FileText, FlaskConical, Loader2, Network, Save, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -35,6 +34,7 @@ export default function MindMapGenerator() {
     const mindMapRef = useRef<HTMLDivElement>(null);
 
     const [checking, setChecking] = useState(true);
+    const [exportMindMap, setExportMindMap] = useState<(() => Promise<string>) | null>(null);
 
     // Initial load from navigation state (if coming from Notes page)
     useEffect(() => {
@@ -43,9 +43,6 @@ export default function MindMapGenerator() {
             if (noteContent) setNotesContent(noteContent);
             if (noteTitle) setTitle(noteTitle);
             if (noteSubject) setSubject(noteSubject);
-
-            // Clear state to prevent reapplying on refresh if desired, 
-            // but keeping it is usually fine for this use case.
         }
     }, [location]);
 
@@ -202,10 +199,10 @@ export default function MindMapGenerator() {
     };
 
     const handleDownload = async (format: 'png' | 'pdf' = 'png') => {
-        if (!mindMapData || !mindMapRef.current) {
+        if (!exportMindMap) {
             toast({
                 title: "Error",
-                description: "Please generate a mind map first",
+                description: "Mind map not ready for export. Please try again in a moment.",
                 variant: "destructive",
             });
             return;
@@ -213,73 +210,26 @@ export default function MindMapGenerator() {
 
         setDownloading(true);
         try {
-            // Wait a bit to ensure the mind map is fully rendered
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            const element = mindMapRef.current;
-
-            // Capture the live element directly instead of cloning
-            // Cloning ReactFlow explicitly can cause issues with missing context/canvas state
-            const canvas = await html2canvas(element, {
-                backgroundColor: '#ffffff',
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                // Ensure we capture the background 
-                allowTaint: true,
-                foreignObjectRendering: true,
-            });
+            // Get data URL from the component
+            const dataUrl = await exportMindMap();
 
             if (format === 'png') {
-                // Download as PNG
                 const link = document.createElement('a');
                 link.download = `${title || 'mind-map'}.png`;
-                link.href = canvas.toDataURL('image/png', 1.0);
+                link.href = dataUrl;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             } else {
-                // Download as PDF
-                const imgData = canvas.toDataURL('image/png', 1.0);
-                const imgWidth = canvas.width;
-                const imgHeight = canvas.height;
-
-                // Convert pixels to mm (1px = 0.264583mm at 96 DPI)
-                const mmWidth = imgWidth * 0.264583;
-                const mmHeight = imgHeight * 0.264583;
-
-                // Use A4 dimensions as max, scale if needed
-                const a4Width = 210; // mm
-                const a4Height = 297; // mm
-
-                let pdfWidth = mmWidth;
-                let pdfHeight = mmHeight;
-                let orientation: 'portrait' | 'landscape' = 'portrait';
-
-                // If image is larger than A4, scale it down
-                if (mmWidth > a4Width || mmHeight > a4Height) {
-                    const scaleX = a4Width / mmWidth;
-                    const scaleY = a4Height / mmHeight;
-                    const scale = Math.min(scaleX, scaleY);
-                    pdfWidth = mmWidth * scale;
-                    pdfHeight = mmHeight * scale;
-                }
-
-                // Determine orientation
-                if (pdfWidth > pdfHeight) {
-                    orientation = 'landscape';
-                    // Swap dimensions for landscape
-                    [pdfWidth, pdfHeight] = [pdfHeight, pdfWidth];
-                }
-
+                // PDF generation using the actual captured image
                 const pdf = new jsPDF({
-                    orientation: orientation,
-                    unit: 'mm',
-                    format: [pdfWidth, pdfHeight]
+                    orientation: 'landscape',
                 });
+                const imgProps = pdf.getImageProperties(dataUrl);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-                // Add image, scaling to fit
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`${title || 'mind-map'}.pdf`);
             }
 
@@ -291,7 +241,7 @@ export default function MindMapGenerator() {
             console.error("Download error:", error);
             toast({
                 title: "Download failed",
-                description: error.message || "Failed to download mind map. Please try again.",
+                description: "Failed to download mind map.",
                 variant: "destructive",
             });
         } finally {
@@ -534,7 +484,10 @@ Other objects in the solar system include dwarf planets like Pluto, asteroids in
                         <CardContent>
                             {mindMapData ? (
                                 <div ref={mindMapRef} className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg h-[600px] overflow-hidden">
-                                    <RadialMindMap data={mindMapData} />
+                                    <RadialMindMap
+                                        data={mindMapData}
+                                        onExportReady={(fn) => setExportMindMap(() => fn)}
+                                    />
                                 </div>
                             ) : (
                                 <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground opacity-50">
