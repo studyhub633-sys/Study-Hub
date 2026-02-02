@@ -40,72 +40,115 @@ const BUBBLE_COLORS = [
     { bg: 'bg-pink-50', border: 'border-pink-400', text: 'text-pink-800', shadow: 'shadow-pink-100' },
 ];
 
-// Bubble Node Component with improved styling
+// Bubble Node Component with improved styling and inline styles for reliability
 const BubbleNode = ({ data, isConnectable }: any) => {
     const isRoot = data.level === 0;
 
-    // Base styles for the bubble with better visual hierarchy
-    let containerClass = "flex items-center justify-center text-center rounded-full shadow-lg border-2 transition-all duration-300 hover:shadow-xl hover:scale-110 hover:z-50 aspect-square relative overflow-hidden";
-    let textClass = "";
-
-    // Dynamic sizing based on level - improved spacing
-    // Root: Extra Large (central focus)
-    // Level 1: Large (primary concepts)
-    // Level 2: Medium (sub-concepts)
-    // Level 3+: Small (details)
-    const sizeStyle = isRoot
-        ? "w-44 h-44"
-        : data.level === 1
-            ? "w-36 h-36"
-            : data.level === 2
-                ? "w-28 h-28"
-                : "w-24 h-24";
+    // Use inline styles instead of Tailwind for better ReactFlow compatibility
+    let backgroundColor = 'white';
+    let borderColor = '#cbd5e1';
+    let textColor = '#1e293b';
+    let fontSize = '14px';
+    let fontWeight = '500';
+    let padding = '8px';
+    let width = '96px';
+    let height = '96px';
+    let boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
 
     if (isRoot) {
-        // Root node - Deep, primary color for central focus
-        containerClass += ` ${sizeStyle} bg-gradient-to-br from-blue-600 to-blue-700 border-blue-800 text-white z-50 shadow-blue-200`;
-        textClass += "text-base font-bold px-3 leading-tight";
+        width = '176px';
+        height = '176px';
+        backgroundColor = '#2563eb';
+        borderColor = '#1e40af';
+        textColor = 'white';
+        fontSize = '16px';
+        fontWeight = '700';
+        boxShadow = '0 10px 15px rgba(37, 99, 235, 0.2)';
     } else {
-        // Child Bubbles with better visual distinction
         const color = BUBBLE_COLORS[data.rootIndex % BUBBLE_COLORS.length];
-
-        // Level 1 vs deeper levels distinction with better contrast
+        
         if (data.level === 1) {
-            containerClass += ` ${sizeStyle} ${color.bg} ${color.border} ${color.text} z-40 ${color.shadow} border-[2.5px]`;
-            textClass += "text-sm font-semibold px-3 leading-snug";
+            width = '144px';
+            height = '144px';
+            fontSize = '14px';
+            fontWeight = '600';
         } else if (data.level === 2) {
-            containerClass += ` ${sizeStyle} ${color.bg} ${color.border} ${color.text} z-30 ${color.shadow} border-2`;
-            textClass += "text-xs font-semibold px-2 leading-snug";
+            width = '112px';
+            height = '112px';
+            fontSize = '12px';
+            fontWeight = '600';
         } else {
-            containerClass += ` ${sizeStyle} ${color.bg} ${color.border} ${color.text} z-20 ${color.shadow} border-2`;
-            textClass += "text-xs font-medium px-2 leading-tight";
+            width = '96px';
+            height = '96px';
+            fontSize = '11px';
+            fontWeight = '500';
         }
+
+        // Map color object to actual colors
+        const colorMap: { [key: string]: any } = {
+            'bg-blue-50': { bg: '#eff6ff', border: '#60a5fa', text: '#1e3a8a' },
+            'bg-emerald-50': { bg: '#f0fdf4', border: '#4ade80', text: '#165e31' },
+            'bg-amber-50': { bg: '#fffbeb', border: '#fbbf24', text: '#92400e' },
+            'bg-rose-50': { bg: '#fff1f2', border: '#fb7185', text: '#881337' },
+            'bg-violet-50': { bg: '#f5f3ff', border: '#c084fc', text: '#5b21b6' },
+            'bg-cyan-50': { bg: '#ecf0ff', border: '#22d3ee', text: '#164e63' },
+            'bg-indigo-50': { bg: '#eef2ff', border: '#818cf8', text: '#312e81' },
+            'bg-pink-50': { bg: '#fdf2f8', border: '#f472b6', text: '#831843' },
+        };
+
+        const colorKey = color.bg;
+        const mappedColor = colorMap[colorKey] || { bg: '#f1f5f9', border: '#cbd5e1', text: '#475569' };
+        
+        backgroundColor = mappedColor.bg;
+        borderColor = mappedColor.border;
+        textColor = mappedColor.text;
     }
 
+    const nodeStyle: React.CSSProperties = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        borderRadius: '50%',
+        border: `2px solid ${borderColor}`,
+        backgroundColor: backgroundColor,
+        color: textColor,
+        width: width,
+        height: height,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        padding: padding,
+        boxShadow: boxShadow,
+        cursor: 'pointer',
+        transition: 'all 300ms ease',
+        overflow: 'hidden',
+        wordWrap: 'break-word',
+        whiteSpace: 'normal',
+        lineHeight: '1.2',
+    };
+
     return (
-        <div className={`${containerClass}`}>
-            {/* Target Handle */}
+        <div style={nodeStyle}>
             {data.level > 0 && (
                 <Handle
                     type="target"
                     position={data.targetPosition || Position.Top}
                     isConnectable={isConnectable}
-                    className="!w-1 !h-1 !bg-transparent !border-0 opacity-0"
+                    style={{ width: '4px', height: '4px', backgroundColor: 'transparent', border: 'none', opacity: 0 }}
                 />
             )}
 
-            <div className="flex flex-col items-center justify-center h-full px-1">
-                <span className={`break-words ${textClass} pointer-events-none line-clamp-4 w-full`}>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%' }}>
+                <span style={{ pointerEvents: 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
                     {data.label}
                 </span>
             </div>
 
-            {/* Source Handle */}
             <Handle
                 type="source"
                 position={data.sourcePosition || Position.Top}
                 isConnectable={isConnectable}
-                className="!w-1 !h-1 !bg-transparent !border-0 opacity-0"
+                style={{ width: '4px', height: '4px', backgroundColor: 'transparent', border: 'none', opacity: 0 }}
             />
         </div>
     );
@@ -200,6 +243,14 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
                 sourcePos = Position.Top; targetPos = Position.Bottom;
             }
 
+            // Calculate node size for proper centering
+            let nodeSize = 96; // Default for level 3+
+            if (level === 0) nodeSize = 176;
+            else if (level === 1) nodeSize = 144;
+            else if (level === 2) nodeSize = 112;
+            
+            const halfSize = nodeSize / 2;
+
             newNodes.push({
                 id,
                 type: 'custom',
@@ -207,21 +258,10 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
                     label: node.title,
                     level,
                     rootIndex: rootIndex,
-                    // We simply pass these for consistency, though we might rely on Center handles in CSS
                     sourcePosition: sourcePos,
                     targetPosition: targetPos
                 },
-                position: { x, y: y },
-                // Centering the node on the coordinate
-                // Bubble sizes are roughly: Root=160px(40rem?), L1=128px, L2=96px
-                // ReactFlow positions are top-left. We need to offset by half width/height to center.
-                // We'll leave that to the CSS centering or adjust here.
-                // It's cleaner to let the node be top-left anchored and just position it correct relative to that.
-                // But for radial math, (x,y) is center.
-                // Let's apply a hook to center:
-                style: {
-                    transform: 'translate(-50%, -50%)',
-                },
+                position: { x: x - halfSize, y: y - halfSize },
                 sourcePosition: sourcePos,
                 targetPosition: targetPos,
                 zIndex: 100 - level
