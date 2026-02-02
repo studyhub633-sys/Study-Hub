@@ -28,80 +28,67 @@ export interface MindMapExportHandle {
     exportAsImage: () => Promise<string>;
 }
 
-// Enhanced Bubble Map Colors with better hierarchy and visual appeal
+// Vibrant Bubble Map Colors - Bold and Readable like Miro
 const BUBBLE_COLORS = [
-    { bg: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-800', shadow: 'shadow-blue-100' },
-    { bg: 'bg-emerald-50', border: 'border-emerald-400', text: 'text-emerald-800', shadow: 'shadow-emerald-100' },
-    { bg: 'bg-amber-50', border: 'border-amber-400', text: 'text-amber-800', shadow: 'shadow-amber-100' },
-    { bg: 'bg-rose-50', border: 'border-rose-400', text: 'text-rose-800', shadow: 'shadow-rose-100' },
-    { bg: 'bg-violet-50', border: 'border-violet-400', text: 'text-violet-800', shadow: 'shadow-violet-100' },
-    { bg: 'bg-cyan-50', border: 'border-cyan-400', text: 'text-cyan-800', shadow: 'shadow-cyan-100' },
-    { bg: 'bg-indigo-50', border: 'border-indigo-400', text: 'text-indigo-800', shadow: 'shadow-indigo-100' },
-    { bg: 'bg-pink-50', border: 'border-pink-400', text: 'text-pink-800', shadow: 'shadow-pink-100' },
+    { bg: '#3B82F6', text: '#FFFFFF' }, // Bright Blue
+    { bg: '#10B981', text: '#FFFFFF' }, // Vibrant Emerald
+    { bg: '#F59E0B', text: '#FFFFFF' }, // Bright Amber
+    { bg: '#EF4444', text: '#FFFFFF' }, // Vibrant Red
+    { bg: '#8B5CF6', text: '#FFFFFF' }, // Bright Purple
+    { bg: '#06B6D4', text: '#FFFFFF' }, // Bright Cyan
+    { bg: '#EC4899', text: '#FFFFFF' }, // Hot Pink
+    { bg: '#6366F1', text: '#FFFFFF' }, // Indigo
+    { bg: '#14B8A6', text: '#FFFFFF' }, // Teal
+    { bg: '#F97316', text: '#FFFFFF' }, // Orange
 ];
 
-// Bubble Node Component with improved styling and inline styles for reliability
+// Bubble Node Component with vibrant colors and excellent readability
 const BubbleNode = ({ data, isConnectable }: any) => {
     const isRoot = data.level === 0;
 
-    // Use inline styles instead of Tailwind for better ReactFlow compatibility
-    let backgroundColor = 'white';
-    let borderColor = '#cbd5e1';
-    let textColor = '#1e293b';
-    let fontSize = '14px';
-    let fontWeight = '500';
-    let padding = '8px';
-    let width = '96px';
-    let height = '96px';
-    let boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+    // Use vibrant colors and better sizing
+    let backgroundColor = '#3B82F6';
+    let textColor = '#FFFFFF';
+    let fontSize = '13px';
+    let fontWeight = '600';
+    let width = '100px';
+    let height = '100px';
+    let boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+    let borderWidth = 0;
 
     if (isRoot) {
-        width = '176px';
-        height = '176px';
-        backgroundColor = '#2563eb';
-        borderColor = '#1e40af';
-        textColor = 'white';
-        fontSize = '16px';
+        width = '180px';
+        height = '180px';
+        backgroundColor = '#1E40AF'; // Deep Blue for root
+        fontSize = '18px';
         fontWeight = '700';
-        boxShadow = '0 10px 15px rgba(37, 99, 235, 0.2)';
+        boxShadow = '0 10px 25px rgba(30, 64, 175, 0.4)';
     } else {
-        const color = BUBBLE_COLORS[data.rootIndex % BUBBLE_COLORS.length];
+        const colorIndex = data.rootIndex % BUBBLE_COLORS.length;
+        const color = BUBBLE_COLORS[colorIndex];
         
+        backgroundColor = color.bg;
+        textColor = color.text;
+
         if (data.level === 1) {
-            width = '144px';
-            height = '144px';
+            width = '140px';
+            height = '140px';
             fontSize = '14px';
-            fontWeight = '600';
+            fontWeight = '700';
+            boxShadow = `0 6px 16px ${backgroundColor}40`;
         } else if (data.level === 2) {
-            width = '112px';
-            height = '112px';
+            width = '110px';
+            height = '110px';
             fontSize = '12px';
             fontWeight = '600';
+            boxShadow = `0 4px 10px ${backgroundColor}30`;
         } else {
-            width = '96px';
-            height = '96px';
+            width = '90px';
+            height = '90px';
             fontSize = '11px';
-            fontWeight = '500';
+            fontWeight = '600';
+            boxShadow = `0 3px 8px ${backgroundColor}25`;
         }
-
-        // Map color object to actual colors
-        const colorMap: { [key: string]: any } = {
-            'bg-blue-50': { bg: '#eff6ff', border: '#60a5fa', text: '#1e3a8a' },
-            'bg-emerald-50': { bg: '#f0fdf4', border: '#4ade80', text: '#165e31' },
-            'bg-amber-50': { bg: '#fffbeb', border: '#fbbf24', text: '#92400e' },
-            'bg-rose-50': { bg: '#fff1f2', border: '#fb7185', text: '#881337' },
-            'bg-violet-50': { bg: '#f5f3ff', border: '#c084fc', text: '#5b21b6' },
-            'bg-cyan-50': { bg: '#ecf0ff', border: '#22d3ee', text: '#164e63' },
-            'bg-indigo-50': { bg: '#eef2ff', border: '#818cf8', text: '#312e81' },
-            'bg-pink-50': { bg: '#fdf2f8', border: '#f472b6', text: '#831843' },
-        };
-
-        const colorKey = color.bg;
-        const mappedColor = colorMap[colorKey] || { bg: '#f1f5f9', border: '#cbd5e1', text: '#475569' };
-        
-        backgroundColor = mappedColor.bg;
-        borderColor = mappedColor.border;
-        textColor = mappedColor.text;
     }
 
     const nodeStyle: React.CSSProperties = {
@@ -110,21 +97,21 @@ const BubbleNode = ({ data, isConnectable }: any) => {
         justifyContent: 'center',
         textAlign: 'center',
         borderRadius: '50%',
-        border: `2px solid ${borderColor}`,
+        border: borderWidth > 0 ? `${borderWidth}px solid ${textColor}` : 'none',
         backgroundColor: backgroundColor,
         color: textColor,
         width: width,
         height: height,
         fontSize: fontSize,
         fontWeight: fontWeight,
-        padding: padding,
+        padding: '12px',
         boxShadow: boxShadow,
         cursor: 'pointer',
-        transition: 'all 300ms ease',
+        transition: 'all 200ms ease',
         overflow: 'hidden',
         wordWrap: 'break-word',
         whiteSpace: 'normal',
-        lineHeight: '1.2',
+        lineHeight: '1.3',
     };
 
     return (
@@ -139,7 +126,7 @@ const BubbleNode = ({ data, isConnectable }: any) => {
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%' }}>
-                <span style={{ pointerEvents: 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                <span style={{ pointerEvents: 'none', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', fontWeight: 'inherit', fontSize: 'inherit' }}>
                     {data.label}
                 </span>
             </div>
@@ -274,9 +261,9 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
                     target: id,
                     type: 'straight',
                     style: {
-                        stroke: '#94a3b8', // Slate-400 for better visibility
-                        strokeWidth: 2.5,
-                        opacity: 0.7,
+                        stroke: '#CBD5E1', // Light slate for clean look
+                        strokeWidth: 2,
+                        opacity: 0.5,
                     },
                     animated: false,
                 });
