@@ -342,7 +342,7 @@ export default function RadialMindMap(props: RadialMindMapProps) {
         if (props.onExportReady && exportRef.current) {
             props.onExportReady(exportRef.current.exportAsImage);
         }
-    }, [props.onExportReady]);
+    }, [props.onExportReady, exportRef.current]);
 
     return (
         <div className="w-full h-full min-h-[500px]">
