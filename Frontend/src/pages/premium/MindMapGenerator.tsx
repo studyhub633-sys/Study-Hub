@@ -217,30 +217,18 @@ export default function MindMapGenerator() {
             await new Promise(resolve => setTimeout(resolve, 100));
 
             const element = mindMapRef.current;
-            const clone = element.cloneNode(true) as HTMLElement;
 
-            // Setup clone styles to ensure full capture
-            clone.style.position = 'fixed';
-            clone.style.left = '-10000px';
-            clone.style.top = '0';
-            clone.style.zIndex = '-1000';
-            clone.style.height = 'auto'; // Allow height to expand
-            clone.style.width = `${element.scrollWidth}px`; // Match full width
-            clone.style.maxHeight = 'none'; // Remove any height constraints
-            clone.style.overflow = 'visible'; // Show all content
-
-            document.body.appendChild(clone);
-
-            const canvas = await html2canvas(clone, {
+            // Capture the live element directly instead of cloning
+            // Cloning ReactFlow explicitly can cause issues with missing context/canvas state
+            const canvas = await html2canvas(element, {
                 backgroundColor: '#ffffff',
                 scale: 2,
                 useCORS: true,
                 logging: false,
-                windowWidth: clone.scrollWidth,
-                windowHeight: clone.scrollHeight,
+                // Ensure we capture the background 
+                allowTaint: true,
+                foreignObjectRendering: true,
             });
-
-            document.body.removeChild(clone);
 
             if (format === 'png') {
                 // Download as PNG
