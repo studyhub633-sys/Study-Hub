@@ -8,10 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
-import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { BookOpen, FileImage, FileText, FlaskConical, Loader2, Network, Save, Sparkles } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface MindMapNode {
     title: string;
@@ -32,7 +31,7 @@ export default function MindMapGenerator() {
     const [mindMapData, setMindMapData] = useState<MindMapNode | null>(null);
     const [uploadingFile, setUploadingFile] = useState(false);
     const [downloading, setDownloading] = useState(false);
-    const mindMapRef = useRef<HTMLDivElement>(null);
+    const [exportFn, setExportFn] = useState<(() => Promise<string>) | null>(null);
 
     const [checking, setChecking] = useState(true);
 
@@ -202,7 +201,7 @@ export default function MindMapGenerator() {
     };
 
     const handleDownload = async (format: 'png' | 'pdf' = 'png') => {
-        if (!mindMapData || !mindMapRef.current) {
+        if (!mindMapData || !exportFn) {
             toast({
                 title: "Error",
                 description: "Please generate a mind map first",
@@ -213,42 +212,40 @@ export default function MindMapGenerator() {
 
         setDownloading(true);
         try {
-            // Wait a bit to ensure the mind map is fully rendered
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Get the image data URL from ReactFlow
+            const dataUrl = await exportFn();
 
-            const element = mindMapRef.current;
-
-            // Capture the live element directly instead of cloning
-            // Cloning ReactFlow explicitly can cause issues with missing context/canvas state
-            const canvas = await html2canvas(element, {
-                backgroundColor: '#ffffff',
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                // Ensure we capture the background 
-                allowTaint: true,
-                foreignObjectRendering: true,
-            });
+            if (!dataUrl || dataUrl === 'data:,') {
+                throw new Error('Failed to capture mind map image');
+            }
 
             if (format === 'png') {
                 // Download as PNG
                 const link = document.createElement('a');
                 link.download = `${title || 'mind-map'}.png`;
-                link.href = canvas.toDataURL('image/png', 1.0);
+                link.href = dataUrl;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             } else {
                 // Download as PDF
-                const imgData = canvas.toDataURL('image/png', 1.0);
-                const imgWidth = canvas.width;
-                const imgHeight = canvas.height;
+                const img = new Image();
+                img.src = dataUrl;
 
-                // Convert pixels to mm (1px = 0.264583mm at 96 DPI)
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+
+                // Use actual image dimensions
+                const imgWidth = img.width;
+                const imgHeight = img.height;
+
+                // Convert pixels to mm (at 96 DPI: 1px = 0.264583mm)
                 const mmWidth = imgWidth * 0.264583;
                 const mmHeight = imgHeight * 0.264583;
 
-                // Use A4 dimensions as max, scale if needed
+                // A4 dimensions
                 const a4Width = 210; // mm
                 const a4Height = 297; // mm
 
@@ -256,7 +253,7 @@ export default function MindMapGenerator() {
                 let pdfHeight = mmHeight;
                 let orientation: 'portrait' | 'landscape' = 'portrait';
 
-                // If image is larger than A4, scale it down
+                // Scale down if larger than A4
                 if (mmWidth > a4Width || mmHeight > a4Height) {
                     const scaleX = a4Width / mmWidth;
                     const scaleY = a4Height / mmHeight;
@@ -268,18 +265,16 @@ export default function MindMapGenerator() {
                 // Determine orientation
                 if (pdfWidth > pdfHeight) {
                     orientation = 'landscape';
-                    // Swap dimensions for landscape
-                    [pdfWidth, pdfHeight] = [pdfHeight, pdfWidth];
                 }
 
                 const pdf = new jsPDF({
                     orientation: orientation,
                     unit: 'mm',
-                    format: [pdfWidth, pdfHeight]
+                    format: orientation === 'landscape' ? [pdfHeight, pdfWidth] : [pdfWidth, pdfHeight]
                 });
 
-                // Add image, scaling to fit
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+                // Add image centered
+                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
                 pdf.save(`${title || 'mind-map'}.pdf`);
             }
 
@@ -533,8 +528,11 @@ Other objects in the solar system include dwarf planets like Pluto, asteroids in
                         </CardHeader>
                         <CardContent>
                             {mindMapData ? (
-                                <div ref={mindMapRef} className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg h-[600px] overflow-hidden">
-                                    <RadialMindMap data={mindMapData} />
+                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg h-[600px] overflow-hidden">
+                                    <RadialMindMap
+                                        data={mindMapData}
+                                        onExportReady={setExportFn}
+                                    />
                                 </div>
                             ) : (
                                 <div className="h-[400px] flex flex-col items-center justify-center text-muted-foreground opacity-50">
@@ -564,39 +562,5 @@ Other objects in the solar system include dwarf planets like Pluto, asteroids in
                 </Card>
             </div>
         </AppLayout>
-    );
-}
-
-// Simple tree-based mind map visualization
-function MindMapVisualization({ data }: { data: MindMapNode }) {
-    const renderNode = (node: MindMapNode, level: number = 0): JSX.Element => {
-        const colors = [
-            'bg-purple-500 text-white border-purple-600',
-            'bg-pink-100 dark:bg-pink-900/50 text-pink-900 dark:text-pink-100 border-pink-300 dark:border-pink-700',
-            'bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 border-blue-200 dark:border-blue-700',
-            'bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-100 border-green-200 dark:border-green-700'
-        ];
-
-        const colorClass = colors[Math.min(level, colors.length - 1)];
-        const fontSize = level === 0 ? 'text-lg font-bold' : level === 1 ? 'text-base font-semibold' : 'text-sm';
-
-        return (
-            <div key={node.title + level} className="mb-3">
-                <div className={`p-3 rounded-lg border-2 inline-block ${colorClass} ${fontSize} shadow-sm`}>
-                    {node.title}
-                </div>
-                {node.children && node.children.length > 0 && (
-                    <div className="ml-6 mt-2 border-l-2 border-purple-200 dark:border-purple-800 pl-4 space-y-2">
-                        {node.children.map((child, idx) => renderNode(child, level + 1))}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
-    return (
-        <div className="">
-            {renderNode(data)}
-        </div>
     );
 }

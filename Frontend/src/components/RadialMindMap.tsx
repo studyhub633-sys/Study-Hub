@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react';
+import { toPng } from 'html-to-image';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import ReactFlow, {
     Background,
     Controls,
@@ -8,7 +9,8 @@ import ReactFlow, {
     Position,
     ReactFlowProvider,
     useEdgesState,
-    useNodesState
+    useNodesState,
+    useReactFlow
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -19,6 +21,12 @@ interface MindMapNode {
 
 interface RadialMindMapProps {
     data: MindMapNode;
+    onExportReady?: (exportFn: () => Promise<string>) => void;
+}
+
+// Add this export handle type
+export interface MindMapExportHandle {
+    exportAsImage: () => Promise<string>;
 }
 
 // Custom Node Component for a cleaner look
@@ -68,13 +76,34 @@ const COLORS = [
     'bg-amber-50 border-amber-400 text-amber-800',
 ];
 
-function MindMapInner({ data }: RadialMindMapProps) {
+function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+    const { getNodes } = useReactFlow();
 
     const nodeTypes = useMemo(() => ({
         custom: CustomNode,
     }), []);
+
+    useImperativeHandle(ref, () => ({
+        exportAsImage: async () => {
+            // Wait a bit to ensure everything is rendered
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            const viewport = document.querySelector('.react-flow__viewport') as HTMLElement;
+            if (!viewport) {
+                throw new Error('ReactFlow viewport not found');
+            }
+
+            const dataUrl = await toPng(viewport, {
+                backgroundColor: '#ffffff',
+                pixelRatio: 2,
+                cacheBust: true,
+            });
+
+            return dataUrl;
+        }
+    }));
 
     useEffect(() => {
         if (!data) return;
@@ -152,7 +181,6 @@ function MindMapInner({ data }: RadialMindMapProps) {
                     target: id,
                     type: 'default', // 'smoothstep', 'step', 'straight', 'default' (bezier)
                     style: { stroke: '#94a3b8', strokeWidth: 2 },
-                    //   markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' }, 
                 });
             }
 
@@ -166,14 +194,8 @@ function MindMapInner({ data }: RadialMindMapProps) {
 
                     // Child position
                     const childMidAngle = currentAngle + childAngleSlice / 2;
-                    // Calculate relative position based on parent angle? 
-                    // Ideally we want radial from center (0,0) or spread out.
-                    // True radial: Calculate (x,y) from (0,0) based on depth * radius.
 
-                    // Issue: If we just use depth * radius, children of one branch might overlap with another.
-                    // But since we are partitioning the angle space from the root, they shouldn't overlap if we stick to the sector.
-
-                    // Calculate absolute absolute position
+                    // Calculate absolute position
                     const r = (level + 1) * radius;
                     const childX = r * Math.cos(childMidAngle);
                     const childY = r * Math.sin(childMidAngle);
@@ -212,13 +234,22 @@ function MindMapInner({ data }: RadialMindMapProps) {
     );
 }
 
+const MindMapWithRef = forwardRef(MindMapInner);
+
 export default function RadialMindMap(props: RadialMindMapProps) {
+    const exportRef = useRef<MindMapExportHandle>(null);
+
+    useEffect(() => {
+        if (props.onExportReady && exportRef.current) {
+            props.onExportReady(exportRef.current.exportAsImage);
+        }
+    }, [props.onExportReady]);
+
     return (
         <div className="w-full h-full min-h-[500px]">
             <ReactFlowProvider>
-                <MindMapInner {...props} />
+                <MindMapWithRef {...props} ref={exportRef} />
             </ReactFlowProvider>
         </div>
     );
 }
-
