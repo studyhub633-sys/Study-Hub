@@ -46,23 +46,23 @@ const BUBBLE_COLORS = [
 const BubbleNode = ({ data, isConnectable }: any) => {
     const isRoot = data.level === 0;
 
-    // Use vibrant colors and better sizing
+    // Use vibrant colors and better sizing with much larger text
     let backgroundColor = '#3B82F6';
     let textColor = '#FFFFFF';
-    let fontSize = '13px';
-    let fontWeight = '600';
-    let width = '100px';
-    let height = '100px';
-    let boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+    let fontSize = '16px';
+    let fontWeight = '700';
+    let width = '120px';
+    let height = '120px';
+    let boxShadow = '0 6px 16px rgba(59, 130, 246, 0.4)';
     let borderWidth = 0;
 
     if (isRoot) {
-        width = '180px';
-        height = '180px';
+        width = '220px';
+        height = '220px';
         backgroundColor = '#1E40AF'; // Deep Blue for root
-        fontSize = '18px';
-        fontWeight = '700';
-        boxShadow = '0 10px 25px rgba(30, 64, 175, 0.4)';
+        fontSize = '22px';
+        fontWeight = '800';
+        boxShadow = '0 12px 32px rgba(30, 64, 175, 0.5)';
     } else {
         const colorIndex = data.rootIndex % BUBBLE_COLORS.length;
         const color = BUBBLE_COLORS[colorIndex];
@@ -71,23 +71,23 @@ const BubbleNode = ({ data, isConnectable }: any) => {
         textColor = color.text;
 
         if (data.level === 1) {
-            width = '140px';
-            height = '140px';
+            width = '160px';
+            height = '160px';
+            fontSize = '16px';
+            fontWeight = '800';
+            boxShadow = `0 8px 20px ${backgroundColor}50`;
+        } else if (data.level === 2) {
+            width = '130px';
+            height = '130px';
             fontSize = '14px';
             fontWeight = '700';
-            boxShadow = `0 6px 16px ${backgroundColor}40`;
-        } else if (data.level === 2) {
+            boxShadow = `0 6px 14px ${backgroundColor}40`;
+        } else {
             width = '110px';
             height = '110px';
-            fontSize = '12px';
-            fontWeight = '600';
-            boxShadow = `0 4px 10px ${backgroundColor}30`;
-        } else {
-            width = '90px';
-            height = '90px';
-            fontSize = '11px';
-            fontWeight = '600';
-            boxShadow = `0 3px 8px ${backgroundColor}25`;
+            fontSize = '13px';
+            fontWeight = '700';
+            boxShadow = `0 4px 10px ${backgroundColor}35`;
         }
     }
 
@@ -162,7 +162,13 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
 
     useImperativeHandle(ref, () => ({
         exportAsImage: async () => {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            // Fit view to show all content
+            fitView({ padding: 0.1, duration: 0 });
+            
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
             const viewport = document.querySelector('.react-flow__viewport') as HTMLElement;
             if (!viewport) return "";
 
@@ -231,10 +237,10 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
             }
 
             // Calculate node size for proper centering
-            let nodeSize = 96; // Default for level 3+
-            if (level === 0) nodeSize = 176;
-            else if (level === 1) nodeSize = 144;
-            else if (level === 2) nodeSize = 112;
+            let nodeSize = 110; // Default for level 3+ (was 96)
+            if (level === 0) nodeSize = 220;
+            else if (level === 1) nodeSize = 160;
+            else if (level === 2) nodeSize = 130;
             
             const halfSize = nodeSize / 2;
 
@@ -261,9 +267,9 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
                     target: id,
                     type: 'straight',
                     style: {
-                        stroke: '#CBD5E1', // Light slate for clean look
-                        strokeWidth: 2,
-                        opacity: 0.5,
+                        stroke: '#64748B', // Darker slate for visibility
+                        strokeWidth: 3.5,
+                        opacity: 0.85,
                     },
                     animated: false,
                 });
@@ -272,12 +278,12 @@ function MindMapInner({ data, onExportReady }: RadialMindMapProps, ref: any) {
             if (node.children && node.children.length > 0) {
                 let currentAngle = startAngle;
 
-                // Improved radius calculation for better spacing
-                // Root (176px/88 half) -> L1 (144px/72 half). Gap should be at least 150px.
+                // Improved radius calculation for better spacing with larger nodes
+                // Root (220px/110 half) -> L1 (160px/80 half). Gap should be at least 180px.
                 // Base spacing starts larger and increases per level for better visual hierarchy
 
-                const baseRadius = 400;  // Increased from 350 for more breathing room
-                const levelRadiusStep = 340; // Increased from 300 for better separation
+                const baseRadius = 480;  // Increased for larger nodes
+                const levelRadiusStep = 380; // Increased for larger nodes
                 const actualRadius = level === 0 ? baseRadius : baseRadius + (level * levelRadiusStep);
 
                 // More intelligent angle distribution to prevent overlap
