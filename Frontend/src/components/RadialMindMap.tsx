@@ -1,5 +1,4 @@
-
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import ReactFlow, {
     Background,
     Controls,
@@ -7,6 +6,7 @@ import ReactFlow, {
     Handle,
     Node,
     Position,
+    ReactFlowProvider,
     useEdgesState,
     useNodesState
 } from 'reactflow';
@@ -48,10 +48,6 @@ const CustomNode = ({ data, isConnectable }: any) => {
     );
 };
 
-const nodeTypes = {
-    custom: CustomNode,
-};
-
 // Helper: Calculate subtree weights (leaf counts)
 const calculateWeights = (node: MindMapNode): any => {
     if (!node.children || node.children.length === 0) {
@@ -72,9 +68,13 @@ const COLORS = [
     'bg-amber-50 border-amber-400 text-amber-800',
 ];
 
-export default function RadialMindMap({ data }: RadialMindMapProps) {
+function MindMapInner({ data }: RadialMindMapProps) {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+    const nodeTypes = useMemo(() => ({
+        custom: CustomNode,
+    }), []);
 
     useEffect(() => {
         if (!data) return;
@@ -194,24 +194,31 @@ export default function RadialMindMap({ data }: RadialMindMapProps) {
         setEdges(newEdges);
     }, [data, setNodes, setEdges]);
 
-    // Center the view initially? We can use fitView in onInit but simple prop is easier
+    return (
+        <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            fitView
+            attributionPosition="bottom-right"
+            minZoom={0.1}
+            maxZoom={4}
+        >
+            <Background gap={16} size={1} />
+            <Controls />
+        </ReactFlow>
+    );
+}
 
+export default function RadialMindMap(props: RadialMindMapProps) {
     return (
         <div className="w-full h-full min-h-[500px]">
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                nodeTypes={nodeTypes}
-                fitView
-                attributionPosition="bottom-right"
-                minZoom={0.1}
-                maxZoom={4}
-            >
-                <Background gap={16} size={1} />
-                <Controls />
-            </ReactFlow>
+            <ReactFlowProvider>
+                <MindMapInner {...props} />
+            </ReactFlowProvider>
         </div>
     );
 }
+
