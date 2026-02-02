@@ -154,6 +154,10 @@ export default function MindMapGenerator() {
                 throw new Error(data.error || 'Failed to generate mind map');
             }
 
+            if (!data.mindMapData) {
+                throw new Error('Invalid response: No mind map data received');
+            }
+
             setMindMapData(data.mindMapData);
             toast({
                 title: "Success!",
@@ -161,9 +165,19 @@ export default function MindMapGenerator() {
             });
 
         } catch (error: any) {
+            console.error('Mind map generation error:', error);
+            let errorMessage = error.message || 'Failed to generate mind map';
+            
+            // Provide helpful error messages
+            if (errorMessage.includes('JSON')) {
+                errorMessage = 'AI response format error. Please try again.';
+            } else if (errorMessage.includes('429')) {
+                errorMessage = 'Too many requests. Please wait a moment and try again.';
+            }
+            
             toast({
                 title: "Error",
-                description: error.message,
+                description: errorMessage,
                 variant: "destructive",
             });
         } finally {

@@ -884,38 +884,25 @@ async function handleGenerateMindMap(req, res) {
         }
 
         const systemPrompt = `You are an expert mind map generator that creates clean, readable, and well-organized visual hierarchies.
-Create a hierarchical JSON mind map from the provided text.
-Structure must be: { "title": "Main Topic", "children": [ { "title": "Subtopic", "children": [...] } ] }
+Your ONLY task is to return a valid JSON mind map structure. DO NOT include any text before, after, or within the JSON.
 
-CRITICAL RULES for readability:
+RESPONSE FORMAT: Return ONLY a single valid JSON object, no markdown, no explanations, no additional text.
+
+JSON Structure: { "title": "Main Topic", "children": [ { "title": "Subtopic", "children": [...] } ] }
+
+CRITICAL RULES:
 - Limit root node to maximum 5-7 main branches (children)
 - Limit depth to 3 levels maximum
 - Each branch should have 2-5 sub-items maximum
 - Keep titles CONCISE: 2-5 words per node maximum
 - Extract only the MOST IMPORTANT concepts
 - Use clear, academic language
-- Each node must have "title" (string) and "children" (array) properties
-- Return ONLY the JSON, no explanations
+- Each node MUST have "title" (string) and "children" (array) properties
 
-Example structure:
-{
-  "title": "Photosynthesis",
-  "children": [
-    {
-      "title": "Light Reactions",
-      "children": [
-        { "title": "Photosystem II", "children": [] },
-        { "title": "Electron Transport", "children": [] }
-      ]
-    },
-    {
-      "title": "Calvin Cycle",
-      "children": [
-        { "title": "Carbon Fixation", "children": [] }
-      ]
-    }
-  ]
-}`;
+EXAMPLE OUTPUT (copy this format exactly):
+{"title":"Photosynthesis","children":[{"title":"Light Reactions","children":[{"title":"Photosystem II","children":[]},{"title":"Electron Transport","children":[]}]},{"title":"Calvin Cycle","children":[{"title":"Carbon Fixation","children":[]}]}]}
+
+REMEMBER: Return ONLY the JSON object with no other text.`;
 
         const userPrompt = `Create a clean, readable mind map structure from these study notes. Focus on the 5-7 most important concepts. Keep all node titles to 2-5 words maximum:\n\n${content.substring(0, 5000)}`;
 
@@ -929,29 +916,66 @@ Example structure:
             return res.status(503).json({ error: apiError.message });
         }
 
+        // Clean and extract JSON from response (handle markdown code blocks)
+        let cleanedText = generatedText.trim();
+        
+        // Remove markdown code blocks if present
+        if (cleanedText.startsWith('```json')) {
+            cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+        } else if (cleanedText.startsWith('```')) {
+            cleanedText = cleanedText.replace(/^```\s*/, '').replace(/```\s*$/, '');
+        }
+        
+        cleanedText = cleanedText.trim();
 
         let mindMapData;
 
         try {
-            mindMapData = JSON.parse(generatedText);
+            mindMapData = JSON.parse(cleanedText);
             // Validate structure
             if (!mindMapData.title || !Array.isArray(mindMapData.children)) {
-                throw new Error('Invalid structure');
+                throw new Error('Invalid structure: missing title or children array');
             }
         } catch (e) {
-            console.error('JSON parse error:', e);
-            // Fallback structure
-            mindMapData = {
-                title: title || subject || "Mind Map",
-                children: [
-                    {
-                        title: "Generated Content",
-                        children: [
-                            { title: content.substring(0, 100) + "...", children: [] }
-                        ]
+            console.error('JSON parse error:', e, 'Raw response:', generatedText);
+            
+            // Try to extract JSON from the response if it contains extra text
+            const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                try {
+                    mindMapData = JSON.parse(jsonMatch[0]);
+                    if (!mindMapData.title || !Array.isArray(mindMapData.children)) {
+                        throw new Error('Extracted JSON has invalid structure');
                     }
-                ]
-            };
+                } catch (extractError) {
+                    console.error('JSON extraction error:', extractError);
+                    // Fallback structure
+                    mindMapData = {
+                        title: title || subject || "Mind Map",
+                        children: [
+                            {
+                                title: "Generated Content",
+                                children: [
+                                    { title: content.substring(0, 100) + "...", children: [] }
+                                ]
+                            }
+                        ]
+                    };
+                }
+            } else {
+                // Fallback structure
+                mindMapData = {
+                    title: title || subject || "Mind Map",
+                    children: [
+                        {
+                            title: "Generated Content",
+                            children: [
+                                { title: content.substring(0, 100) + "...", children: [] }
+                            ]
+                        }
+                    ]
+                };
+            }
         }
 
         if (usageData?.usageId) {
