@@ -21,6 +21,7 @@ interface Message {
     role: "user" | "assistant";
     content: string;
     timestamp: Date;
+    image?: string; // Base64 image data
 }
 
 // Convert internal Message to ChatMessage for storage
@@ -29,6 +30,7 @@ const toChatMessage = (msg: Message): ChatMessage => ({
     role: msg.role,
     content: msg.content,
     timestamp: msg.timestamp.toISOString(),
+    image: msg.image,
 });
 
 // Convert stored ChatMessage to internal Message
@@ -37,6 +39,7 @@ const toMessage = (msg: ChatMessage): Message => ({
     role: msg.role,
     content: msg.content,
     timestamp: new Date(msg.timestamp),
+    image: msg.image,
 });
 
 const defaultWelcomeMessage: Message = {
@@ -159,6 +162,7 @@ export default function AITutor() {
             role: "user",
             content: text,
             timestamp: new Date(),
+            image: image,
         };
 
         const newMessages = [...messages, userMessage];
@@ -416,7 +420,18 @@ export default function AITutor() {
                                                 {message.role === "assistant" ? (
                                                     <SimpleMarkdown content={message.content} />
                                                 ) : (
-                                                    <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
+                                                    <>
+                                                        {message.image && (
+                                                            <img
+                                                                src={message.image}
+                                                                alt="Uploaded"
+                                                                className="max-w-full max-h-[200px] rounded-lg object-contain mb-2"
+                                                            />
+                                                        )}
+                                                        {message.content !== "Analyzing image..." && (
+                                                            <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
+                                                        )}
+                                                    </>
                                                 )}
                                             </div>
                                             <div className="text-[10px] opacity-40 mt-1 px-1">

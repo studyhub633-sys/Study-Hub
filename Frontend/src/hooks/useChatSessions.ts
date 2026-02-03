@@ -6,6 +6,7 @@ export interface ChatMessage {
     role: "user" | "assistant";
     content: string;
     timestamp: string;
+    image?: string; // Base64 image data
 }
 
 export interface ChatSession {
