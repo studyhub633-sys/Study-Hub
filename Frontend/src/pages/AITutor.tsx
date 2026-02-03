@@ -526,7 +526,18 @@ export default function AITutor() {
                 <VoiceChat
                     isOpen={isVoiceMode}
                     onClose={() => setIsVoiceMode(false)}
-                    onSendMessage={(text) => processMessage(text)}
+                    onSendMessage={async (text) => {
+                        const img = uploadedImage || undefined;
+                        const res = await processMessage(text, img);
+                        if (img) {
+                            setUploadedImage(null);
+                            setImageFileName(null);
+                            if (fileInputRef.current) {
+                                fileInputRef.current.value = '';
+                            }
+                        }
+                        return res;
+                    }}
                     isProcessing={loading}
                 />
             </div>
