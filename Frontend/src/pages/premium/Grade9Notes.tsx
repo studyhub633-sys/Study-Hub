@@ -3,7 +3,16 @@ import { SimpleMarkdown } from "@/components/SimpleMarkdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
@@ -11,13 +20,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { generateKnowledgeOrganizer } from "@/lib/ai-client";
 import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
     BookOpen,
-    Bot,
     ChevronLeft,
     Crown,
     Download,
@@ -30,7 +40,7 @@ import {
     Star
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface PremiumNote {
     id: string;
@@ -54,6 +64,64 @@ export default function Grade9Notes() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSubject, setSelectedSubject] = useState("All Subjects");
     const [selectedNote, setSelectedNote] = useState<PremiumNote | null>(null);
+
+    // AI Generation State
+    const [showGenerationDialog, setShowGenerationDialog] = useState(false);
+    const [generationPrompt, setGenerationPrompt] = useState("");
+    const [generating, setGenerating] = useState(false);
+
+    const handleGenerateNotes = async () => {
+        if (!generationPrompt.trim()) return;
+
+        setGenerating(true);
+        try {
+            const result = await generateKnowledgeOrganizer({
+                prompt: generationPrompt,
+                subject: selectedSubject === "All Subjects" ? "General" : selectedSubject,
+                topic: generationPrompt.substring(0, 50)
+            }, supabase);
+
+            if (result.error) throw new Error(result.error);
+
+            if (result.data) {
+                // Combine sections into one markdown content
+                const content = result.data.sections
+                    .map((s: any) => `## ${s.title}\n\n${s.content}`)
+                    .join("\n\n");
+
+                const title = result.data.topic || result.data.sections[0]?.title || "AI Generated Note";
+
+                const newNote: PremiumNote = {
+                    id: `ai-${Date.now()}`,
+                    title: title,
+                    content: content,
+                    subject: result.data.subject || (selectedSubject === "All Subjects" ? "General" : selectedSubject),
+                    topic: result.data.topic || "AI Generated",
+                    grade_level: "9",
+                    tags: ["AI", "Generated", "Knowledge Organizer"],
+                    created_at: new Date().toISOString()
+                };
+
+                setNotes(prev => [newNote, ...prev]);
+                setSelectedNote(newNote);
+                setShowGenerationDialog(false);
+                setGenerationPrompt("");
+                toast({
+                    title: "Note Generated",
+                    description: "Your AI note has been created successfully.",
+                });
+            }
+        } catch (error: any) {
+            console.error("Error generating note:", error);
+            toast({
+                title: "Generation Failed",
+                description: error.message || "Failed to generate note.",
+                variant: "destructive",
+            });
+        } finally {
+            setGenerating(false);
+        }
+    };
 
     const subjects = Array.from(new Set(notes.map((n) => n.subject).filter(Boolean)));
 
@@ -269,12 +337,13 @@ export default function Grade9Notes() {
                             </p>
                         </div>
                     </div>
-                    <Link to="/knowledge">
-                        <Button className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white">
-                            <Bot className="w-4 h-4 mr-2" />
-                            AI Knowledge Organizer
-                        </Button>
-                    </Link>
+                    <Button
+                        onClick={() => setShowGenerationDialog(true)}
+                        className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white"
+                    >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        AI Note Generator
+                    </Button>
                 </div>
 
                 {/* Filters */}
@@ -440,6 +509,56 @@ export default function Grade9Notes() {
                     </div>
                 )}
             </div>
-        </AppLayout>
+
+            <Dialog open={showGenerationDialog} onOpenChange={setShowGenerationDialog}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-purple-500" />
+                            AI Note Generator
+                        </DialogTitle>
+                        <DialogDescription>
+                            Enter a topic or specific question below, and our AI will generate a comprehensive study note for you.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="prompt">Topic or Question</Label>
+                            <Textarea
+                                id="prompt"
+                                placeholder="E.g., 'Explain the causes of World War I' or 'How does photosynthesis work?'..."
+                                className="min-h-[150px]"
+                                value={generationPrompt}
+                                onChange={(e) => setGenerationPrompt(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowGenerationDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleGenerateNotes}
+                            disabled={!generationPrompt.trim() || generating}
+                            className="bg-gradient-to-r from-purple-500 to-blue-600 text-white"
+                        >
+                            {generating ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Generating...
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    Generate Note
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </AppLayout >
     );
 }

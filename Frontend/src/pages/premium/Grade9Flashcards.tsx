@@ -3,28 +3,41 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
+import { generateFlashcards } from "@/lib/ai-client";
 import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
     ArrowLeft,
     ArrowRight,
-    Bot,
     ChevronLeft,
     Crown,
     Layers,
+    Loader2,
     Lock,
     RotateCcw,
-    Shuffle
+    Shuffle,
+    Sparkles
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Flashcard {
     id: string;
@@ -1003,9 +1016,66 @@ export default function Grade9Flashcards() {
     const [isFlipped, setIsFlipped] = useState(false);
     const [shuffledCards, setShuffledCards] = useState<Flashcard[]>([]);
 
-    const currentSet = flashcardData.find(s => s.subject === selectedSubject);
+    // AI Generation State
+    const [allFlashcards, setAllFlashcards] = useState<FlashcardSet[]>(flashcardData);
+    const [showGenerationDialog, setShowGenerationDialog] = useState(false);
+    const [generationPrompt, setGenerationPrompt] = useState("");
+    const [generating, setGenerating] = useState(false);
+
+    const currentSet = allFlashcards.find(s => s.subject === selectedSubject);
     const cards = shuffledCards.length > 0 ? shuffledCards : (currentSet?.cards || []);
     const currentCard = cards[currentCardIndex];
+
+    const handleGenerateFlashcards = async () => {
+        if (!generationPrompt.trim()) return;
+
+        setGenerating(true);
+        try {
+            const result = await generateFlashcards({
+                notes: generationPrompt,
+                subject: "AI Generated",
+                count: 10
+            }, supabase);
+
+            if (result.error) throw new Error(result.error);
+
+            if (result.data?.flashcards) {
+                const newCards = result.data.flashcards.map((card: any, index: number) => ({
+                    id: `ai-${Date.now()}-${index}`,
+                    topic: "AI Generated",
+                    question: card.question,
+                    answer: card.answer
+                }));
+
+                setAllFlashcards(prev => {
+                    const existingAiSetIndex = prev.findIndex(s => s.subject === "AI Generated");
+                    if (existingAiSetIndex >= 0) {
+                        const newSets = [...prev];
+                        newSets[existingAiSetIndex] = {
+                            ...newSets[existingAiSetIndex],
+                            cards: [...newCards, ...newSets[existingAiSetIndex].cards]
+                        };
+                        return newSets;
+                    } else {
+                        return [...prev, {
+                            subject: "AI Generated",
+                            cards: newCards
+                        }];
+                    }
+                });
+
+                setSelectedSubject("AI Generated");
+                setShowGenerationDialog(false);
+                setGenerationPrompt("");
+                toast.success(`Generated ${newCards.length} flashcards!`);
+            }
+        } catch (error: any) {
+            console.error("Error generating flashcards:", error);
+            toast.error(error.message || "Failed to generate flashcards");
+        } finally {
+            setGenerating(false);
+        }
+    };
 
     useEffect(() => {
         if (user) {
@@ -1136,12 +1206,13 @@ export default function Grade9Flashcards() {
                             </p>
                         </div>
                     </div>
-                    <Link to="/flashcards">
-                        <Button className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white">
-                            <Bot className="w-4 h-4 mr-2" />
-                            AI Flashcard Generator
-                        </Button>
-                    </Link>
+                    <Button
+                        onClick={() => setShowGenerationDialog(true)}
+                        className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white"
+                    >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        AI Flashcard Generator
+                    </Button>
                 </div>
 
                 {/* Subject Selection */}
@@ -1151,7 +1222,7 @@ export default function Grade9Flashcards() {
                             <SelectValue placeholder="Select Subject" />
                         </SelectTrigger>
                         <SelectContent>
-                            {flashcardData.map(set => (
+                            {allFlashcards.map(set => (
                                 <SelectItem key={set.subject} value={set.subject}>
                                     {set.subject}
                                 </SelectItem>
@@ -1291,7 +1362,7 @@ export default function Grade9Flashcards() {
 
                 {/* Subject Stats */}
                 <div className="mt-8 grid grid-cols-2 sm:grid-cols-5 gap-3">
-                    {flashcardData.map(set => (
+                    {allFlashcards.map(set => (
                         <button
                             key={set.subject}
                             onClick={() => setSelectedSubject(set.subject)}
@@ -1308,6 +1379,56 @@ export default function Grade9Flashcards() {
                     ))}
                 </div>
             </div>
-        </AppLayout>
+
+            <Dialog open={showGenerationDialog} onOpenChange={setShowGenerationDialog}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-purple-500" />
+                            AI Flashcard Generator
+                        </DialogTitle>
+                        <DialogDescription>
+                            Enter your study notes or a topic below, and our AI will instantly generate high-quality flashcards for you.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="prompt">Study Notes or Topic</Label>
+                            <Textarea
+                                id="prompt"
+                                placeholder="Paste your notes here, or type a topic (e.g., 'Photosynthesis and Respiration')..."
+                                className="min-h-[150px]"
+                                value={generationPrompt}
+                                onChange={(e) => setGenerationPrompt(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowGenerationDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleGenerateFlashcards}
+                            disabled={!generationPrompt.trim() || generating}
+                            className="bg-gradient-to-r from-purple-500 to-blue-600 text-white"
+                        >
+                            {generating ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Generating...
+                                </>
+                            ) : (
+                                <>
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    Generate Cards
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </AppLayout >
     );
 }

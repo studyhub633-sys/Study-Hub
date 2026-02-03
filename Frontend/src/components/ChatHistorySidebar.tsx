@@ -9,8 +9,13 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ChatSession } from "@/hooks/useChatSessions";
 import { cn } from "@/lib/utils";
 import {
@@ -18,6 +23,7 @@ import {
     ChevronLeft,
     ChevronRight,
     MessageSquare,
+    MoreVertical,
     Pencil,
     Plus,
     Trash2,
@@ -34,6 +40,7 @@ interface ChatHistorySidebarProps {
     onRenameSession: (id: string, title: string) => Promise<void>;
     loading?: boolean;
     onClose?: () => void;
+    isOpen?: boolean; // For mobile/tablet control
 }
 
 export function ChatHistorySidebar({
@@ -45,6 +52,7 @@ export function ChatHistorySidebar({
     onRenameSession,
     loading,
     onClose,
+    isOpen = true,
 }: ChatHistorySidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -143,9 +151,6 @@ export function ChatHistorySidebar({
 
     const handleHideClick = (id: string) => {
         setHiddenSessionIds(prev => [...prev, id]);
-        // If the current session is hidden, user probably wants to stay on it or go to new chat?
-        // Usually stick to it or let onSelectSession handle it.
-        // But if it disappears from list, that's fine.
     };
 
     const handleConfirmDelete = async () => {
@@ -156,10 +161,19 @@ export function ChatHistorySidebar({
         setSessionToDelete(null);
     };
 
+    const handleSessionClick = (sessionId: string) => {
+        onSelectSession(sessionId);
+        // Auto-close on mobile/tablet
+        if (onClose && window.innerWidth < 1024) {
+            onClose();
+        }
+    };
+
     // Filter out hidden sessions before grouping
     const visibleSessions = sessions.filter(s => !hiddenSessionIds.includes(s.id));
     const groupedSessions = groupSessionsByDate(visibleSessions);
 
+    // Collapsed state (thin sidebar with icons only)
     if (isCollapsed) {
         return (
             <div className="w-12 h-full border-r border-border/50 bg-muted/30 flex flex-col items-center py-4 gap-2">
@@ -185,9 +199,29 @@ export function ChatHistorySidebar({
 
     return (
         <>
-            <div className="w-64 h-full border-r border-border/50 bg-muted/30 flex flex-col">
+            {/* Backdrop for mobile/tablet */}
+            {isOpen && onClose && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    onClick={onClose}
+                />
+            )}
+
+            {/* Sidebar */}
+            <div
+                className={cn(
+                    "h-full border-r border-border/50 bg-background flex flex-col transition-transform duration-300",
+                    // Mobile & Tablet: Fixed overlay with slide animation
+                    "fixed inset-y-0 left-0 z-50 w-[280px] sm:w-[300px] md:w-80",
+                    // Desktop: Relative positioning, always visible
+                    "lg:relative lg:z-auto lg:translate-x-0",
+                    // Slide animation for mobile/tablet
+                    !isOpen && "lg:hidden -translate-x-full",
+                    isOpen && "translate-x-0"
+                )}
+            >
                 {/* Header */}
-                <div className="p-3 border-b border-border/50 flex items-center justify-between">
+                <div className="p-3 border-b border-border/50 flex items-center justify-between flex-shrink-0">
                     <h3 className="text-sm font-medium text-foreground">Chat History</h3>
                     <Button
                         variant="ghost"
@@ -195,20 +229,23 @@ export function ChatHistorySidebar({
                         className="h-7 w-7"
                         onClick={onClose ? onClose : () => setIsCollapsed(true)}
                     >
-                        {onClose ? (
-                            <X className="h-4 w-4" />
-                        ) : (
-                            <ChevronLeft className="h-4 w-4" />
-                        )}
+                        <X className="h-4 w-4 lg:hidden" />
+                        <ChevronLeft className="h-4 w-4 hidden lg:block" />
                     </Button>
                 </div>
 
                 {/* New Chat Button */}
-                <div className="p-3">
+                <div className="p-3 flex-shrink-0">
                     <Button
                         variant="outline"
                         className="w-full justify-start gap-2"
-                        onClick={onNewChat}
+                        onClick={() => {
+                            onNewChat();
+                            // Auto-close on mobile/tablet
+                            if (onClose && window.innerWidth < 1024) {
+                                onClose();
+                            }
+                        }}
                     >
                         <Plus className="h-4 w-4" />
                         New Chat
@@ -216,14 +253,14 @@ export function ChatHistorySidebar({
                 </div>
 
                 {/* Sessions List */}
-                <ScrollArea className="flex-1">
-                    <div className="p-2 space-y-4">
+                <div className="flex-1 overflow-y-auto min-h-0">
+                    <div className="p-2 space-y-4 pb-4">
                         {loading ? (
                             <div className="text-center text-muted-foreground text-sm py-8">
                                 Loading...
                             </div>
                         ) : visibleSessions.length === 0 ? (
-                            <div className="text-center text-muted-foreground text-sm py-8">
+                            <div className="text-center text-muted-foreground text-sm py-8 px-4">
                                 <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
                                 <p>No chat history yet</p>
                                 <p className="text-xs mt-1">Start a new conversation!</p>
@@ -231,7 +268,7 @@ export function ChatHistorySidebar({
                         ) : (
                             groupedSessions.map((group) => (
                                 <div key={group.label}>
-                                    <h4 className="text-xs font-medium text-muted-foreground px-2 mb-2">
+                                    <h4 className="text-xs font-medium text-muted-foreground px-2 mb-2 sticky top-0 bg-background/95 backdrop-blur-sm py-1">
                                         {group.label}
                                     </h4>
                                     <div className="space-y-1">
@@ -239,10 +276,10 @@ export function ChatHistorySidebar({
                                             <div
                                                 key={session.id}
                                                 className={cn(
-                                                    "group relative rounded-lg transition-colors",
+                                                    "group rounded-lg transition-colors mx-1",
                                                     currentSessionId === session.id
                                                         ? "bg-primary/10"
-                                                        : "hover:bg-muted"
+                                                        : "hover:bg-muted active:bg-muted"
                                                 )}
                                             >
                                                 {editingId === session.id ? (
@@ -250,7 +287,7 @@ export function ChatHistorySidebar({
                                                         <Input
                                                             value={editTitle}
                                                             onChange={(e) => setEditTitle(e.target.value)}
-                                                            className="h-7 text-sm"
+                                                            className="h-7 text-sm flex-1 min-w-0"
                                                             autoFocus
                                                             onKeyDown={(e) => {
                                                                 if (e.key === "Enter") handleSaveEdit();
@@ -275,45 +312,54 @@ export function ChatHistorySidebar({
                                                         </Button>
                                                     </div>
                                                 ) : (
-                                                    <button
-                                                        className="w-full text-left p-2 pr-8"
-                                                        onClick={() => onSelectSession(session.id)}
-                                                    >
-                                                        <p className="text-sm font-medium truncate text-foreground">
-                                                            {session.title}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {formatRelativeTime(session.updated_at)}
-                                                        </p>
-                                                    </button>
-                                                )}
+                                                    <div className="flex items-center gap-1 p-2">
+                                                        <button
+                                                            className="flex-1 text-left min-w-0"
+                                                            onClick={() => handleSessionClick(session.id)}
+                                                        >
+                                                            <p className="text-sm font-medium truncate text-foreground pr-1">
+                                                                {session.title}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground truncate">
+                                                                {formatRelativeTime(session.updated_at)}
+                                                            </p>
+                                                        </button>
 
-                                                {editingId !== session.id && (
-                                                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded-md shadow-sm border border-border/50 p-0.5">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleStartEdit(session);
-                                                            }}
-                                                            title="Rename"
-                                                        >
-                                                            <Pencil className="h-3 w-3" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDeleteClick(session.id);
-                                                            }}
-                                                            title="Delete"
-                                                        >
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </Button>
+                                                        {/* 3-DOT MENU - Always visible */}
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent"
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                >
+                                                                    <MoreVertical className="h-4 w-4" />
+                                                                    <span className="sr-only">More options</span>
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="w-48">
+                                                                <DropdownMenuItem
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleStartEdit(session);
+                                                                    }}
+                                                                >
+                                                                    <Pencil className="h-4 w-4 mr-2" />
+                                                                    Rename
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDeleteClick(session.id);
+                                                                    }}
+                                                                    className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4 mr-2" />
+                                                                    Delete
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </div>
                                                 )}
                                             </div>
@@ -323,7 +369,7 @@ export function ChatHistorySidebar({
                             ))
                         )}
                     </div>
-                </ScrollArea>
+                </div>
             </div>
 
             {/* Delete Confirmation Dialog */}
