@@ -17,6 +17,7 @@ import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
     BookOpen,
+    Bot,
     ChevronLeft,
     Crown,
     Download,
@@ -26,10 +27,10 @@ import {
     Lock,
     Search,
     Sparkles,
-    Star,
+    Star
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface PremiumNote {
     id: string;
@@ -250,22 +251,30 @@ export default function Grade9Notes() {
         <AppLayout>
             <div className="max-w-6xl mx-auto animate-fade-in pb-12">
                 {/* Header */}
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 rounded-xl bg-gradient-to-r from-yellow-500/20 to-amber-500/20">
-                        <FileText className="w-8 h-8 text-yellow-500" />
-                    </div>
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-3xl font-bold">Grade 9 Premium Notes</h1>
-                            <Badge className="bg-gradient-to-r from-yellow-500 to-amber-600 text-white border-0">
-                                <Crown className="w-3 h-3 mr-1" />
-                                Premium
-                            </Badge>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="p-3 rounded-xl bg-gradient-to-r from-yellow-500/20 to-amber-500/20">
+                            <FileText className="w-8 h-8 text-yellow-500" />
                         </div>
-                        <p className="text-muted-foreground">
-                            Exclusive study materials for top marks
-                        </p>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-3xl font-bold">Grade 9 Premium Notes</h1>
+                                <Badge className="bg-gradient-to-r from-yellow-500 to-amber-600 text-white border-0">
+                                    <Crown className="w-3 h-3 mr-1" />
+                                    Premium
+                                </Badge>
+                            </div>
+                            <p className="text-muted-foreground">
+                                Exclusive study materials for top marks
+                            </p>
+                        </div>
                     </div>
+                    <Link to="/knowledge">
+                        <Button className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white">
+                            <Bot className="w-4 h-4 mr-2" />
+                            Generate AI Notes
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Filters */}
@@ -405,7 +414,11 @@ export default function Grade9Notes() {
                                             </div>
                                         )}
 
-                                        <div className="prose prose-sm max-w-none prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-a:text-primary dark:prose-invert">
+                                        {/* Scrollable content area with improved scroll behavior */}
+                                        <div
+                                            className="prose prose-sm max-w-none prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-a:text-primary dark:prose-invert max-h-[60vh] overflow-y-auto pr-2 scroll-smooth"
+                                            style={{ scrollbarWidth: 'thin', scrollbarGutter: 'stable' }}
+                                        >
                                             <SimpleMarkdown content={selectedNote.content} />
                                         </div>
                                     </CardContent>

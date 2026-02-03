@@ -15,15 +15,16 @@ import { cn } from "@/lib/utils";
 import {
     ArrowLeft,
     ArrowRight,
+    Bot,
     ChevronLeft,
     Crown,
     Layers,
     Lock,
     RotateCcw,
-    Shuffle,
+    Shuffle
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface Flashcard {
     id: string;
@@ -1135,6 +1136,12 @@ export default function Grade9Flashcards() {
                             </p>
                         </div>
                     </div>
+                    <Link to="/flashcards">
+                        <Button className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white">
+                            <Bot className="w-4 h-4 mr-2" />
+                            Generate AI Flashcards
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Subject Selection */}

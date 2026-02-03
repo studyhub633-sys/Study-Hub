@@ -5,8 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { chatWithAI } from "@/lib/ai-client";
-import { Brain, Sparkles, Upload } from "lucide-react";
-import { useState } from "react";
+import { Brain, Sparkles, Upload, X } from "lucide-react";
+import { useRef, useState } from "react";
 
 export default function HomeworkSolver() {
     const { supabase } = useAuth();
@@ -14,12 +14,60 @@ export default function HomeworkSolver() {
     const [question, setQuestion] = useState("");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [solution, setSolution] = useState<string | null>(null);
+    const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+    const [imageFileName, setImageFileName] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast({
+                title: "Invalid file",
+                description: "Please upload an image file (PNG, JPG, GIF, etc.)",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast({
+                title: "File too large",
+                description: "Please upload an image smaller than 5MB",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // Read and display the image
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setUploadedImage(e.target?.result as string);
+            setImageFileName(file.name);
+            toast({
+                title: "Image uploaded",
+                description: "Describe the problem in the text area to get AI assistance.",
+            });
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleRemoveImage = () => {
+        setUploadedImage(null);
+        setImageFileName(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
 
     const handleSolve = async () => {
-        if (!question.trim()) {
+        if (!question.trim() && !uploadedImage) {
             toast({
                 title: "Error",
-                description: "Please enter a question to solve.",
+                description: "Please enter a question or upload an image to solve.",
                 variant: "destructive",
             });
             return;
@@ -29,9 +77,13 @@ export default function HomeworkSolver() {
         setSolution(null);
 
         try {
-            const prompt = `Please solve this homework question step-by-step. Provide a clear explanation of each step, show your work, and explain the reasoning behind each step. If applicable, identify the key concepts being tested.
+            let prompt = `Please solve this homework question step-by-step. Provide a clear explanation of each step, show your work, and explain the reasoning behind each step. If applicable, identify the key concepts being tested.`;
 
-Question: ${question}`;
+            if (uploadedImage) {
+                prompt += `\n\nNote: The student has uploaded an image of their homework. They have described the question as follows:`;
+            }
+
+            prompt += `\n\nQuestion: ${question || "Please analyze and solve the problem shown in the uploaded image."}`;
 
             const result = await chatWithAI(
                 {
@@ -88,21 +140,59 @@ Question: ${question}`;
                             <CardDescription>Type your question or upload an image</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                            {/* Image Preview */}
+                            {uploadedImage && (
+                                <div className="relative rounded-lg border-2 border-dashed border-purple-500/30 p-2 bg-purple-500/5">
+                                    <img
+                                        src={uploadedImage}
+                                        alt="Uploaded homework"
+                                        className="max-h-[150px] w-full object-contain rounded"
+                                    />
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        className="absolute top-1 right-1 h-6 w-6 rounded-full"
+                                        onClick={handleRemoveImage}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground mt-1 text-center truncate">
+                                        {imageFileName}
+                                    </p>
+                                </div>
+                            )}
+
                             <Textarea
-                                placeholder="Paste your homework question here..."
-                                className="min-h-[200px] resize-none"
+                                placeholder={uploadedImage
+                                    ? "Describe what you need help with from the image..."
+                                    : "Paste your homework question here..."}
+                                className="min-h-[150px] resize-none"
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
                             />
+
+                            {/* Hidden file input */}
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                            />
+
                             <div className="flex gap-4">
-                                <Button variant="outline" className="flex-1">
+                                <Button
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
                                     <Upload className="w-4 h-4 mr-2" />
-                                    Upload Image
+                                    {uploadedImage ? "Change Image" : "Upload Image"}
                                 </Button>
                                 <Button
                                     className="flex-1 bg-purple-600 hover:bg-purple-700"
                                     onClick={handleSolve}
-                                    disabled={!question && !isAnalyzing}
+                                    disabled={(!question && !uploadedImage) || isAnalyzing}
                                 >
                                     {isAnalyzing ? (
                                         <>Processing...</>
@@ -127,7 +217,7 @@ Question: ${question}`;
                         </CardHeader>
                         <CardContent>
                             {solution ? (
-                                <div className="prose dark:prose-invert">
+                                <div className="prose dark:prose-invert max-h-[400px] overflow-y-auto">
                                     <p className="whitespace-pre-line">{solution}</p>
 
                                     <div className="mt-6 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">

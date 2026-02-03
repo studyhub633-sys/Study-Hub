@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useChatSessions, type ChatMessage } from "@/hooks/useChatSessions";
 import { chatWithAI } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
-import { Bot, Headphones, Loader2, Menu, Send, Sparkles, User } from "lucide-react";
+import { Bot, Camera, Headphones, Loader2, Menu, Send, Sparkles, User, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
@@ -70,6 +70,11 @@ export default function AITutor() {
     const [loading, setLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [isVoiceMode, setIsVoiceMode] = useState(false);
+
+    // Image upload state
+    const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+    const [imageFileName, setImageFileName] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Flag to prevent double session creation
     const sessionCreatedRef = useRef(false);
@@ -230,10 +235,65 @@ export default function AITutor() {
         }
     };
 
+    // Image upload handler
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast({
+                title: "Invalid file",
+                description: "Please upload an image file (PNG, JPG, GIF, etc.)",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast({
+                title: "File too large",
+                description: "Please upload an image smaller than 5MB",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // Read and display the image
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setUploadedImage(e.target?.result as string);
+            setImageFileName(file.name);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleRemoveImage = () => {
+        setUploadedImage(null);
+        setImageFileName(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     const handleSend = async () => {
-        if (!input.trim() || loading) return;
-        const text = input;
+        if ((!input.trim() && !uploadedImage) || loading) return;
+
+        let text = input;
+        if (uploadedImage) {
+            text = text
+                ? `[Image uploaded: ${imageFileName}]\n\n${text}`
+                : `[Image uploaded: ${imageFileName}] Please analyze or help me with this image.`;
+        }
+
         setInput("");
+        setUploadedImage(null);
+        setImageFileName(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+
         await processMessage(text);
     };
 
@@ -372,6 +432,37 @@ export default function AITutor() {
                     {/* Input Area */}
                     <div className="p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border/40">
                         <div className="w-full max-w-3xl mx-auto">
+                            {/* Image Preview */}
+                            {uploadedImage && (
+                                <div className="relative mb-2 rounded-lg border border-primary/30 p-2 bg-primary/5 inline-block">
+                                    <img
+                                        src={uploadedImage}
+                                        alt="Uploaded"
+                                        className="max-h-[100px] rounded object-contain"
+                                    />
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full"
+                                        onClick={handleRemoveImage}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                    <p className="text-[10px] text-muted-foreground mt-1 text-center truncate max-w-[150px]">
+                                        {imageFileName}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Hidden file input */}
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                            />
+
                             <div className="relative flex items-end gap-2 bg-muted/30 p-2 rounded-xl border border-border/40 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all shadow-sm">
                                 <Input
                                     value={input}
@@ -382,10 +473,19 @@ export default function AITutor() {
                                             handleSend();
                                         }
                                     }}
-                                    placeholder={t("aiTutor.askAnything")}
+                                    placeholder={uploadedImage ? "Describe what you need help with..." : t("aiTutor.askAnything")}
                                     disabled={loading}
                                     className="border-0 focus-visible:ring-0 bg-transparent min-h-[44px] py-3 px-2 shadow-none resize-none"
                                 />
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-9 mb-1 shrink-0 rounded-lg text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    title="Upload Image"
+                                >
+                                    <Camera className="h-5 w-5" />
+                                </Button>
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -397,11 +497,11 @@ export default function AITutor() {
                                 </Button>
                                 <Button
                                     onClick={handleSend}
-                                    disabled={loading || !input.trim()}
+                                    disabled={loading || (!input.trim() && !uploadedImage)}
                                     size="icon"
                                     className={cn(
                                         "h-9 w-9 mb-1 shrink-0 rounded-lg transition-all",
-                                        input.trim() ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                        (input.trim() || uploadedImage) ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
                                     )}
                                 >
                                     {loading ? (
