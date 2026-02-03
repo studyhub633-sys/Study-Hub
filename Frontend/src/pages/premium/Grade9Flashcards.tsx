@@ -1027,7 +1027,7 @@ export default function Grade9Flashcards() {
     const currentCard = cards[currentCardIndex];
 
     const handleGenerateFlashcards = async () => {
-        if (!generationPrompt.trim()) return;
+        if (!generationPrompt.trim() || !user) return;
 
         setGenerating(true);
         try {
@@ -1040,8 +1040,31 @@ export default function Grade9Flashcards() {
             if (result.error) throw new Error(result.error);
 
             if (result.data?.flashcards) {
+                // Prepare flashcards for database and local state
+                const cardsToInsert = result.data.flashcards.map((card: any) => ({
+                    user_id: user.id,
+                    front: card.question,
+                    back: card.answer,
+                    subject: "Grade 9 Premium",
+                    topic: "AI Generated",
+                    tier: null,
+                    difficulty: 1,
+                    review_count: 0,
+                }));
+
+                // Save to database
+                const { data: savedCards, error: saveError } = await supabase
+                    .from("flashcards")
+                    .insert(cardsToInsert)
+                    .select();
+
+                if (saveError) {
+                    console.error("Error saving flashcards to database:", saveError);
+                }
+
+                // Create local state cards with IDs (from DB if available)
                 const newCards = result.data.flashcards.map((card: any, index: number) => ({
-                    id: `ai-${Date.now()}-${index}`,
+                    id: savedCards?.[index]?.id || `ai-${Date.now()}-${index}`,
                     topic: "AI Generated",
                     question: card.question,
                     answer: card.answer
@@ -1067,7 +1090,11 @@ export default function Grade9Flashcards() {
                 setSelectedSubject("AI Generated");
                 setShowGenerationDialog(false);
                 setGenerationPrompt("");
-                toast.success(`Generated ${newCards.length} flashcards!`);
+                toast.success(
+                    savedCards
+                        ? `Generated & saved ${newCards.length} flashcards!`
+                        : `Generated ${newCards.length} flashcards (save failed)`
+                );
             }
         } catch (error: any) {
             console.error("Error generating flashcards:", error);

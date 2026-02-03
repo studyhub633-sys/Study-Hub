@@ -71,7 +71,7 @@ export default function Grade9Notes() {
     const [generating, setGenerating] = useState(false);
 
     const handleGenerateNotes = async () => {
-        if (!generationPrompt.trim()) return;
+        if (!generationPrompt.trim() || !user) return;
 
         setGenerating(true);
         try {
@@ -90,16 +90,37 @@ export default function Grade9Notes() {
                     .join("\n\n");
 
                 const title = result.data.topic || result.data.sections[0]?.title || "AI Generated Note";
+                const noteSubject = result.data.subject || (selectedSubject === "All Subjects" ? "General" : selectedSubject);
+                const noteTags = ["AI Generated", "Grade 9 Premium", "Knowledge Organizer"];
+
+                // Save to database
+                const { data: savedNote, error: saveError } = await supabase
+                    .from("notes")
+                    .insert({
+                        user_id: user.id,
+                        title: title,
+                        content: content,
+                        subject: noteSubject,
+                        topic: result.data.topic || "AI Generated",
+                        tags: noteTags,
+                    })
+                    .select()
+                    .single();
+
+                if (saveError) {
+                    console.error("Error saving note to database:", saveError);
+                    // Still show the note locally even if save fails
+                }
 
                 const newNote: PremiumNote = {
-                    id: `ai-${Date.now()}`,
+                    id: savedNote?.id || `ai-${Date.now()}`,
                     title: title,
                     content: content,
-                    subject: result.data.subject || (selectedSubject === "All Subjects" ? "General" : selectedSubject),
+                    subject: noteSubject,
                     topic: result.data.topic || "AI Generated",
                     grade_level: "9",
-                    tags: ["AI", "Generated", "Knowledge Organizer"],
-                    created_at: new Date().toISOString()
+                    tags: noteTags,
+                    created_at: savedNote?.created_at || new Date().toISOString()
                 };
 
                 setNotes(prev => [newNote, ...prev]);
@@ -107,8 +128,10 @@ export default function Grade9Notes() {
                 setShowGenerationDialog(false);
                 setGenerationPrompt("");
                 toast({
-                    title: "Note Generated",
-                    description: "Your AI note has been created successfully.",
+                    title: "Note Generated & Saved",
+                    description: savedNote
+                        ? "Your AI note has been created and saved to your notes."
+                        : "Your AI note has been created (save to database failed).",
                 });
             }
         } catch (error: any) {
