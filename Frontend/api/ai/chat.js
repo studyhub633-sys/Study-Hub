@@ -88,7 +88,7 @@ ${langInstruction}`;
         let model = "llama-3.3-70b-versatile";
 
         if (image) {
-            model = "llama-3.2-11b-vision-preview"; // Use Llama 3.2 Vision model
+            model = "meta-llama/llama-4-scout-17b-16e-instruct"; // Llama 4 Scout Vision model
             userMessageContent = [
                 { type: "text", text: message || "Please analyze this image." },
                 { type: "image_url", image_url: { url: image } }
