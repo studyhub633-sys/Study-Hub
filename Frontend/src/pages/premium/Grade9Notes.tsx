@@ -272,7 +272,7 @@ export default function Grade9Notes() {
                     <Link to="/knowledge">
                         <Button className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white">
                             <Bot className="w-4 h-4 mr-2" />
-                            Generate AI Notes
+                            AI Knowledge Organizer
                         </Button>
                     </Link>
                 </div>

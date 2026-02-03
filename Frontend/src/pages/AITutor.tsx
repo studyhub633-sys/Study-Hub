@@ -265,6 +265,10 @@ export default function AITutor() {
         reader.onload = (e) => {
             setUploadedImage(e.target?.result as string);
             setImageFileName(file.name);
+            toast({
+                title: "Image uploaded",
+                description: "Since I am a text-based AI, please describe what's in the image so I can help!",
+            });
         };
         reader.readAsDataURL(file);
     };
@@ -278,13 +282,20 @@ export default function AITutor() {
     };
 
     const handleSend = async () => {
-        if ((!input.trim() && !uploadedImage) || loading) return;
+        if ((!input.trim()) || loading) {
+            if (uploadedImage && !input.trim()) {
+                toast({
+                    title: "Description required",
+                    description: "Please describe the image so I can help you (I can't see it directly!)",
+                    variant: "destructive",
+                });
+            }
+            return;
+        }
 
         let text = input;
         if (uploadedImage) {
-            text = text
-                ? `[Image uploaded: ${imageFileName}]\n\n${text}`
-                : `[Image uploaded: ${imageFileName}] Please analyze or help me with this image.`;
+            text = `[Image uploaded: ${imageFileName}]\n\nThe user has uploaded an image (which you cannot see) and provided this description:\n"${input}"\n\nPlease assist based on this description.`;
         }
 
         setInput("");
@@ -473,7 +484,7 @@ export default function AITutor() {
                                             handleSend();
                                         }
                                     }}
-                                    placeholder={uploadedImage ? "Describe what you need help with..." : t("aiTutor.askAnything")}
+                                    placeholder={uploadedImage ? "Please describe the image to help the AI understand it..." : t("aiTutor.askAnything")}
                                     disabled={loading}
                                     className="border-0 focus-visible:ring-0 bg-transparent min-h-[44px] py-3 px-2 shadow-none resize-none"
                                 />

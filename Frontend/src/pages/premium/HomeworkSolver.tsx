@@ -64,10 +64,10 @@ export default function HomeworkSolver() {
     };
 
     const handleSolve = async () => {
-        if (!question.trim() && !uploadedImage) {
+        if (!question.trim()) {
             toast({
-                title: "Error",
-                description: "Please enter a question or upload an image to solve.",
+                title: "Description required",
+                description: "Since I am a text-based AI, please describe the problem from your image so I can help you!",
                 variant: "destructive",
             });
             return;
@@ -80,10 +80,10 @@ export default function HomeworkSolver() {
             let prompt = `Please solve this homework question step-by-step. Provide a clear explanation of each step, show your work, and explain the reasoning behind each step. If applicable, identify the key concepts being tested.`;
 
             if (uploadedImage) {
-                prompt += `\n\nNote: The student has uploaded an image of their homework. They have described the question as follows:`;
+                prompt += `\n\nNote: The student has uploaded an image (which you cannot see). They have described the content of the image/question as follows:\n"${question}"\n\nPlease solve based on this description.`;
+            } else {
+                prompt += `\n\nQuestion: ${question}`;
             }
-
-            prompt += `\n\nQuestion: ${question || "Please analyze and solve the problem shown in the uploaded image."}`;
 
             const result = await chatWithAI(
                 {
@@ -164,7 +164,7 @@ export default function HomeworkSolver() {
 
                             <Textarea
                                 placeholder={uploadedImage
-                                    ? "Describe what you need help with from the image..."
+                                    ? "Please describe the problem in the image (I can't see the image directly, so your description helps me understand it!)..."
                                     : "Paste your homework question here..."}
                                 className="min-h-[150px] resize-none"
                                 value={question}
