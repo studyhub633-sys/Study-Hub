@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, 'Frontend', '.env') });
 
 const app = express();
-const PORT = 3003;
+const PORT = 3004;
 
 // Basic logging
 const log = (msg) => {

@@ -45,7 +45,7 @@ export default async function handler(req, res) {
             throw error;
         }
 
-        const generationPrompt = `Create a structured knowledge organizer with sections and key points based on this topic: ${prompt}${subject ? ` Subject: ${subject}` : ""}${topic ? ` Topic: ${topic}` : ""}. Format the response as JSON with this structure: {"sections": [{"title": "Section Title", "content": "Detailed content", "keyPoints": ["Point 1", "Point 2"]}]}. Generate 3-5 sections with relevant content and 3-5 key points per section.`;
+        const generationPrompt = `Create a structured knowledge organizer with sections and key points based on this topic: ${prompt}${subject ? ` Subject: ${subject}` : ""}${topic ? ` Topic: ${topic}` : ""}. Format the response as a single valid JSON object with this structure: {"sections": [{"title": "Section Title", "content": "Detailed content", "keyPoints": ["Point 1", "Point 2"]}]}. Generate 3-5 sections with relevant content and 3-5 key points per section. IMPORTANT: Return ONLY the JSON object. Do not include markdown code blocks, introductory text, or explanations.`;
 
         const response = await fetch(GROQ_CHAT_URL, {
             method: "POST",
