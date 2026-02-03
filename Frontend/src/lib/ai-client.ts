@@ -359,6 +359,7 @@ export const chatWithAI = async (
     context?: string;
     history?: Array<{ role: string; content: string }>;
     language?: string;
+    image?: string;
   },
   supabase: any
 ) => {

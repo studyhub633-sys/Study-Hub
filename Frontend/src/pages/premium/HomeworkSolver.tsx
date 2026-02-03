@@ -49,7 +49,7 @@ export default function HomeworkSolver() {
             setImageFileName(file.name);
             toast({
                 title: "Image uploaded",
-                description: "Describe the problem in the text area to get AI assistance.",
+                description: "You can add a specific question or just click Solve to analyze the image.",
             });
         };
         reader.readAsDataURL(file);
@@ -64,10 +64,10 @@ export default function HomeworkSolver() {
     };
 
     const handleSolve = async () => {
-        if (!question.trim()) {
+        if (!question.trim() && !uploadedImage) {
             toast({
-                title: "Description required",
-                description: "Since I am a text-based AI, please describe the problem from your image so I can help you!",
+                title: "Error",
+                description: "Please enter a question or upload an image to solve.",
                 variant: "destructive",
             });
             return;
@@ -79,9 +79,7 @@ export default function HomeworkSolver() {
         try {
             let prompt = `Please solve this homework question step-by-step. Provide a clear explanation of each step, show your work, and explain the reasoning behind each step. If applicable, identify the key concepts being tested.`;
 
-            if (uploadedImage) {
-                prompt += `\n\nNote: The student has uploaded an image (which you cannot see). They have described the content of the image/question as follows:\n"${question}"\n\nPlease solve based on this description.`;
-            } else {
+            if (question) {
                 prompt += `\n\nQuestion: ${question}`;
             }
 
@@ -89,6 +87,7 @@ export default function HomeworkSolver() {
                 {
                     message: prompt,
                     context: "You are an expert tutor who provides clear, step-by-step solutions to homework problems. Always show your work and explain your reasoning.",
+                    image: uploadedImage || undefined
                 },
                 supabase
             );
@@ -164,7 +163,7 @@ export default function HomeworkSolver() {
 
                             <Textarea
                                 placeholder={uploadedImage
-                                    ? "Please describe the problem in the image (I can't see the image directly, so your description helps me understand it!)..."
+                                    ? "Add any specific instructions or context for the image..."
                                     : "Paste your homework question here..."}
                                 className="min-h-[150px] resize-none"
                                 value={question}

@@ -24,10 +24,10 @@ export default async function handler(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { message, context, history, language } = req.body;
+        const { message, context, history, language, image } = req.body;
 
-        if (!message) {
-            return res.status(400).json({ error: "Message is required" });
+        if (!message && !image) {
+            return res.status(400).json({ error: "Message or image is required" });
         }
 
         // Check global usage limits
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
             : "";
 
         let systemPrompt = `You are a helpful, encouraging, and knowledgeable AI tutor assistant. Your goal is to help students learn and understand concepts clearly. Keep answers concise but informative. 
-
+        
 CRITICAL: Always maintain context from the conversation. When the user refers to previous topics, questions, or answers, make sure to connect your response to what was discussed earlier. Pay close attention to follow-up questions and clarifications.
 
 ${langInstruction}`;
@@ -84,7 +84,18 @@ ${langInstruction}`;
         }
 
         // Add the current user message
-        messages.push({ role: "user", content: message });
+        let userMessageContent = message;
+        let model = "llama-3.3-70b-versatile";
+
+        if (image) {
+            model = "llama-3.2-90b-vision-preview"; // Use vision model if image is present
+            userMessageContent = [
+                { type: "text", text: message || "Please analyze this image." },
+                { type: "image_url", image_url: { url: image } }
+            ];
+        }
+
+        messages.push({ role: "user", content: userMessageContent });
 
         const response = await fetch(GROQ_CHAT_URL, {
             method: "POST",
@@ -93,7 +104,7 @@ ${langInstruction}`;
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
+                model: model,
                 messages: messages,
                 max_tokens: 1000,
                 temperature: 0.7,

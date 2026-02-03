@@ -153,7 +153,7 @@ export default function AITutor() {
         }));
     }, []);
 
-    const processMessage = async (text: string): Promise<string> => {
+    const processMessage = async (text: string, image?: string): Promise<string> => {
         const userMessage: Message = {
             id: Date.now().toString(),
             role: "user",
@@ -174,6 +174,7 @@ export default function AITutor() {
                     message: text,
                     history: history,
                     language: i18n.language,
+                    image: image
                 },
                 supabase
             );
@@ -267,7 +268,7 @@ export default function AITutor() {
             setImageFileName(file.name);
             toast({
                 title: "Image uploaded",
-                description: "Since I am a text-based AI, please describe what's in the image so I can help!",
+                description: "You can add a message or just send the image to analyze.",
             });
         };
         reader.readAsDataURL(file);
@@ -282,20 +283,13 @@ export default function AITutor() {
     };
 
     const handleSend = async () => {
-        if ((!input.trim()) || loading) {
-            if (uploadedImage && !input.trim()) {
-                toast({
-                    title: "Description required",
-                    description: "Please describe the image so I can help you (I can't see it directly!)",
-                    variant: "destructive",
-                });
-            }
-            return;
-        }
+        if ((!input.trim() && !uploadedImage) || loading) return;
 
         let text = input;
-        if (uploadedImage) {
-            text = `[Image uploaded: ${imageFileName}]\n\nThe user has uploaded an image (which you cannot see) and provided this description:\n"${input}"\n\nPlease assist based on this description.`;
+        const imageToSend = uploadedImage || undefined;
+
+        if (uploadedImage && !text.trim()) {
+            text = "Analyzing image..."; // Fallback text for history/display purposes if user sends only image
         }
 
         setInput("");
@@ -305,7 +299,7 @@ export default function AITutor() {
             fileInputRef.current.value = '';
         }
 
-        await processMessage(text);
+        await processMessage(text, imageToSend);
     };
 
     return (
@@ -484,7 +478,7 @@ export default function AITutor() {
                                             handleSend();
                                         }
                                     }}
-                                    placeholder={uploadedImage ? "Please describe the image to help the AI understand it..." : t("aiTutor.askAnything")}
+                                    placeholder={uploadedImage ? "Ask something about the image..." : t("aiTutor.askAnything")}
                                     disabled={loading}
                                     className="border-0 focus-visible:ring-0 bg-transparent min-h-[44px] py-3 px-2 shadow-none resize-none"
                                 />
@@ -532,7 +526,7 @@ export default function AITutor() {
                 <VoiceChat
                     isOpen={isVoiceMode}
                     onClose={() => setIsVoiceMode(false)}
-                    onSendMessage={processMessage}
+                    onSendMessage={(text) => processMessage(text)}
                     isProcessing={loading}
                 />
             </div>
