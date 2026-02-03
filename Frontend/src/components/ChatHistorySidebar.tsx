@@ -9,12 +9,6 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ChatSession } from "@/hooks/useChatSessions";
@@ -23,13 +17,11 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
-    EyeOff,
     MessageSquare,
-    MoreVertical,
     Pencil,
     Plus,
     Trash2,
-    X,
+    X
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -297,38 +289,32 @@ export function ChatHistorySidebar({
                                                 )}
 
                                                 {editingId !== session.id && (
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 bg-muted/50 hover:bg-muted text-foreground hover:text-foreground border border-border/50"
-                                                            >
-                                                                <MoreVertical className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleStartEdit(session)}
-                                                            >
-                                                                <Pencil className="h-4 w-4 mr-2" />
-                                                                Rename
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleHideClick(session.id)}
-                                                            >
-                                                                <EyeOff className="h-4 w-4 mr-2" />
-                                                                Hide
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                className="text-destructive focus:text-destructive"
-                                                                onClick={() => handleDeleteClick(session.id)}
-                                                            >
-                                                                <Trash2 className="h-4 w-4 mr-2" />
-                                                                Delete
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded-md shadow-sm border border-border/50 p-0.5">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleStartEdit(session);
+                                                            }}
+                                                            title="Rename"
+                                                        >
+                                                            <Pencil className="h-3 w-3" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteClick(session.id);
+                                                            }}
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 className="h-3 w-3" />
+                                                        </Button>
+                                                    </div>
                                                 )}
                                             </div>
                                         ))}
