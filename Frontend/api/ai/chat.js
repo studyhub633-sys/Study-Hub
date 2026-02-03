@@ -88,7 +88,7 @@ ${langInstruction}`;
         let model = "llama-3.3-70b-versatile";
 
         if (image) {
-            model = "llama-3.2-90b-vision-preview"; // Use vision model if image is present
+            model = "llama-4-maverick-17b-128e-instruct"; // Use Llama 4 Maverick (Vision)
             userMessageContent = [
                 { type: "text", text: message || "Please analyze this image." },
                 { type: "image_url", image_url: { url: image } }
