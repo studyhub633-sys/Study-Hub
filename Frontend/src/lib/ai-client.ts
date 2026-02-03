@@ -122,8 +122,12 @@ async function apiRequest<T>(
     }
 
     if (!response.ok) {
+      const errorMsg = typeof data.error === 'object'
+        ? (data.error.message || JSON.stringify(data.error))
+        : (data.error || `Request failed with status ${response.status}`);
+
       return {
-        error: data.error || `Request failed with status ${response.status}`,
+        error: errorMsg,
         message: data.message,
       };
     }

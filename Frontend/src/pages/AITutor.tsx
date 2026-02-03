@@ -214,8 +214,22 @@ export default function AITutor() {
 
             return responseContent;
         } catch (error: any) {
-            console.error("Error:", error);
-            const errorMessage = error.message || "Failed to get response. Please try again.";
+            console.error("Full Error Object:", error);
+
+            let errorMessage = "Failed to get response. Please try again.";
+
+            if (typeof error === "string") {
+                errorMessage = error;
+            } else if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === "object" && error !== null) {
+                errorMessage = error.message || JSON.stringify(error);
+            }
+
+            // Fallback if somehow we still got [object Object]
+            if (errorMessage === "[object Object]") {
+                errorMessage = "An unexpected error occurred.";
+            }
 
             toast({
                 title: "Error",
@@ -251,11 +265,11 @@ export default function AITutor() {
             return;
         }
 
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
+        // Validate file size (max 4MB to be safe with Base64 encoding overhead)
+        if (file.size > 4 * 1024 * 1024) {
             toast({
                 title: "File too large",
-                description: "Please upload an image smaller than 5MB",
+                description: "Please upload an image smaller than 4MB",
                 variant: "destructive",
             });
             return;

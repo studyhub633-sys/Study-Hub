@@ -117,7 +117,11 @@ ${langInstruction}`;
             if (response.status === 503) {
                 return res.status(503).json({ error: "Model is loading. Please try again in moments.", retryAfter: 30 });
             }
-            return res.status(response.status).json({ error: errorData.error || "Failed to generate response" });
+            // Handle structured error objects from Groq/OpenAI
+            const errorMessage = errorData.error?.message ||
+                (typeof errorData.error === 'string' ? errorData.error : JSON.stringify(errorData.error)) ||
+                "Failed to generate response";
+            return res.status(response.status).json({ error: errorMessage });
         }
 
         const data = await response.json();
