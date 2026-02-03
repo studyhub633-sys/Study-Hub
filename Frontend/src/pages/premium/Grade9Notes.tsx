@@ -71,10 +71,24 @@ export default function Grade9Notes() {
     const [generating, setGenerating] = useState(false);
 
     const handleGenerateNotes = async () => {
-        if (!generationPrompt.trim() || !user) return;
+        if (!generationPrompt.trim() || !user) {
+            console.log("Generation blocked: prompt empty or user not logged in", { prompt: generationPrompt, user });
+            return;
+        }
+
+        if (!supabase) {
+            console.error("Supabase client is not available");
+            toast({
+                title: "Error",
+                description: "Database connection not available. Please refresh the page.",
+                variant: "destructive",
+            });
+            return;
+        }
 
         setGenerating(true);
         try {
+            console.log("Starting note generation...");
             const result = await generateKnowledgeOrganizer({
                 prompt: generationPrompt,
                 subject: selectedSubject === "All Subjects" ? "General" : selectedSubject,
@@ -94,6 +108,12 @@ export default function Grade9Notes() {
                 const noteTags = ["AI Generated", "Grade 9 Premium", "Knowledge Organizer"];
 
                 // Save to database
+                console.log("Saving note to database...", {
+                    user_id: user.id,
+                    title: title,
+                    subject: noteSubject,
+                });
+
                 const { data: savedNote, error: saveError } = await supabase
                     .from("notes")
                     .insert({
@@ -109,7 +129,14 @@ export default function Grade9Notes() {
 
                 if (saveError) {
                     console.error("Error saving note to database:", saveError);
-                    // Still show the note locally even if save fails
+                    console.error("Save error details:", JSON.stringify(saveError, null, 2));
+                    toast({
+                        title: "Save Warning",
+                        description: `Note generated but save failed: ${saveError.message}`,
+                        variant: "destructive",
+                    });
+                } else {
+                    console.log("Note saved successfully:", savedNote);
                 }
 
                 const newNote: PremiumNote = {
@@ -175,23 +202,53 @@ export default function Grade9Notes() {
     };
 
     const fetchPremiumNotes = async () => {
-        if (!supabase) return;
+        if (!supabase || !user) return;
 
         try {
             setLoading(true);
-            const { data, error } = await supabase
+
+            // Fetch global premium notes
+            const { data: globalNotes, error: globalError } = await supabase
                 .from("global_premium_notes")
                 .select("*")
                 .eq("grade_level", "9")
                 .order("created_at", { ascending: false });
 
-            if (error) throw error;
+            if (globalError) {
+                console.error("Error fetching global premium notes:", globalError);
+            }
 
-            setNotes(data || []);
+            // Also fetch user's AI-generated Grade 9 Premium notes from their personal notes
+            const { data: userNotes, error: userError } = await supabase
+                .from("notes")
+                .select("*")
+                .eq("user_id", user.id)
+                .contains("tags", ["Grade 9 Premium"])
+                .order("created_at", { ascending: false });
+
+            if (userError) {
+                console.error("Error fetching user AI notes:", userError);
+            }
+
+            // Convert user notes to PremiumNote format and combine
+            const formattedUserNotes: PremiumNote[] = (userNotes || []).map(note => ({
+                id: note.id,
+                title: note.title,
+                content: note.content,
+                subject: note.subject || "General",
+                topic: note.topic || "AI Generated",
+                grade_level: "9",
+                tags: note.tags || [],
+                created_at: note.created_at
+            }));
+
+            // Combine global and user notes
+            const allNotes = [...formattedUserNotes, ...(globalNotes || [])];
+            setNotes(allNotes);
 
             // Select the first note if available
-            if (data && data.length > 0 && !selectedNote) {
-                setSelectedNote(data[0]);
+            if (allNotes.length > 0 && !selectedNote) {
+                setSelectedNote(allNotes[0]);
             }
         } catch (error: any) {
             console.error("Error fetching premium notes:", error);

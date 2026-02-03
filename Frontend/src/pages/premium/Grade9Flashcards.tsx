@@ -1027,10 +1027,20 @@ export default function Grade9Flashcards() {
     const currentCard = cards[currentCardIndex];
 
     const handleGenerateFlashcards = async () => {
-        if (!generationPrompt.trim() || !user) return;
+        if (!generationPrompt.trim() || !user) {
+            console.log("Generation blocked: prompt empty or user not logged in", { prompt: generationPrompt, user });
+            return;
+        }
+
+        if (!supabase) {
+            console.error("Supabase client is not available");
+            toast.error("Database connection not available. Please refresh the page.");
+            return;
+        }
 
         setGenerating(true);
         try {
+            console.log("Starting flashcard generation...");
             const result = await generateFlashcards({
                 notes: generationPrompt,
                 subject: "AI Generated",
@@ -1041,6 +1051,11 @@ export default function Grade9Flashcards() {
 
             if (result.data?.flashcards) {
                 // Prepare flashcards for database and local state
+                console.log("Preparing flashcards for database save...", {
+                    count: result.data.flashcards.length,
+                    user_id: user.id
+                });
+
                 const cardsToInsert = result.data.flashcards.map((card: any) => ({
                     user_id: user.id,
                     front: card.question,
@@ -1052,6 +1067,8 @@ export default function Grade9Flashcards() {
                     review_count: 0,
                 }));
 
+                console.log("Cards to insert:", cardsToInsert);
+
                 // Save to database
                 const { data: savedCards, error: saveError } = await supabase
                     .from("flashcards")
@@ -1060,6 +1077,10 @@ export default function Grade9Flashcards() {
 
                 if (saveError) {
                     console.error("Error saving flashcards to database:", saveError);
+                    console.error("Save error details:", JSON.stringify(saveError, null, 2));
+                    toast.error(`Flashcards generated but save failed: ${saveError.message}`);
+                } else {
+                    console.log("Flashcards saved successfully:", savedCards);
                 }
 
                 // Create local state cards with IDs (from DB if available)
@@ -1111,6 +1132,64 @@ export default function Grade9Flashcards() {
             setCheckingPremium(false);
         }
     }, [user]);
+
+    // Fetch user's AI-generated flashcards from database
+    useEffect(() => {
+        if (user && supabase && isPremium) {
+            fetchUserFlashcards();
+        }
+    }, [user, supabase, isPremium]);
+
+    const fetchUserFlashcards = async () => {
+        if (!user || !supabase) return;
+
+        try {
+            console.log("Fetching user's AI-generated flashcards...");
+            const { data: userCards, error } = await supabase
+                .from("flashcards")
+                .select("*")
+                .eq("user_id", user.id)
+                .eq("subject", "Grade 9 Premium")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error("Error fetching user flashcards:", error);
+                return;
+            }
+
+            if (userCards && userCards.length > 0) {
+                console.log(`Found ${userCards.length} AI-generated flashcards`);
+
+                // Convert to Flashcard format
+                const formattedCards: Flashcard[] = userCards.map(card => ({
+                    id: card.id,
+                    topic: card.topic || "AI Generated",
+                    question: card.front,
+                    answer: card.back
+                }));
+
+                // Add or update the AI Generated subject set
+                setAllFlashcards(prev => {
+                    const existingAiSetIndex = prev.findIndex(s => s.subject === "AI Generated");
+                    if (existingAiSetIndex >= 0) {
+                        const newSets = [...prev];
+                        newSets[existingAiSetIndex] = {
+                            ...newSets[existingAiSetIndex],
+                            cards: formattedCards
+                        };
+                        return newSets;
+                    } else {
+                        return [...prev, {
+                            subject: "AI Generated",
+                            cards: formattedCards
+                        }];
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching user flashcards:", error);
+        }
+    };
 
     useEffect(() => {
         // Reset when subject changes
