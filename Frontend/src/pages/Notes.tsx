@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import {
   Bold,
   BookOpen,
+  ChevronLeft,
   Clock,
   Crown,
   Download,
@@ -96,6 +97,7 @@ export default function Notes() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [mobileShowDetail, setMobileShowDetail] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [formData, setFormData] = useState({
@@ -590,7 +592,10 @@ export default function Notes() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Notes List (Accordion Style) */}
-          <div className="lg:col-span-1 space-y-4 animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
+          <div className={cn(
+            "lg:col-span-1 space-y-4 animate-slide-up",
+            mobileShowDetail ? "hidden lg:block" : "block"
+          )} style={{ animationDelay: "0.2s", opacity: 0 }}>
             {/* Premium Grade 9 Notes Section */}
             {isPremium && filteredPremiumNotes.length > 0 && (
               <div className="glass-card p-4 border-2 border-premium/30 bg-premium/5">
@@ -628,7 +633,10 @@ export default function Notes() {
                               {topicNotes.map((note) => (
                                 <button
                                   key={note.id}
-                                  onClick={() => setSelectedNote(note)}
+                                  onClick={() => {
+                                    setSelectedNote(note);
+                                    setMobileShowDetail(true);
+                                  }}
                                   className={cn(
                                     "w-full text-left p-2 rounded-lg transition-all duration-200 group border text-xs",
                                     selectedNote?.id === note.id
@@ -721,7 +729,10 @@ export default function Notes() {
                               {topicNotes.map((note) => (
                                 <button
                                   key={note.id}
-                                  onClick={() => setSelectedNote(note)}
+                                  onClick={() => {
+                                    setSelectedNote(note);
+                                    setMobileShowDetail(true);
+                                  }}
                                   className={cn(
                                     "w-full text-left p-3 rounded-lg transition-all duration-200 group border",
                                     selectedNote?.id === note.id
@@ -766,9 +777,22 @@ export default function Notes() {
           </div>
 
           {/* Note Content */}
-          <div className="lg:col-span-2 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
+          <div className={cn(
+            "lg:col-span-2 animate-slide-up",
+            mobileShowDetail ? "block" : "hidden lg:block"
+          )} style={{ animationDelay: "0.3s", opacity: 0 }}>
             {selectedNote ? (
               <div className="glass-card p-6 md:p-8 sticky top-4">
+                {/* Mobile Back Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="lg:hidden mb-4 -ml-2"
+                  onClick={() => setMobileShowDetail(false)}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Back to List
+                </Button>
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">

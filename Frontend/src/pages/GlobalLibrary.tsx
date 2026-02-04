@@ -2,13 +2,25 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { SmartPaperParser } from "@/lib/paper-parser";
-import { Brain, Calendar, FileText, Filter, Info, Layers, Library, Plus, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Brain, Calendar, ChevronDown, ExternalLink, FileText, Filter, Layers, Library, Plus, Search, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -48,8 +60,8 @@ export default function GlobalLibrary() {
     const [yearFilter, setYearFilter] = useState<string>("all");
     const [subjectFilter, setSubjectFilter] = useState<string>("all");
     const [activeTab, setActiveTab] = useState("papers");
-    const [quickAddUrl, setQuickAddUrl] = useState("");
-    const [isParsing, setIsParsing] = useState(false);
+    const [viewingOrganizer, setViewingOrganizer] = useState<GlobalOrganizer | null>(null);
+    const [openSections, setOpenSections] = useState<string[]>([]);
     const { toast } = useToast();
 
     // Get unique years and subjects for filters
@@ -112,40 +124,7 @@ export default function GlobalLibrary() {
         }
     };
 
-    const handleQuickAdd = async () => {
-        if (!quickAddUrl.trim()) return;
-        setIsParsing(true);
 
-        try {
-            const metadata = SmartPaperParser.parse(quickAddUrl);
-
-            const { error } = await supabase.from("past_papers").insert({
-                user_id: user?.id,
-                title: `${metadata.board} ${metadata.subjectCode || ''} ${metadata.type} ${metadata.year || ''} ${metadata.month || ''}`,
-                subject: metadata.subjectCode || "AQA General",
-                year: metadata.year ? parseInt(metadata.year) : null,
-                exam_board: metadata.board,
-                file_url: quickAddUrl,
-                file_type: "link",
-            });
-
-            if (error) throw error;
-
-            toast({
-                title: "Smart Add Successful",
-                description: "The paper has been added to your collection using AI parsing.",
-            });
-            setQuickAddUrl("");
-        } catch (e: any) {
-            toast({
-                title: "Parsing Error",
-                description: "We couldn't parse that link. Try adding it manually or check the URL.",
-                variant: "destructive",
-            });
-        } finally {
-            setIsParsing(false);
-        }
-    };
 
     const handleAddPaper = async (paper: GlobalPaper) => {
         if (!user) {
@@ -209,6 +188,7 @@ export default function GlobalLibrary() {
         }
 
         try {
+            console.log("Adding organizer:", org);
             const { data: existing } = await supabase
                 .from("knowledge_organizers")
                 .select("id")
@@ -224,24 +204,38 @@ export default function GlobalLibrary() {
                 return;
             }
 
+            // Extract extra metadata if available in content, otherwise default
+            const examBoard = org.content?.exam_board || null;
+            // Some schemas might have tier in content or it might be null
+            const tier = null;
+
             const { error } = await supabase.from("knowledge_organizers").insert({
                 user_id: user.id,
                 title: org.title,
                 subject: org.subject,
                 topic: org.topic,
                 content: org.content,
+                tier: tier,
+                // We don't insert exam_board column as it seems to be part of content in some schemas,
+                // but if the table has it as a column (which Knowledge.tsx save doesn't seem to use?), 
+                // we leave it out. If the DB requires it, this might fail, but checking Knowledge.tsx
+                // suggested it wasn't used in insert.
             });
 
-            if (error) throw error;
+            if (error) {
+                console.error("Database insert error:", error);
+                throw error;
+            }
 
             toast({
                 title: "Added to Library",
                 description: `${org.title} has been added to your organizers.`,
             });
         } catch (e: any) {
+            console.error("Error adding organizer:", e);
             toast({
                 title: "Error",
-                description: e.message,
+                description: e.message || "Failed to add organizer",
                 variant: "destructive",
             });
         }
@@ -410,71 +404,40 @@ export default function GlobalLibrary() {
 
                     {/* Tab 1: Past Papers */}
                     <TabsContent value="papers" className="space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="md:col-span-2 space-y-6">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {filteredPapers.map((paper) => (
-                                        <Card key={paper.id} className="hover:shadow-lg transition-all border-primary/5 group">
-                                            <CardHeader className="p-4 pb-2">
-                                                <div className="flex justify-between items-start">
-                                                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10">
-                                                        {paper.exam_board}
-                                                    </Badge>
-                                                    <Button size="icon" variant="ghost" onClick={() => handleAddPaper(paper)} className="h-8 w-8 text-primary hover:bg-primary/10">
-                                                        <Plus className="h-5 w-5" />
-                                                    </Button>
-                                                </div>
-                                                <CardTitle className="text-base mt-2 line-clamp-2">{paper.title}</CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="p-4 pt-0 flex justify-between items-center">
-                                                <span className="text-xs font-medium text-muted-foreground">{paper.subject} • {paper.year}</span>
-                                                <div className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase">Verified</div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                    {filteredPapers.length === 0 && (
-                                        <div className="col-span-full py-20 text-center text-muted-foreground">
-                                            {t("library.noPapersFound")}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="md:col-span-1">
-                                <div className="sticky top-24">
-                                    <Card className="border-primary/20 shadow-xl overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
-                                        <CardHeader className="bg-primary/5">
-                                            <CardTitle className="flex items-center gap-2 text-primary">
-                                                <Sparkles className="h-5 w-5" /> {t("library.smartLinkImporter")}
-                                            </CardTitle>
-                                            <CardDescription>
-                                                {t("library.smartLinkDesc")}
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="p-6 space-y-4">
-                                            <Input
-                                                placeholder="https://..."
-                                                value={quickAddUrl}
-                                                onChange={(e) => setQuickAddUrl(e.target.value)}
-                                                className="border-primary/10 focus:border-primary focus:ring-primary h-12"
-                                            />
-                                            <Button
-                                                className="w-full h-12 font-bold gap-2 text-lg shadow-primary/20"
-                                                onClick={handleQuickAdd}
-                                                disabled={isParsing || !quickAddUrl}
-                                            >
-                                                {isParsing ? t("library.working") : t("library.addWithSmartParser")}
-                                            </Button>
-                                            <div className="pt-4 border-t border-primary/5">
-                                                <p className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                                                    <Info className="h-3 w-3" /> Note: This uses URLs only. Scientia.ai does not host or redistribute any PDF files.
-                                                </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredPapers.map((paper) => (
+                                <Card
+                                    key={paper.id}
+                                    className="hover:shadow-lg transition-all border-primary/5 group cursor-pointer"
+                                    onClick={() => window.open(paper.file_url, '_blank')}
+                                >
+                                    <CardHeader className="p-4 pb-2">
+                                        <div className="flex justify-between items-start">
+                                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10">
+                                                {paper.exam_board}
+                                            </Badge>
+                                            <div className="flex items-center gap-1">
+                                                <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); window.open(paper.file_url, '_blank'); }} className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                                                    <ExternalLink className="h-4 w-4" />
+                                                </Button>
+                                                <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); handleAddPaper(paper); }} className="h-8 w-8 text-primary hover:bg-primary/10">
+                                                    <Plus className="h-5 w-5" />
+                                                </Button>
                                             </div>
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                        <CardTitle className="text-base mt-2 line-clamp-2 group-hover:text-primary transition-colors">{paper.title}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-4 pt-0 flex justify-between items-center">
+                                        <span className="text-xs font-medium text-muted-foreground">{paper.subject} • {paper.year}</span>
+                                        <div className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase">Verified</div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                            {filteredPapers.length === 0 && (
+                                <div className="col-span-full py-20 text-center text-muted-foreground">
+                                    {t("library.noPapersFound")}
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </TabsContent>
 
@@ -482,9 +445,16 @@ export default function GlobalLibrary() {
                     <TabsContent value="organizers" className="space-y-6">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredOrganizers.map((org) => (
-                                <Card key={org.id} className="hover:shadow-xl transition-all border-primary/5 group relative overflow-hidden">
+                                <Card
+                                    key={org.id}
+                                    className="hover:shadow-xl transition-all border-primary/5 group relative overflow-hidden cursor-pointer"
+                                    onClick={() => {
+                                        setViewingOrganizer(org);
+                                        setOpenSections(org.content?.sections?.slice(0, 1).map((s: any) => s.title) || []);
+                                    }}
+                                >
                                     <div className="absolute top-0 right-0 p-3">
-                                        <Button size="icon" variant="secondary" onClick={() => handleAddOrganizer(org)} className="h-10 w-10 shadow-lg">
+                                        <Button size="icon" variant="secondary" onClick={(e) => { e.stopPropagation(); handleAddOrganizer(org); }} className="h-10 w-10 shadow-lg">
                                             <Plus className="h-6 w-6" />
                                         </Button>
                                     </div>
@@ -506,6 +476,7 @@ export default function GlobalLibrary() {
                                         <div className="text-xs text-muted-foreground flex items-center gap-2">
                                             <Brain className="h-3 w-3" />
                                             {t("knowledge.sections", { count: org.content?.sections?.length || 0 })}
+                                            <span className="ml-auto text-primary text-xs font-medium">Click to view →</span>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -556,6 +527,85 @@ export default function GlobalLibrary() {
 
                 </Tabs>
             </div>
+
+            {/* Organizer View Dialog */}
+            <Dialog open={!!viewingOrganizer} onOpenChange={(open) => !open && setViewingOrganizer(null)}>
+                <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+                    <DialogHeader>
+                        <div className="flex items-center gap-2 mb-2">
+                            <Badge className="bg-primary/10 text-primary border-none">
+                                {viewingOrganizer?.content?.exam_board || "General"}
+                            </Badge>
+                            <Badge variant="outline" className="text-muted-foreground">
+                                {viewingOrganizer?.subject}
+                            </Badge>
+                        </div>
+                        <DialogTitle className="text-2xl">{viewingOrganizer?.title}</DialogTitle>
+                        <DialogDescription>{viewingOrganizer?.topic}</DialogDescription>
+                    </DialogHeader>
+
+                    <ScrollArea className="flex-1 pr-4">
+                        <div className="space-y-4 pb-4">
+                            {viewingOrganizer?.content?.sections?.map((section: any, idx: number) => (
+                                <Collapsible
+                                    key={idx}
+                                    open={openSections.includes(section.title)}
+                                    onOpenChange={() => {
+                                        setOpenSections(prev =>
+                                            prev.includes(section.title)
+                                                ? prev.filter(t => t !== section.title)
+                                                : [...prev, section.title]
+                                        );
+                                    }}
+                                >
+                                    <CollapsibleTrigger className="w-full">
+                                        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`h-3 w-3 rounded-full bg-${section.color || 'primary'}`} />
+                                                <span className="font-semibold text-left">{section.title}</span>
+                                            </div>
+                                            <ChevronDown className={`h-5 w-5 transition-transform ${openSections.includes(section.title) ? 'rotate-180' : ''}`} />
+                                        </div>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <div className="p-4 border border-t-0 rounded-b-lg space-y-4">
+                                            <p className="text-muted-foreground">{section.content}</p>
+                                            {section.keyPoints && section.keyPoints.length > 0 && (
+                                                <div className="space-y-2">
+                                                    <h4 className="font-medium text-sm">Key Points:</h4>
+                                                    <ul className="space-y-1">
+                                                        {section.keyPoints.map((kp: any, kpIdx: number) => (
+                                                            <li key={kpIdx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                                                <span className="text-primary mt-1">•</span>
+                                                                <span>{typeof kp === 'string' ? kp : kp.text}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </CollapsibleContent>
+                                </Collapsible>
+                            ))}
+                        </div>
+                    </ScrollArea>
+
+                    <div className="flex justify-end gap-3 pt-4 border-t">
+                        <Button variant="outline" onClick={() => setViewingOrganizer(null)}>
+                            Close
+                        </Button>
+                        <Button onClick={() => {
+                            if (viewingOrganizer) {
+                                handleAddOrganizer(viewingOrganizer);
+                                setViewingOrganizer(null);
+                            }
+                        }}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add to My Library
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

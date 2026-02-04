@@ -14,8 +14,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -30,13 +37,18 @@ import { generateKnowledgeOrganizer } from "@/lib/ai-client";
 import { EXAM_BOARDS } from "@/lib/constants";
 import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
+import * as htmlToImage from 'html-to-image';
+import jsPDF from 'jspdf';
 import {
   Brain,
   CheckCircle,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
   Download,
   Edit,
+  FileImage,
+  FileText,
   Layers,
   Lightbulb,
   Loader2,
@@ -45,7 +57,7 @@ import {
   Trash2,
   X
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -108,6 +120,9 @@ export default function Knowledge() {
   const [aiUsageCount, setAiUsageCount] = useState<number | null>(null);
   const [aiLimit, setAiLimit] = useState<number>(10);
   const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [mobileShowDetail, setMobileShowDetail] = useState(false);
+  const organizerContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -617,19 +632,85 @@ export default function Knowledge() {
     }
   };
 
-  const handleDownload = (org: KnowledgeOrganizer) => {
-    const dataStr = JSON.stringify(org.content, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${org.title.replace(/\s+/g, "_")}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-    toast({
-      title: "Downloaded",
-      description: "Knowledge organizer downloaded as JSON",
-    });
+  const handleDownload = async (format: 'png' | 'pdf' = 'png') => {
+    if (!selectedOrganizer || !organizerContentRef.current) {
+      toast({
+        title: "Error",
+        description: "No organizer selected or content not ready",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setDownloading(true);
+    // Store current open sections to restore later
+    const previousOpenSections = openSections;
+
+    try {
+      // Expand all sections to capture full content
+      const allSections = selectedOrganizer.content?.sections?.map((s: KnowledgeSection) => s.title) || [];
+      if (allSections.length > 0) {
+        setOpenSections(allSections);
+        // Wait for expansion animation (300ms should be enough given duration-200)
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      // Determine background color based on current theme to ensure text definition
+      const isDarkMode = document.documentElement.classList.contains("dark");
+      // Use Slate-950 for dark mode, White for light mode matches the bg-white dark:bg-slate-950 class
+      const backgroundColor = isDarkMode ? '#020617' : '#ffffff';
+
+      // Create a high-quality image from the organizer content
+      const dataUrl = await htmlToImage.toPng(organizerContentRef.current, {
+        quality: 1,
+        pixelRatio: 2,
+        backgroundColor: backgroundColor,
+        filter: (node) => {
+          // Exclude elements with 'export-exclude' class (buttons, etc)
+          if (node instanceof HTMLElement && node.classList.contains('export-exclude')) {
+            return false;
+          }
+          return true;
+        }
+      });
+
+      const fileName = selectedOrganizer.title.replace(/\s+/g, "_");
+
+      if (format === 'png') {
+        const link = document.createElement('a');
+        link.download = `${fileName}.png`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // PDF generation
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+        });
+        const imgProps = pdf.getImageProperties(dataUrl);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`${fileName}.pdf`);
+      }
+
+      toast({
+        title: "Downloaded!",
+        description: `Knowledge organizer saved as ${format.toUpperCase()}`,
+      });
+    } catch (error: any) {
+      console.error("Download error:", error);
+      toast({
+        title: "Download failed",
+        description: "Failed to download knowledge organizer. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setOpenSections(previousOpenSections);
+      setDownloading(false);
+    }
   };
 
   const handleTestKnowledge = () => {
@@ -823,104 +904,125 @@ export default function Knowledge() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Organizers List */}
-          <div className="lg:col-span-1 space-y-3 animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
-            {organizers.length === 0 ? (
-              <div className="glass-card p-8 text-center">
-                <Brain className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">{t("knowledge.noOrganizers")}</h3>
-                <p className="text-muted-foreground mb-4">
-                  Create your first knowledge organiser, generate one with AI, or add from the{" "}
-                  <button
-                    type="button"
-                    onClick={() => navigate("/library")}
-                    className="text-primary hover:underline font-medium"
-                  >
-                    Global Library
-                  </button>{" "}
-                  (Organisers tab).
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <Button onClick={handleCreateOrganizer}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t("knowledge.createOrganizer")}
-                  </Button>
-                  <Button variant="outline" onClick={() => navigate("/library")}>
-                    {t("library.title")}
-                  </Button>
-                </div>
-              </div>
-            ) : filteredOrganizers.length === 0 ? (
-              <div className="glass-card p-8 text-center">
-                <Brain className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No organizers found</h3>
-                <p className="text-muted-foreground mb-4">
-                  Try adjusting your filters or create a new organizer
-                </p>
-                <Button variant="outline" onClick={() => {
-                  setSelectedSubject("All Subjects");
-                  setSelectedBoard("All Boards");
-                  setSelectedTier("All Tiers");
-                  setSearchQuery("");
-                }}>
-                  Clear Filters
-                </Button>
-              </div>
-            ) : (
-              filteredOrganizers.map((org) => {
-                const orgProgress = calculateProgress(org);
-                return (
-                  <button
-                    key={org.id}
-                    onClick={() => {
-                      setSelectedOrganizer(org);
-                      if (org.content?.sections && org.content.sections.length > 0) {
-                        setOpenSections([org.content.sections[0].title]);
-                      }
-                    }}
-                    className={cn(
-                      "w-full text-left p-4 rounded-xl transition-all duration-200",
-                      selectedOrganizer?.id === org.id
-                        ? "glass-card border-primary/30 shadow-glow"
-                        : "bg-muted/50 hover:bg-muted"
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
-                        <Brain className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground truncate">{org.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {org.subject || "General"} • {org.topic || "General"}
-                          {org.tier && (
-                            <Badge variant="secondary" className={cn("text-[10px] h-4 px-1 ml-1", org.tier === "Higher" ? "text-red-500 bg-red-500/10" : "text-green-500 bg-green-500/10")}>
-                              {org.tier}
-                            </Badge>
-                          )}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-primary rounded-full transition-all duration-500"
-                              style={{ width: `${orgProgress}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground">{orgProgress}%</span>
-                        </div>
-                      </div>
+          {/* Organizers List - Scrollable */}
+          <div className={cn(
+            "lg:col-span-1 animate-slide-up",
+            mobileShowDetail ? "hidden lg:block" : "block"
+          )} style={{ animationDelay: "0.2s", opacity: 0 }}>
+            <ScrollArea className="h-[calc(100vh-280px)] lg:h-[calc(100vh-220px)] rounded-lg">
+              <div className="space-y-3 pr-3">
+                {organizers.length === 0 ? (
+                  <div className="glass-card p-8 text-center">
+                    <Brain className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">{t("knowledge.noOrganizers")}</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Create your first knowledge organiser, generate one with AI, or add from the{" "}
+                      <button
+                        type="button"
+                        onClick={() => navigate("/library")}
+                        className="text-primary hover:underline font-medium"
+                      >
+                        Global Library
+                      </button>{" "}
+                      (Organisers tab).
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      <Button onClick={handleCreateOrganizer}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        {t("knowledge.createOrganizer")}
+                      </Button>
+                      <Button variant="outline" onClick={() => navigate("/library")}>
+                        {t("library.title")}
+                      </Button>
                     </div>
-                  </button>
-                );
-              })
-            )}
+                  </div>
+                ) : filteredOrganizers.length === 0 ? (
+                  <div className="glass-card p-8 text-center">
+                    <Brain className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">No organizers found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Try adjusting your filters or create a new organizer
+                    </p>
+                    <Button variant="outline" onClick={() => {
+                      setSelectedSubject("All Subjects");
+                      setSelectedBoard("All Boards");
+                      setSelectedTier("All Tiers");
+                      setSearchQuery("");
+                    }}>
+                      Clear Filters
+                    </Button>
+                  </div>
+                ) : (
+                  filteredOrganizers.map((org) => {
+                    const orgProgress = calculateProgress(org);
+                    return (
+                      <button
+                        key={org.id}
+                        onClick={() => {
+                          setSelectedOrganizer(org);
+                          setMobileShowDetail(true);
+                          if (org.content?.sections && org.content.sections.length > 0) {
+                            setOpenSections([org.content.sections[0].title]);
+                          }
+                        }}
+                        className={cn(
+                          "w-full text-left p-4 rounded-xl transition-all duration-200",
+                          selectedOrganizer?.id === org.id
+                            ? "glass-card border-primary/30 shadow-glow"
+                            : "bg-muted/50 hover:bg-muted"
+                        )}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
+                            <Brain className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-foreground truncate">{org.title}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {org.subject || "General"} • {org.topic || "General"}
+                              {org.tier && (
+                                <Badge variant="secondary" className={cn("text-[10px] h-4 px-1 ml-1", org.tier === "Higher" ? "text-red-500 bg-red-500/10" : "text-green-500 bg-green-500/10")}>
+                                  {org.tier}
+                                </Badge>
+                              )}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-primary rounded-full transition-all duration-500"
+                                  style={{ width: `${orgProgress}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-muted-foreground">{orgProgress}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </ScrollArea>
           </div>
 
           {/* Organizer Detail */}
-          <div className="lg:col-span-2">
+          <div className={cn(
+            "lg:col-span-2",
+            mobileShowDetail ? "block" : "hidden lg:block"
+          )}>
             <div className="lg:sticky lg:top-24 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
               {selectedOrganizer ? (
-                <div className="glass-card p-6 md:p-8">
+                <div ref={organizerContentRef} className="glass-card p-6 md:p-8 bg-white dark:bg-slate-950">
+                  {/* Mobile Back Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="lg:hidden mb-4 -ml-2 export-exclude"
+                    onClick={() => setMobileShowDetail(false)}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Back to List
+                  </Button>
                   <div className="flex items-start justify-between mb-6">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
@@ -954,7 +1056,7 @@ export default function Knowledge() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 export-exclude">
                       <Button
                         variant="outline"
                         size="icon"
@@ -969,9 +1071,23 @@ export default function Knowledge() {
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
-                      <Button variant="outline" size="icon" onClick={() => handleDownload(selectedOrganizer)}>
-                        <Download className="h-4 w-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="icon" disabled={downloading}>
+                            {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleDownload('png')}>
+                            <FileImage className="h-4 w-4 mr-2" />
+                            Download as PNG
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDownload('pdf')}>
+                            <FileText className="h-4 w-4 mr-2" />
+                            Download as PDF
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
 
