@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { LimitReachedDialog } from "@/components/premium/LimitReachedDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -93,6 +94,11 @@ export default function HomeworkSolver() {
             );
 
             if (result.error) {
+                // Check for usage limit error
+                if (result.error.includes("limit") || result.error.includes("429")) {
+                    setLimitReached(true);
+                    return;
+                }
                 throw new Error(result.error);
             }
 
@@ -118,8 +124,12 @@ export default function HomeworkSolver() {
         }
     };
 
+    // Limit Reached State
+    const [limitReached, setLimitReached] = useState(false);
+
     return (
         <AppLayout>
+            <LimitReachedDialog open={limitReached} onOpenChange={setLimitReached} />
             <div className="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 rounded-xl bg-purple-500/10 text-purple-500">

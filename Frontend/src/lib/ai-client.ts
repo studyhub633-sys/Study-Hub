@@ -373,3 +373,34 @@ export const chatWithAI = async (
   }, supabase);
 };
 
+// Get AI usage stats
+export async function getAIUsage(supabase: any, feature?: string): Promise<ApiResponse<{ usageCount: number; limit: number; remaining: number; isPremium: boolean }>> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("Not authenticated");
+
+    let url = `${API_BASE_URL}/api/ai/usage`;
+    if (feature) {
+      url += `?feature=${encodeURIComponent(feature)}`;
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to fetch usage stats");
+    }
+
+    const data = await response.json();
+    return { data };
+  } catch (error: any) {
+    console.error("Error fetching usage stats:", error);
+    return { error: error.message };
+  }
+}

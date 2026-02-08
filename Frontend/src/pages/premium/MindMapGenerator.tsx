@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { LimitReachedDialog } from "@/components/premium/LimitReachedDialog";
 import RadialMindMap from "@/components/RadialMindMap";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -167,14 +168,15 @@ export default function MindMapGenerator() {
         } catch (error: any) {
             console.error('Mind map generation error:', error);
             let errorMessage = error.message || 'Failed to generate mind map';
-            
+
             // Provide helpful error messages
             if (errorMessage.includes('JSON')) {
                 errorMessage = 'AI response format error. Please try again.';
             } else if (errorMessage.includes('429')) {
-                errorMessage = 'Too many requests. Please wait a moment and try again.';
+                setLimitReached(true);
+                return;
             }
-            
+
             toast({
                 title: "Error",
                 description: errorMessage,
@@ -184,6 +186,9 @@ export default function MindMapGenerator() {
             setLoading(false);
         }
     };
+
+    // Limit Reached State
+    const [limitReached, setLimitReached] = useState(false);
 
     const handleSave = async () => {
         if (!mindMapData) return;
@@ -372,6 +377,7 @@ Other objects in the solar system include dwarf planets like Pluto, asteroids in
 
     return (
         <AppLayout>
+            <LimitReachedDialog open={limitReached} onOpenChange={setLimitReached} />
             <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-fade-in">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-6">

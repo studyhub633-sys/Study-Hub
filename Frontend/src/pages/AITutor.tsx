@@ -1,5 +1,6 @@
 import { ChatHistorySidebar } from "@/components/ChatHistorySidebar";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { LimitReachedDialog } from "@/components/premium/LimitReachedDialog";
 import { SimpleMarkdown } from "@/components/SimpleMarkdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +10,12 @@ import { VoiceChat } from "@/components/VoiceChat";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useChatSessions, type ChatMessage } from "@/hooks/useChatSessions";
-import { chatWithAI } from "@/lib/ai-client";
+import { chatWithAI, getAIUsage } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
 import { Bot, Camera, Headphones, Loader2, Menu, Send, Sparkles, User, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface Message {
     id: string;
@@ -87,6 +88,23 @@ export default function AITutor() {
 
     // UI State
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [limitReached, setLimitReached] = useState(false);
+    const [usageStats, setUsageStats] = useState<{ usageCount: number; limit: number; remaining: number; isPremium: boolean } | null>(null);
+    const navigate = useNavigate();
+
+    const fetchUsage = async () => {
+        if (!supabase) return;
+        const result = await getAIUsage(supabase);
+        if (result.data) {
+            setUsageStats(result.data);
+        }
+    };
+
+    useEffect(() => {
+        if (supabase) {
+            fetchUsage();
+        }
+    }, [supabase]);
 
     // Load session from URL parameter
     useEffect(() => {
@@ -225,9 +243,23 @@ export default function AITutor() {
             if (typeof error === "string") {
                 errorMessage = error;
             } else if (error instanceof Error) {
-                errorMessage = error.message;
+                // Check if it's a JSON error response from our API
+                try {
+                    const parsed = JSON.parse(error.message);
+                    if (parsed.error) errorMessage = parsed.error;
+                } catch (e) {
+                    errorMessage = error.message;
+                }
             } else if (typeof error === "object" && error !== null) {
-                errorMessage = error.message || JSON.stringify(error);
+                errorMessage = error.message || error.error || JSON.stringify(error);
+            }
+
+            // Check for usage limit error
+            if (errorMessage.includes("limit") || (error.status === 429)) {
+                setLimitReached(true);
+                // Don't toast for limit reached, the dialog will show
+                setLoading(false);
+                return "Usage limit reached.";
             }
 
             // Fallback if somehow we still got [object Object]
@@ -320,8 +352,14 @@ export default function AITutor() {
         await processMessage(text, imageToSend);
     };
 
+    // Limit Reached State
+
+
+
     return (
         <AppLayout fullWidth>
+            <LimitReachedDialog open={limitReached} onOpenChange={setLimitReached} />
+
             <div className="flex h-[calc(100vh-3.5rem)] md:h-screen overflow-hidden bg-background pb-20 md:pb-0">
                 {/* Desktop History Sidebar */}
                 <div className="hidden lg:flex shrink-0">
@@ -371,6 +409,13 @@ export default function AITutor() {
                             <div className="flex items-center gap-2">
                                 <Sparkles className="h-5 w-5 text-primary" />
                                 <span className="font-semibold text-lg">{t("nav.aiTutor")}</span>
+                                {usageStats && !usageStats.isPremium && (
+                                    <div className="ml-4 flex items-center px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 rounded-full border border-indigo-200 dark:border-indigo-800">
+                                        <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">
+                                            {usageStats.remaining} free uses left
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -507,8 +552,8 @@ export default function AITutor() {
                                             handleSend();
                                         }
                                     }}
-                                    placeholder={uploadedImage ? "Ask something about the image..." : t("aiTutor.askAnything")}
-                                    disabled={loading}
+                                    placeholder={uploadedImage ? "Ask something about the image..." : (limitReached ? "Usage limit reached" : t("aiTutor.askAnything"))}
+                                    disabled={loading || limitReached}
                                     className="border-0 focus-visible:ring-0 bg-transparent min-h-[44px] py-3 px-2 shadow-none resize-none"
                                 />
                                 <Button
@@ -531,7 +576,7 @@ export default function AITutor() {
                                 </Button>
                                 <Button
                                     onClick={handleSend}
-                                    disabled={loading || (!input.trim() && !uploadedImage)}
+                                    disabled={loading || (!input.trim() && !uploadedImage) || limitReached}
                                     size="icon"
                                     className={cn(
                                         "h-9 w-9 mb-1 shrink-0 rounded-lg transition-all",
