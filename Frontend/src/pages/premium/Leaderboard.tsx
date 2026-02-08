@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Flame, Loader2, Medal, Trophy } from "lucide-react";
+import { Loader2, Medal, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface LeaderboardUser {
@@ -136,7 +136,7 @@ export default function Leaderboard() {
 
                                 {/* 1st Place */}
                                 <div className="flex flex-col items-center w-[32%] sm:w-[34%] md:flex-1 min-w-[90px] sm:min-w-[110px] md:max-w-[160px] lg:max-w-none z-10 relative">
-                                    <Flame className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-orange-500 absolute -top-7 sm:-top-8 md:-top-10 left-1/2 -translate-x-1/2 animate-bounce" />
+
                                     <Avatar className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 border-2 sm:border-4 border-yellow-400 mb-1 sm:mb-2 ring-2 sm:ring-4 ring-yellow-400/20">
                                         <AvatarImage src={users[0]?.avatar || undefined} />
                                         <AvatarFallback>{users[0]?.name[0] || "1"}</AvatarFallback>
@@ -184,8 +184,8 @@ export default function Leaderboard() {
                                             </div>
                                             <div className="text-right">
                                                 <div className="font-bold">{formatXP(user.xp)} XP</div>
-                                                <div className="text-xs text-muted-foreground flex items-center justify-end gap-1">
-                                                    <Flame className="w-3 h-3 text-orange-500" /> {user.streak} day streak
+                                                <div className="text-xs text-muted-foreground">
+                                                    {user.streak} day streak
                                                 </div>
                                             </div>
                                         </div>

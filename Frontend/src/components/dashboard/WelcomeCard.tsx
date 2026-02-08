@@ -220,13 +220,9 @@ export function WelcomeCard() {
             )}
           </div>
 
-
-        </div>
-
-        {/* Study Streak */}
-        <div className="mt-6">
+          {/* Study Streak - positioned on the right */}
           <div
-            className="bg-white/10 backdrop-blur-sm rounded-lg p-3 animate-scale-in inline-block min-w-[140px]"
+            className="bg-white/10 backdrop-blur-sm rounded-lg p-3 animate-scale-in min-w-[140px] self-start"
           >
             <p className="text-primary-foreground/70 text-xs mb-1">{t("dashboard.welcome.studyStreak")}</p>
             <p className="text-primary-foreground font-bold text-lg">
@@ -237,6 +233,8 @@ export function WelcomeCard() {
             </p>
           </div>
         </div>
+
+
       </div>
     </div>
   );
