@@ -77,7 +77,7 @@ export async function checkAndRecordUsage(user, featureType, prompt = null, subj
 
     return {
         usageCount: count + 1,
-        limit: MAX_DAILY_USAGE,
+        limit: currentLimit,
         isPremium,
         usageId: insertedData?.id
     };
