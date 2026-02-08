@@ -473,7 +473,7 @@ export default function PremiumDashboard() {
                         {!isPremium && (
                             <Button
                                 size="lg"
-                                className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white shadow-lg border-0 text-lg px-8 py-6 h-auto"
+                                className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white shadow-lg border-0 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 h-auto whitespace-nowrap shrink-0"
                                 onClick={() => document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
                             >
                                 <Sparkles className="w-5 h-5 mr-2" />

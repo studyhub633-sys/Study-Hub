@@ -159,9 +159,11 @@ export function SuggestedResources() {
                 <p className="text-sm text-muted-foreground">{t("dashboard.suggestions.getPersonalized")}</p>
               </div>
             </div>
-            <Button size="sm" className="w-full sm:w-auto bg-premium hover:bg-premium/90 text-premium-foreground shrink-0">
-              {t("dashboard.suggestions.upgrade")}
-            </Button>
+            <Link to="/premium-dashboard">
+              <Button size="sm" className="w-full sm:w-auto bg-premium hover:bg-premium/90 text-premium-foreground shrink-0">
+                {t("dashboard.suggestions.upgrade")}
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

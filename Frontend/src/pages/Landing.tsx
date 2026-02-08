@@ -204,7 +204,7 @@ export default function Landing() {
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <Link key={feature.titleKey} to={feature.link} className="block">
+              <Link key={feature.titleKey} to="/signup" className="block">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer group h-full">
                   <CardHeader>
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">

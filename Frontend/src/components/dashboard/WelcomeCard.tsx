@@ -1,7 +1,6 @@
-import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { hasPremium } from "@/lib/premium";
-import { Brain, Sparkles, TrendingUp } from "lucide-react";
+import { Brain, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -221,41 +220,22 @@ export function WelcomeCard() {
             )}
           </div>
 
-          {stats.notesCount + stats.flashcardsCount + stats.papersCount > 0 && (
-            <div className="glass-card bg-white/10 backdrop-blur-sm border-white/20 p-4 rounded-xl min-w-[160px]">
-              <div className="flex items-center gap-2 text-primary-foreground/80 text-sm mb-2">
-                <TrendingUp className="h-4 w-4" />
-                <span>{t("dashboard.welcome.totalItems")}</span>
-              </div>
-              <div className="text-3xl font-bold text-primary-foreground mb-2">
-                {stats.notesCount + stats.flashcardsCount + stats.papersCount}
-              </div>
-              <Progress
-                value={Math.min(100, ((stats.notesCount + stats.flashcardsCount + stats.papersCount) / 100) * 100)}
-                className="h-2 bg-white/20"
-              />
-            </div>
-          )}
+
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-          {[
-            { label: t("dashboard.welcome.notes"), value: stats.notesCount.toString(), change: stats.notesCount === 0 ? t("dashboard.welcome.noneYet") : t("dashboard.welcome.created") },
-            { label: t("dashboard.welcome.flashcards"), value: stats.flashcardsCount.toString(), change: stats.flashcardsCount === 0 ? t("dashboard.welcome.noneYet") : t("dashboard.welcome.created") },
-            { label: t("dashboard.welcome.pastPapers"), value: stats.papersCount.toString(), change: stats.papersCount === 0 ? t("dashboard.welcome.noneYet") : t("dashboard.welcome.added") },
-            { label: t("dashboard.welcome.studyStreak"), value: stats.streak > 0 ? t("dashboard.welcome.days", { count: stats.streak }) : t("dashboard.welcome.days", { count: 0 }), change: stats.streak > 0 ? t("dashboard.welcome.keepGoing") : t("dashboard.welcome.startStudying") },
-          ].map((stat, index) => (
-            <div
-              key={stat.label}
-              className="bg-white/10 backdrop-blur-sm rounded-lg p-3 animate-scale-in"
-              style={{ animationDelay: `${index * 0.1}s`, opacity: 0 }}
-            >
-              <p className="text-primary-foreground/70 text-xs mb-1">{stat.label}</p>
-              <p className="text-primary-foreground font-bold text-lg">{stat.value}</p>
-              <p className="text-primary-foreground/60 text-xs mt-0.5">{stat.change}</p>
-            </div>
-          ))}
+        {/* Study Streak */}
+        <div className="mt-6">
+          <div
+            className="bg-white/10 backdrop-blur-sm rounded-lg p-3 animate-scale-in inline-block min-w-[140px]"
+          >
+            <p className="text-primary-foreground/70 text-xs mb-1">{t("dashboard.welcome.studyStreak")}</p>
+            <p className="text-primary-foreground font-bold text-lg">
+              {stats.streak > 0 ? t("dashboard.welcome.days", { count: stats.streak }) : t("dashboard.welcome.days", { count: 0 })}
+            </p>
+            <p className="text-primary-foreground/60 text-xs mt-0.5">
+              {stats.streak > 0 ? t("dashboard.welcome.keepGoing") : t("dashboard.welcome.startStudying")}
+            </p>
+          </div>
         </div>
       </div>
     </div>

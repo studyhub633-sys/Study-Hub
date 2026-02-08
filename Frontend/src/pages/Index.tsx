@@ -66,10 +66,10 @@ export default function Dashboard() {
       icon: Sparkles,
       title: t('features.aiQuestions.title'),
       description: t('features.aiQuestions.description'),
-      countLabel: t('features.aiQuestions.title').split(" ").pop()?.toLowerCase() || "questions",
+      countLabel: "questions",
       path: "/ai-tutor",
       color: "premium" as const,
-      tableName: "ai_usage_tracking",
+      tableName: undefined, // Don't show count for unlimited AI questions
     },
   ];
 
