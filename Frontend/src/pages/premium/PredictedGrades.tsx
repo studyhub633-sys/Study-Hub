@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { hasPremium } from "@/lib/premium";
+import { Calculator, Loader2, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface SubjectGrade {
     name: string;
@@ -37,6 +39,9 @@ const GRADE_LABELS: Record<string, string> = {
 };
 
 export default function PredictedGrades() {
+    const { supabase, user } = useAuth();
+    const [isPremium, setIsPremium] = useState(false);
+    const [checking, setChecking] = useState(true);
     const [subjects, setSubjects] = useState<SubjectGrade[]>([{ name: "", grade: "", target: "" }]);
     const [prediction, setPrediction] = useState<{
         onTrack: number;
@@ -45,6 +50,24 @@ export default function PredictedGrades() {
         message: string;
         focusAreas: string[];
     } | null>(null);
+
+    useEffect(() => {
+        const checkPremiumStatus = async () => {
+            if (!user || !supabase) {
+                setChecking(false);
+                return;
+            }
+            try {
+                const premium = await hasPremium(supabase);
+                setIsPremium(premium);
+            } catch (error) {
+                console.error("Error checking premium status:", error);
+            } finally {
+                setChecking(false);
+            }
+        };
+        checkPremiumStatus();
+    }, [user]);
 
     const addSubject = () => {
         setSubjects([...subjects, { name: "", grade: "", target: "" }]);
@@ -64,7 +87,7 @@ export default function PredictedGrades() {
 
     const calculatePrediction = () => {
         const validSubjects = subjects.filter(s => s.name && s.grade && s.target);
-        
+
         if (validSubjects.length === 0) {
             return;
         }
@@ -101,6 +124,47 @@ export default function PredictedGrades() {
             focusAreas,
         });
     };
+
+    if (checking) {
+        return (
+            <AppLayout>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        );
+    }
+
+    if (!isPremium) {
+        return (
+            <AppLayout>
+                <div className="max-w-4xl mx-auto py-12">
+                    <Card className="border-amber-500/20 bg-amber-500/5">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Calculator className="w-6 h-6 text-amber-500" />
+                                Premium Feature
+                            </CardTitle>
+                            <CardDescription>
+                                Predicted Grades Calculator is a premium feature
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground mb-4">
+                                Upgrade to premium to track your performance and see what grades you're on track to achieve.
+                            </p>
+                            <Button
+                                onClick={() => window.location.href = '/premium-dashboard'}
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                            >
+                                View Premium Plans
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </AppLayout>
+        );
+    }
 
     return (
         <AppLayout>

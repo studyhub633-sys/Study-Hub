@@ -1,9 +1,10 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { hasPremium } from "@/lib/premium";
 import { CheckCircle2, Loader2, Pause, Play, Plus, RotateCcw, Timer, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -18,6 +19,10 @@ export default function FocusMode() {
     const { user, supabase } = useAuth();
     const { toast } = useToast();
 
+    // Premium check
+    const [isPremium, setIsPremium] = useState(false);
+    const [checkingPremium, setCheckingPremium] = useState(true);
+
     // Timer state
     const [timeLeft, setTimeLeft] = useState(25 * 60);
     const [isActive, setIsActive] = useState(false);
@@ -29,6 +34,24 @@ export default function FocusMode() {
     const [newTaskText, setNewTaskText] = useState("");
     const [loadingTasks, setLoadingTasks] = useState(true);
     const [addingTask, setAddingTask] = useState(false);
+
+    useEffect(() => {
+        const checkPremiumStatus = async () => {
+            if (!user || !supabase) {
+                setCheckingPremium(false);
+                return;
+            }
+            try {
+                const premium = await hasPremium(supabase);
+                setIsPremium(premium);
+            } catch (error) {
+                console.error("Error checking premium status:", error);
+            } finally {
+                setCheckingPremium(false);
+            }
+        };
+        checkPremiumStatus();
+    }, [user]);
 
     // Load tasks on mount
     useEffect(() => {
@@ -267,6 +290,47 @@ export default function FocusMode() {
     const completedCount = tasks.filter(t => t.completed).length;
     const totalCount = tasks.length;
 
+    if (checkingPremium) {
+        return (
+            <AppLayout>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        );
+    }
+
+    if (!isPremium) {
+        return (
+            <AppLayout>
+                <div className="max-w-4xl mx-auto py-12">
+                    <Card className="border-amber-500/20 bg-amber-500/5">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Timer className="w-6 h-6 text-amber-500" />
+                                Premium Feature
+                            </CardTitle>
+                            <CardDescription>
+                                Focus Mode is a premium feature
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground mb-4">
+                                Upgrade to premium to use the Pomodoro timer and manage your focus sessions.
+                            </p>
+                            <Button
+                                onClick={() => window.location.href = '/premium-dashboard'}
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                            >
+                                View Premium Plans
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </AppLayout>
+        );
+    }
+
     return (
         <AppLayout>
             <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-12">
@@ -429,8 +493,8 @@ export default function FocusMode() {
                                     <div
                                         key={task.id}
                                         className={`group flex items-center gap-3 p-3 rounded-lg transition-all ${task.completed
-                                                ? "bg-green-500/10 border border-green-500/20"
-                                                : "bg-secondary/50 border border-border hover:border-primary/30"
+                                            ? "bg-green-500/10 border border-green-500/20"
+                                            : "bg-secondary/50 border border-border hover:border-primary/30"
                                             }`}
                                     >
                                         <button

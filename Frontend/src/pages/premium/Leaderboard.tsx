@@ -1,9 +1,11 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { hasPremium } from "@/lib/premium";
 import { Loader2, Medal, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -22,6 +24,26 @@ export default function Leaderboard() {
     const { toast } = useToast();
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState<LeaderboardUser[]>([]);
+    const [isPremium, setIsPremium] = useState(false);
+    const [checkingPremium, setCheckingPremium] = useState(true);
+
+    useEffect(() => {
+        const checkPremiumStatus = async () => {
+            if (!user || !supabase) {
+                setCheckingPremium(false);
+                return;
+            }
+            try {
+                const premium = await hasPremium(supabase);
+                setIsPremium(premium);
+            } catch (error) {
+                console.error("Error checking premium status:", error);
+            } finally {
+                setCheckingPremium(false);
+            }
+        };
+        checkPremiumStatus();
+    }, [user]);
 
     useEffect(() => {
         fetchLeaderboard();
@@ -81,6 +103,47 @@ export default function Leaderboard() {
     const formatXP = (xp: number) => {
         return xp.toLocaleString();
     };
+
+    if (checkingPremium) {
+        return (
+            <AppLayout>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        );
+    }
+
+    if (!isPremium) {
+        return (
+            <AppLayout>
+                <div className="max-w-4xl mx-auto py-12">
+                    <Card className="border-amber-500/20 bg-amber-500/5">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Trophy className="w-6 h-6 text-amber-500" />
+                                Premium Feature
+                            </CardTitle>
+                            <CardDescription>
+                                Study Leaderboard is a premium feature
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground mb-4">
+                                Upgrade to premium to see your weekly rankings and compete with peers.
+                            </p>
+                            <Button
+                                onClick={() => window.location.href = '/premium-dashboard'}
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                            >
+                                View Premium Plans
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </AppLayout>
+        );
+    }
 
     return (
         <AppLayout>

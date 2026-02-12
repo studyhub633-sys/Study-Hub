@@ -23,10 +23,10 @@ export function LimitReachedDialog({ open, onOpenChange }: LimitReachedDialogPro
                     <div className="p-3 bg-amber-500/10 rounded-full">
                         <Sparkles className="h-8 w-8 text-amber-500" />
                     </div>
-                    <h2 className="text-2xl font-bold">Usage Limit Reached</h2>
+                    <h2 className="text-2xl font-bold">Daily Limit Reached</h2>
                     <p className="text-muted-foreground">
-                        You've reached your free limit of 10 AI interactions.
-                        To continue utilizing our AI tools and unlock unlimited access, please upgrade to Premium.
+                        You've reached your daily limit of 10 AI interactions.
+                        Your limit resets every 24 hours. To unlock unlimited access, upgrade to Premium.
                     </p>
 
                     <div className="w-full pt-4 space-y-2">

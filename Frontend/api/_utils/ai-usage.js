@@ -18,23 +18,17 @@ export async function checkAndRecordUsage(user, featureType, prompt = null, subj
 
     const isPremium = profile?.is_premium || false;
 
-    // Free users: 10 lifetime requests, Premium: unlimited (set to very high number)
-    const MAX_LIFETIME_USAGE_FREE = 10;
+    // Free users: 10 daily requests, Premium: unlimited (set to very high number)
+    const MAX_DAILY_USAGE_FREE = 10;
     const MAX_DAILY_USAGE_PREMIUM = 10000; // Effectively unlimited
 
-    // Determine the query filter based on premium status
-    // Premium: specific time window (last 24h)
-    // Free: ALL time (lifetime limit)
+    // Determine the query filter - both free and premium use a 24h rolling window
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     let usageQuery = supabase
         .from("ai_usage_tracking")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
-
-    if (isPremium) {
-        // For premium users, we only care about recent usage to prevent abuse
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        usageQuery = usageQuery.gt("created_at", oneDayAgo);
-    }
+        .eq("user_id", user.id)
+        .gt("created_at", oneDayAgo);
 
     const { count, error } = await usageQuery;
 
@@ -42,14 +36,14 @@ export async function checkAndRecordUsage(user, featureType, prompt = null, subj
         throw new Error(`Failed to check usage limits: ${error.message}`);
     }
 
-    const currentLimit = isPremium ? MAX_DAILY_USAGE_PREMIUM : MAX_LIFETIME_USAGE_FREE;
+    const currentLimit = isPremium ? MAX_DAILY_USAGE_PREMIUM : MAX_DAILY_USAGE_FREE;
 
     if (count >= currentLimit) {
         throw {
             status: 429,
             message: isPremium
                 ? `You have reached the daily safety limit of ${MAX_DAILY_USAGE_PREMIUM} requests.`
-                : `You have reached your free limit of ${MAX_LIFETIME_USAGE_FREE} AI interactions. Upgrade to Premium for unlimited access!`,
+                : `You have reached your daily free limit of ${MAX_DAILY_USAGE_FREE} AI interactions. Come back tomorrow or upgrade to Premium for unlimited access!`,
             usageCount: count,
             limit: currentLimit,
             isPremium: isPremium // Pass this flag to frontend to trigger upgrade UI

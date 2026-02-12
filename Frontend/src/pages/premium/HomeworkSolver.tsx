@@ -6,11 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { chatWithAI } from "@/lib/ai-client";
-import { Brain, Sparkles, Upload, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { hasPremium } from "@/lib/premium";
+import { Brain, Loader2, Sparkles, Upload, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export default function HomeworkSolver() {
-    const { supabase } = useAuth();
+    const { supabase, user } = useAuth();
     const { toast } = useToast();
     const [question, setQuestion] = useState("");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -18,6 +19,26 @@ export default function HomeworkSolver() {
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
     const [imageFileName, setImageFileName] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isPremium, setIsPremium] = useState(false);
+    const [checking, setChecking] = useState(true);
+
+    useEffect(() => {
+        const checkPremiumStatus = async () => {
+            if (!user || !supabase) {
+                setChecking(false);
+                return;
+            }
+            try {
+                const premium = await hasPremium(supabase);
+                setIsPremium(premium);
+            } catch (error) {
+                console.error("Error checking premium status:", error);
+            } finally {
+                setChecking(false);
+            }
+        };
+        checkPremiumStatus();
+    }, [user]);
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -126,6 +147,47 @@ export default function HomeworkSolver() {
 
     // Limit Reached State
     const [limitReached, setLimitReached] = useState(false);
+
+    if (checking) {
+        return (
+            <AppLayout>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        );
+    }
+
+    if (!isPremium) {
+        return (
+            <AppLayout>
+                <div className="max-w-4xl mx-auto py-12">
+                    <Card className="border-amber-500/20 bg-amber-500/5">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Brain className="w-6 h-6 text-amber-500" />
+                                Premium Feature
+                            </CardTitle>
+                            <CardDescription>
+                                AI Homework Solver is a premium feature
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground mb-4">
+                                Upgrade to premium to get instant, step-by-step solutions for any subject.
+                            </p>
+                            <Button
+                                onClick={() => window.location.href = '/premium-dashboard'}
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                            >
+                                View Premium Plans
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </AppLayout>
+        );
+    }
 
     return (
         <AppLayout>
