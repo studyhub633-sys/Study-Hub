@@ -18,6 +18,7 @@ const AITutor = lazy(() => import("./pages/AITutor"));
 const Extracurricular = lazy(() => import("./pages/Extracurricular"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Flashcards = lazy(() => import("./pages/Flashcards"));
+const FlashcardDeckView = lazy(() => import("./pages/FlashcardDeckView"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const GlobalLibrary = lazy(() => import("./pages/GlobalLibrary"));
 const Index = lazy(() => import("./pages/Index"));
@@ -107,6 +108,14 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <Flashcards />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/flashcards/:subject"
+                      element={
+                        <ProtectedRoute>
+                          <FlashcardDeckView />
                         </ProtectedRoute>
                       }
                     />

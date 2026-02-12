@@ -1,6 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -11,37 +10,23 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { generateFlashcards } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
-  Check,
-  ChevronLeft,
   ChevronRight,
-  Edit,
-  Filter,
+  Clock,
+  Layers,
   Loader2,
-  Play,
   Plus,
-  RotateCcw,
   Search,
-  Shuffle,
-  Trash2,
-  X,
+  Sparkles,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface Flashcard {
   id: string;
@@ -57,34 +42,47 @@ interface Flashcard {
   updated_at: string;
 }
 
+interface Deck {
+  subject: string;
+  cards: Flashcard[];
+  totalCards: number;
+  newCards: number;
+  learning: number;
+  almostDone: number;
+  mastered: number;
+  lastStudied: string | null;
+  topics: string[];
+}
+
+function getMasteryLevel(reviewCount: number): "new" | "learning" | "almostDone" | "mastered" {
+  if (reviewCount === 0) return "new";
+  if (reviewCount <= 2) return "learning";
+  if (reviewCount <= 4) return "almostDone";
+  return "mastered";
+}
+
+function getMasteryPercent(deck: Deck): number {
+  if (deck.totalCards === 0) return 0;
+  return Math.round((deck.mastered / deck.totalCards) * 100);
+}
+
 export default function Flashcards() {
   const { supabase, user } = useAuth();
   const { t } = useTranslation();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const location = useLocation();
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
-  const [selectedTopic, setSelectedTopic] = useState("All Topics");
-  const [selectedTier, setSelectedTier] = useState("All Tiers");
   const [searchQuery, setSearchQuery] = useState("");
-  const [quizMode, setQuizMode] = useState(false);
-  const [score, setScore] = useState({ correct: 0, incorrect: 0 });
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
-  const [formData, setFormData] = useState({
-    front: "",
-    back: "",
-    subject: "",
-    topic: "",
-    tier: "" as "Foundation" | "Higher" | "",
-  });
+  const [isCreateDeckOpen, setIsCreateDeckOpen] = useState(false);
+  const [newDeckName, setNewDeckName] = useState("");
 
-  // Bulk Selection State
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
+  // AI generation state
+  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+  const [generateTopic, setGenerateTopic] = useState("");
+  const [generateSubject, setGenerateSubject] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -93,18 +91,15 @@ export default function Flashcards() {
   }, [user]);
 
   // Handle generated flashcards from Knowledge Organizers
-  // Handle generated flashcards from Knowledge Organizers
   useEffect(() => {
     const handleGeneration = async () => {
       if (!user) return;
 
-      // Case 1: Pre-generated cards (legacy support or if passed directly)
       if (location.state?.generatedFlashcards) {
         await saveGeneratedCards(location.state.generatedFlashcards, location.state.subject || "General");
         return;
       }
 
-      // Case 2: Content passed to be generated
       if (location.state?.organizerContent) {
         const content = location.state.organizerContent;
         const subject = location.state.subject || "General";
@@ -166,10 +161,7 @@ export default function Flashcards() {
         description: t("flashcards.successCreatedDesc", { count: generatedCards.length }),
       });
 
-      // Clear location state
       window.history.replaceState({}, document.title);
-
-      // Refresh cards
       fetchCards();
     } catch (error: any) {
       console.error("Error saving generated flashcards:", error);
@@ -206,308 +198,124 @@ export default function Flashcards() {
     }
   };
 
-  const handleCreateCard = () => {
-    setEditingCard(null);
-    setFormData({
-      front: "",
-      back: "",
-      subject: "",
-      topic: "",
-      tier: "",
-    });
-    setIsDialogOpen(true);
-  };
+  const handleCreateDeck = async () => {
+    if (!user || !newDeckName.trim()) return;
 
-  const handleEditCard = (card: Flashcard) => {
-    setEditingCard(card);
-    setFormData({
-      front: card.front,
-      back: card.back,
-      subject: card.subject || "",
-      topic: card.topic || "",
-      tier: card.tier || "",
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleSaveCard = async () => {
-    if (!user || !formData.front.trim() || !formData.back.trim()) {
-      toast({
-        title: "Error",
-        description: "Both front and back are required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.tier) {
-      toast({
-        title: "Error",
-        description: "Please select a Tier (Foundation or Higher)",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // Create a placeholder card for the new deck
     try {
-      if (editingCard) {
-        // Update existing card
-        const { error } = await supabase
-          .from("flashcards")
-          .update({
-            front: formData.front,
-            back: formData.back,
-            subject: formData.subject || null,
-            topic: formData.topic || null,
-            tier: formData.tier || null,
-          })
-          .eq("id", editingCard.id)
-          .eq("user_id", user.id);
+      const { error } = await supabase.from("flashcards").insert({
+        user_id: user.id,
+        front: "Sample Question",
+        back: "Sample Answer — edit or delete this card",
+        subject: newDeckName.trim(),
+        topic: "General",
+        difficulty: 1,
+        review_count: 0,
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        toast({
-          title: t("common.success"),
-          description: t("flashcards.successUpdated"),
-        });
-      } else {
-        // Create new card
-        const { error } = await supabase.from("flashcards").insert({
-          user_id: user.id,
-          front: formData.front,
-          back: formData.back,
-          subject: formData.subject || null,
-          topic: formData.topic || null,
-          tier: formData.tier || null,
-          difficulty: 1,
-          review_count: 0,
-        });
+      toast({
+        title: "Deck Created",
+        description: `"${newDeckName.trim()}" deck has been created.`,
+      });
 
-        if (error) throw error;
+      setIsCreateDeckOpen(false);
+      setNewDeckName("");
+      fetchCards();
 
-        toast({
-          title: t("common.success"),
-          description: t("flashcards.successCreatedSingle"),
-        });
+      // Navigate to the new deck
+      navigate(`/flashcards/${encodeURIComponent(newDeckName.trim())}`);
+    } catch (error: any) {
+      console.error("Error creating deck:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create deck. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGenerateCards = async () => {
+    if (!user || !generateTopic.trim()) return;
+
+    setGenerating(true);
+    try {
+      const subject = generateSubject.trim() || "General";
+
+      const result = await generateFlashcards(
+        {
+          notes: generateTopic,
+          subject: subject,
+          count: 10,
+        },
+        supabase
+      );
+
+      if (result.error) throw new Error(result.error);
+
+      if (result.data?.flashcards) {
+        await saveGeneratedCards(result.data.flashcards, subject);
+        setIsGenerateOpen(false);
+        setGenerateTopic("");
+        setGenerateSubject("");
       }
-
-      setIsDialogOpen(false);
-      fetchCards();
     } catch (error: any) {
-      console.error("Error saving flashcard:", error);
+      console.error("Error generating flashcards:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to save flashcard. Please try again.",
+        title: "Generation Failed",
+        description: error.message || "Failed to generate flashcards.",
         variant: "destructive",
       });
+    } finally {
+      setGenerating(false);
     }
   };
 
-  const handleDeleteCard = async (cardId: string) => {
-    if (!user) return;
-    if (!confirm(t("flashcards.deleteConfirm"))) return;
+  // Group cards into decks by subject
+  const decks: Deck[] = (() => {
+    const grouped: Record<string, Flashcard[]> = {};
+    cards.forEach((card) => {
+      const subject = card.subject || "Uncategorised";
+      if (!grouped[subject]) grouped[subject] = [];
+      grouped[subject].push(card);
+    });
 
-    try {
-      const { error } = await supabase
-        .from("flashcards")
-        .delete()
-        .eq("id", cardId)
-        .eq("user_id", user.id);
+    return Object.entries(grouped).map(([subject, deckCards]) => {
+      const newCards = deckCards.filter((c) => getMasteryLevel(c.review_count) === "new").length;
+      const learning = deckCards.filter((c) => getMasteryLevel(c.review_count) === "learning").length;
+      const almostDone = deckCards.filter((c) => getMasteryLevel(c.review_count) === "almostDone").length;
+      const mastered = deckCards.filter((c) => getMasteryLevel(c.review_count) === "mastered").length;
+      const topics = Array.from(new Set(deckCards.map((c) => c.topic).filter(Boolean)));
+      const lastStudied = deckCards
+        .map((c) => c.last_reviewed)
+        .filter(Boolean)
+        .sort()
+        .reverse()[0] || null;
 
-      if (error) throw error;
+      return {
+        subject,
+        cards: deckCards,
+        totalCards: deckCards.length,
+        newCards,
+        learning,
+        almostDone,
+        mastered,
+        lastStudied,
+        topics,
+      };
+    });
+  })();
 
-      toast({
-        title: t("common.success"),
-        description: t("flashcards.successDeleted"),
-      });
-
-      fetchCards();
-    } catch (error: any) {
-      console.error("Error deleting flashcard:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete flashcard. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleMarkReview = async (cardId: string, correct: boolean) => {
-    if (!user) return;
-
-    try {
-      // Get current card to increment review_count
-      const { data: currentCard } = await supabase
-        .from("flashcards")
-        .select("review_count")
-        .eq("id", cardId)
-        .eq("user_id", user.id)
-        .single();
-
-      const { error } = await supabase
-        .from("flashcards")
-        .update({
-          last_reviewed: new Date().toISOString(),
-          review_count: (currentCard?.review_count || 0) + 1,
-        })
-        .eq("id", cardId)
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-      fetchCards();
-    } catch (error: any) {
-      console.error("Error updating review:", error);
-      console.error("Error updating review:", error);
-    }
-  };
-
-  // Bulk Actions
-  const handleToggleSelectMode = () => {
-    setIsSelectionMode(!isSelectionMode);
-    setSelectedCards(new Set()); // Clear selection when toggling
-  };
-
-  const handleSelectCard = (cardId: string) => {
-    const newSelected = new Set(selectedCards);
-    if (newSelected.has(cardId)) {
-      newSelected.delete(cardId);
-    } else {
-      newSelected.add(cardId);
-    }
-    setSelectedCards(newSelected);
-  };
-
-  const handleSelectAll = () => {
-    if (selectedCards.size === filteredCards.length) {
-      setSelectedCards(new Set());
-    } else {
-      const allIds = new Set(filteredCards.map((c) => c.id));
-      setSelectedCards(allIds);
-    }
-  };
-  //yes
-  const handleBulkDelete = async () => {
-    if (!user || selectedCards.size === 0) return;
-
-    if (!confirm(t("flashcards.bulkDeleteConfirm", { count: selectedCards.size }))) return;
-
-    try {
-      setLoading(true);
-      const { error } = await supabase
-        .from("flashcards")
-        .delete()
-        .in("id", Array.from(selectedCards))
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: t("common.success"),
-        description: t("flashcards.bulkDeleted", { count: selectedCards.size }),
-      });
-
-      setSelectedCards(new Set());
-      setIsSelectionMode(false);
-      fetchCards();
-    } catch (error: any) {
-      console.error("Error deleting flashcards:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete flashcards. Please try again.",
-        variant: "destructive",
-      });
-      setLoading(false); // Only set loading false on error, fetchCards will handle it on success
-    }
-  };
-
-  const filteredCards = cards.filter((card) => {
-    const matchesSubject =
-      selectedSubject === "All Subjects" || card.subject === selectedSubject;
-    const matchesTopic =
-      selectedTopic === "All Topics" || card.topic === selectedTopic;
-    const matchesTier =
-      selectedTier === "All Tiers" || card.tier === selectedTier;
-    const matchesSearch =
-      (card.front || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (card.back || "").toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSubject && matchesTopic && matchesTier && matchesSearch;
-  });
-
-  // Group cards by subject and topic for organization
-  const groupedCards = filteredCards.reduce((acc, card) => {
-    const subject = card.subject || "Uncategorized";
-    const topic = card.topic || "General";
-    if (!acc[subject]) {
-      acc[subject] = {};
-    }
-    if (!acc[subject][topic]) {
-      acc[subject][topic] = [];
-    }
-    acc[subject][topic].push(card);
-    return acc;
-  }, {} as Record<string, Record<string, Flashcard[]>>);
-
-  const subjects = Array.from(new Set(cards.map((c) => c.subject).filter(Boolean)));
-  const topics = selectedSubject !== "All Subjects"
-    ? Array.from(new Set(cards.filter(c => c.subject === selectedSubject).map((c) => c.topic).filter(Boolean)))
-    : Array.from(new Set(cards.map((c) => c.topic).filter(Boolean)));
-
-  const currentCard = filteredCards[currentIndex];
-  const progress =
-    filteredCards.length > 0
-      ? ((currentIndex + 1) / filteredCards.length) * 100
-      : 0;
-
-  const handleNext = () => {
-    setIsFlipped(false);
-    // Remove delay for faster quiz mode
-    setCurrentIndex((prev) => (prev + 1) % filteredCards.length);
-  };
-
-  const handlePrev = () => {
-    setIsFlipped(false);
-    // Remove delay for faster quiz mode
-    setCurrentIndex((prev) => (prev - 1 + filteredCards.length) % filteredCards.length);
-  };
-
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
-
-  const handleAnswer = async (correct: boolean) => {
-    // Update score immediately for instant feedback
-    if (correct) {
-      setScore((prev) => ({ ...prev, correct: prev.correct + 1 }));
-    } else {
-      setScore((prev) => ({ ...prev, incorrect: prev.incorrect + 1 }));
-    }
-
-    // Move to next card immediately
-    handleNext();
-
-    // Mark review in background (non-blocking)
-    if (currentCard) {
-      handleMarkReview(currentCard.id, correct).catch(console.error);
-    }
-  };
-
-  const resetQuiz = () => {
-    setScore({ correct: 0, incorrect: 0 });
-    setCurrentIndex(0);
-    setIsFlipped(false);
-  };
-
-  const shuffleCards = () => {
-    const shuffled = [...filteredCards].sort(() => Math.random() - 0.5);
-    setCards(shuffled);
-    setCurrentIndex(0);
-    setIsFlipped(false);
-  };
+  const filteredDecks = decks.filter((deck) =>
+    deck.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    deck.topics.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   if (loading) {
     return (
       <AppLayout>
-        <div className="max-w-4xl mx-auto flex items-center justify-center h-[60vh]">
+        <div className="max-w-5xl mx-auto flex items-center justify-center h-[60vh]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </AppLayout>
@@ -516,388 +324,278 @@ export default function Flashcards() {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6 pb-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("flashcards.title")}</h1>
-            <p className="text-muted-foreground mt-1">
-              {t("flashcards.totalCards", {
-                count: cards.length,
-                plural: cards.length !== 1 ? "s" : ""
-              })}
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+                <Layers className="h-7 w-7 text-primary" />
+              </div>
+              {t("flashcards.title")}
+            </h1>
+            <p className="text-muted-foreground mt-1.5 ml-14">
+              {decks.length} {decks.length === 1 ? "deck" : "decks"} • {cards.length} total cards
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {!isSelectionMode ? (
-              <>
-                <Button variant="outline" onClick={handleToggleSelectMode}>
-                  {t("flashcards.select")}
-                </Button>
-                <Button variant={quizMode ? "default" : "outline"} onClick={() => setQuizMode(!quizMode)}>
-                  <Play className="h-4 w-4 mr-2" />
-                  {quizMode ? t("flashcards.exitQuiz") : t("flashcards.quizMode")}
-                </Button>
-                <Button onClick={handleCreateCard}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("flashcards.addCard")}
-                </Button>
-              </>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium mr-2">
-                  {t("flashcards.selected", { count: selectedCards.size })}
-                </span>
-                <Button variant="outline" onClick={handleSelectAll}>
-                  {selectedCards.size === filteredCards.length ? t("flashcards.deselectAll") : t("flashcards.selectAll")}
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleBulkDelete}
-                  disabled={selectedCards.size === 0}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {t("flashcards.deleteSelected", { count: selectedCards.size })}
-                </Button>
-                <Button variant="ghost" onClick={handleToggleSelectMode}>
-                  {t("common.cancel")}
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={t("flashcards.searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Select value={selectedSubject} onValueChange={(value) => {
-            setSelectedSubject(value);
-            setSelectedTopic("All Topics"); // Reset topic when subject changes
-          }}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All Subjects">{t("flashcards.allSubjects")}</SelectItem>
-              {subjects.map((subject) => (
-                <SelectItem key={subject} value={subject}>
-                  {subject}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-            <SelectTrigger className="w-full sm:w-[150px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All Topics">{t("flashcards.allTopics")}</SelectItem>
-              {topics.map((topic) => (
-                <SelectItem key={topic} value={topic}>
-                  {topic}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={selectedTier} onValueChange={setSelectedTier}>
-            <SelectTrigger className="w-full sm:w-[150px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All Tiers">{t("flashcards.allTiers")}</SelectItem>
-              <SelectItem value="Higher">{t("flashcards.higherTier")}</SelectItem>
-              <SelectItem value="Foundation">{t("flashcards.foundationTier")}</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="icon" onClick={shuffleCards}>
-            <Shuffle className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {filteredCards.length === 0 ? (
-          <div className="glass-card p-12 text-center">
-            <BookOpen className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">{t("flashcards.noCards")}</h3>
-            <p className="text-muted-foreground mb-4">
-              {t("flashcards.createFirst")}
-            </p>
-            <Button onClick={handleCreateCard}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t("flashcards.addCard")}
+            <Button
+              variant="outline"
+              onClick={() => setIsGenerateOpen(true)}
+              className="gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              AI Generate
+            </Button>
+            <Button onClick={() => setIsCreateDeckOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              New Deck
             </Button>
           </div>
-        ) : (
-          <>
-            {/* Progress */}
-            <div className="glass-card p-4 animate-slide-up" style={{ animationDelay: "0.2s" }}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">
-                  {t("flashcards.cardProgress", { current: currentIndex + 1, total: filteredCards.length })}
-                </span>
-                {quizMode && (
-                  <div className="flex items-center gap-4 text-sm">
-                    <span className="text-secondary flex items-center gap-1">
-                      <Check className="h-4 w-4" /> {score.correct}
-                    </span>
-                    <span className="text-destructive flex items-center gap-1">
-                      <X className="h-4 w-4" /> {score.incorrect}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
+        </div>
 
-            {/* Flashcard */}
-            {currentCard && (
-              <div
-                className={cn(
-                  "flip-card h-80 md:h-96 cursor-pointer animate-scale-in relative",
-                  isFlipped && "flipped"
-                )}
-                style={{ animationDelay: "0.3s" }}
-                onClick={handleFlip}
-              >
-                <div className="absolute top-4 right-4 flex gap-2 z-10">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditCard(currentCard);
-                    }}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteCard(currentCard.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-                <div className="flip-card-inner">
-                  {/* Front */}
-                  <div className="flip-card-front glass-card p-8 flex flex-col items-center justify-center text-center">
-                    <div className="absolute top-4 left-4 flex gap-2">
-                      {currentCard.subject && (
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                          {currentCard.subject}
-                        </span>
-                      )}
-                      {currentCard.tier && (
-                        <span className={cn("text-xs font-medium px-2 py-1 rounded-full", currentCard.tier === "Higher" ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500")}>
-                          {currentCard.tier}
-                        </span>
-                      )}
-                    </div>
-                    <BookOpen className="h-8 w-8 text-primary mb-4" />
-                    <h3 className="text-xl md:text-2xl font-semibold text-foreground">
-                      {currentCard.front}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-4">{t("flashcards.revealAnswer")}</p>
-                  </div>
+        {/* Search */}
+        <div className="relative animate-slide-up" style={{ animationDelay: "0.1s" }}>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search decks by name or topic..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
 
-                  {/* Back */}
-                  <div className="flip-card-back glass-card p-8 flex flex-col items-center justify-center text-center bg-gradient-to-br from-secondary/10 to-primary/10">
-                    <div className="absolute top-4 left-4">
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-secondary/20 text-secondary-foreground">
-                        {t("common.answer")}
-                      </span>
-                    </div>
-                    <p className="text-lg md:text-xl text-foreground leading-relaxed">
-                      {currentCard.back}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Controls */}
-            <div className="flex items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: "0.4s" }}>
-              <Button variant="outline" size="icon" onClick={handlePrev} className="h-12 w-12 rounded-full">
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-
-              {quizMode ? (
-                <>
-                  <Button
-                    variant="outline"
-                    className="h-12 px-6 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                    onClick={() => handleAnswer(false)}
-                  >
-                    <X className="h-5 w-5 mr-2" />
-                    {t("flashcards.incorrect")}
-                  </Button>
-                  <Button
-                    className="h-12 px-6 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                    onClick={() => handleAnswer(true)}
-                  >
-                    <Check className="h-5 w-5 mr-2" />
-                    {t("flashcards.correct")}
-                  </Button>
-                  {score.correct + score.incorrect > 0 && (
-                    <Button variant="outline" onClick={resetQuiz} className="h-12 px-6">
-                      <RotateCcw className="h-5 w-5 mr-2" />
-                      {t("flashcards.reset")}
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <Button variant="outline" onClick={handleFlip} className="h-12 px-6">
-                  <RotateCcw className="h-5 w-5 mr-2" />
-                  {t("flashcards.flipCard")}
+        {/* Deck Grid */}
+        {filteredDecks.length === 0 ? (
+          <div className="glass-card p-12 text-center animate-fade-in">
+            <BookOpen className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              {cards.length === 0 ? "No flashcard decks yet" : "No decks match your search"}
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              {cards.length === 0
+                ? "Create your first deck to start organising your flashcards"
+                : "Try a different search term"}
+            </p>
+            {cards.length === 0 && (
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button onClick={() => setIsCreateDeckOpen(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create a Deck
                 </Button>
-              )}
-
-              <Button variant="outline" size="icon" onClick={handleNext} className="h-12 w-12 rounded-full">
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </div>
-
-            {/* Card Grid Preview */}
-            {filteredCards.length > 0 && (
-              <div className="mt-8">
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">{t("flashcards.allCards")}</h3>
-                <div className="max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-slide-up" style={{ animationDelay: "0.5s" }}>
-                    {filteredCards.map((card, index) => (
-                      <button
-                        key={card.id}
-                        onClick={() => {
-                          if (isSelectionMode) {
-                            handleSelectCard(card.id);
-                          } else {
-                            setCurrentIndex(index);
-                            setIsFlipped(false);
-                          }
-                        }}
-                        className={cn(
-                          "p-4 rounded-xl text-left transition-all duration-200 relative group",
-                          currentIndex === index && !isSelectionMode
-                            ? "bg-primary text-primary-foreground shadow-glow"
-                            : "bg-muted/50 hover:bg-muted text-foreground",
-                          isSelectionMode && selectedCards.has(card.id) && "ring-2 ring-primary bg-primary/10"
-                        )}
-                      >
-                        {isSelectionMode && (
-                          <div className="absolute top-2 right-2 z-10">
-                            <Checkbox
-                              checked={selectedCards.has(card.id)}
-                              onCheckedChange={() => handleSelectCard(card.id)}
-                              className={cn(
-                                "data-[state=checked]:bg-primary data-[state=checked]:border-primary",
-                                selectedCards.has(card.id) ? "border-primary" : "border-muted-foreground/50"
-                              )}
-                            />
-                          </div>
-                        )}
-                        <p className={cn("text-xs font-medium mb-1 opacity-70", isSelectionMode && "mr-6")}>{card.subject || "General"}</p>
-                        <p className="text-sm font-medium line-clamp-2">{card.front}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <Button variant="outline" onClick={() => setIsGenerateOpen(true)} className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  AI Generate Cards
+                </Button>
               </div>
             )}
-          </>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            {filteredDecks.map((deck, index) => {
+              const masteryPercent = getMasteryPercent(deck);
+              return (
+                <button
+                  key={deck.subject}
+                  onClick={() => navigate(`/flashcards/${encodeURIComponent(deck.subject)}`)}
+                  className={cn(
+                    "group glass-card p-5 text-left transition-all duration-300",
+                    "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20",
+                    "hover:translate-y-[-2px] active:translate-y-0"
+                  )}
+                  style={{ animationDelay: `${0.05 * index}s` }}
+                >
+                  {/* Deck Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground text-base truncate group-hover:text-primary transition-colors">
+                        {deck.subject}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {deck.totalCards} {deck.totalCards === 1 ? "card" : "cards"}
+                      </p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary transition-all group-hover:translate-x-0.5 flex-shrink-0 mt-0.5" />
+                  </div>
+
+                  {/* Mastery Progress Bar */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between text-xs mb-1.5">
+                      <span className="text-muted-foreground">Progress</span>
+                      <span className={cn(
+                        "font-semibold",
+                        masteryPercent >= 80 ? "text-emerald-500" :
+                          masteryPercent >= 40 ? "text-blue-500" :
+                            "text-muted-foreground"
+                      )}>{masteryPercent}%</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full flex">
+                        {deck.mastered > 0 && (
+                          <div
+                            className="bg-emerald-500 transition-all duration-500"
+                            style={{ width: `${(deck.mastered / deck.totalCards) * 100}%` }}
+                          />
+                        )}
+                        {deck.almostDone > 0 && (
+                          <div
+                            className="bg-blue-500 transition-all duration-500"
+                            style={{ width: `${(deck.almostDone / deck.totalCards) * 100}%` }}
+                          />
+                        )}
+                        {deck.learning > 0 && (
+                          <div
+                            className="bg-amber-500 transition-all duration-500"
+                            style={{ width: `${(deck.learning / deck.totalCards) * 100}%` }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mastery Breakdown */}
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-rose-400/80" />
+                      <span className="text-muted-foreground">New</span>
+                      <span className="ml-auto font-medium text-foreground">{deck.newCards}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                      <span className="text-muted-foreground">Learning</span>
+                      <span className="ml-auto font-medium text-foreground">{deck.learning}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-500" />
+                      <span className="text-muted-foreground">Almost</span>
+                      <span className="ml-auto font-medium text-foreground">{deck.almostDone}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="text-muted-foreground">Mastered</span>
+                      <span className="ml-auto font-medium text-foreground">{deck.mastered}</span>
+                    </div>
+                  </div>
+
+                  {/* Topics & Last Studied */}
+                  <div className="mt-4 pt-3 border-t border-border/50">
+                    {deck.topics.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {deck.topics.slice(0, 3).map((topic) => (
+                          <span
+                            key={topic}
+                            className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary"
+                          >
+                            {topic}
+                          </span>
+                        ))}
+                        {deck.topics.length > 3 && (
+                          <span className="text-[10px] text-muted-foreground">
+                            +{deck.topics.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {deck.lastStudied && (
+                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        Last studied {new Date(deck.lastStudied).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+      {/* Create Deck Dialog */}
+      <Dialog open={isCreateDeckOpen} onOpenChange={setIsCreateDeckOpen}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingCard ? "Edit Flashcard" : "Create New Flashcard"}</DialogTitle>
+            <DialogTitle>Create New Deck</DialogTitle>
             <DialogDescription>
-              {editingCard
-                ? "Update your flashcard details below"
-                : "Fill in the details to create a new flashcard"}
+              Give your flashcard deck a name. You can add cards after creating it.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
-                <Input
-                  id="subject"
-                  value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  placeholder="e.g., Biology"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="topic">Topic</Label>
-                <Input
-                  id="topic"
-                  value={formData.topic}
-                  onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-                  placeholder="e.g., Cell Biology"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tier">Tier</Label>
-                <Select
-                  value={formData.tier}
-                  onValueChange={(val: "Foundation" | "Higher") => setFormData({ ...formData, tier: val })}
-                >
-                  <SelectTrigger id="tier">
-                    <SelectValue placeholder="Tier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Higher">Higher</SelectItem>
-                    <SelectItem value="Foundation">Foundation</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             <div className="space-y-2">
-              <Label htmlFor="front">Front (Question) *</Label>
-              <Textarea
-                id="front"
-                value={formData.front}
-                onChange={(e) => setFormData({ ...formData, front: e.target.value })}
-                placeholder="Enter the question or prompt..."
-                className="min-h-[100px]"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="back">Back (Answer) *</Label>
-              <Textarea
-                id="back"
-                value={formData.back}
-                onChange={(e) => setFormData({ ...formData, back: e.target.value })}
-                placeholder="Enter the answer..."
-                className="min-h-[100px]"
+              <Label htmlFor="deckName">Deck Name</Label>
+              <Input
+                id="deckName"
+                value={newDeckName}
+                onChange={(e) => setNewDeckName(e.target.value)}
+                placeholder="e.g., Cold War, Cell Biology, Macbeth..."
+                onKeyDown={(e) => e.key === "Enter" && handleCreateDeck()}
+                autoFocus
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsCreateDeckOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSaveCard}>
-              {editingCard ? "Update" : "Create"} Card
+            <Button onClick={handleCreateDeck} disabled={!newDeckName.trim()}>
+              Create Deck
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Generate Dialog */}
+      <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              AI Flashcard Generator
+            </DialogTitle>
+            <DialogDescription>
+              Enter your study notes or a topic and our AI will generate flashcards for you.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="genSubject">Deck Name (Subject)</Label>
+              <Input
+                id="genSubject"
+                value={generateSubject}
+                onChange={(e) => setGenerateSubject(e.target.value)}
+                placeholder="e.g., Biology, History..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="genTopic">Topic or Notes</Label>
+              <textarea
+                id="genTopic"
+                value={generateTopic}
+                onChange={(e) => setGenerateTopic(e.target.value)}
+                placeholder="Paste your notes or enter a topic..."
+                className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsGenerateOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleGenerateCards}
+              disabled={!generateTopic.trim() || generating}
+              className="bg-gradient-to-r from-purple-500 to-blue-600 text-white"
+            >
+              {generating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate Cards
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
