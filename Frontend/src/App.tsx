@@ -1,3 +1,4 @@
+import { CookieBanner } from "@/components/CookieBanner";
 import { LanguagePermissionModal } from "@/components/LanguagePermissionModal";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -73,6 +74,7 @@ const App = () => {
             <LanguagePermissionModal />
             <AuthProvider>
               <BrowserRouter>
+                <CookieBanner />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/landing" element={<Landing />} />

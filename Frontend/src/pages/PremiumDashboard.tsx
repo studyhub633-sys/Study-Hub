@@ -102,15 +102,6 @@ export default function PremiumDashboard() {
             hoverBg: "bg-amber-500",
         },
         {
-            title: t('premium.features.homeworkSolver.title'),
-            description: t('premium.features.homeworkSolver.description'),
-            icon: Brain,
-            path: "/premium/homework-solver",
-            color: "text-purple-500",
-            bg: "bg-purple-500/10",
-            hoverBg: "bg-purple-500",
-        },
-        {
             title: t('premium.features.noteCondenser.title'),
             description: t('premium.features.noteCondenser.description'),
             icon: FileText,
@@ -232,16 +223,6 @@ export default function PremiumDashboard() {
             icon: Bot,
             title: t('premium.features.aiTutor.title'),
             description: t('premium.features.aiTutor.description'),
-        },
-        {
-            icon: Sparkles,
-            title: t('premium.features.studyPlans.title'),
-            description: t('premium.features.studyPlans.description'),
-        },
-        {
-            icon: Zap,
-            title: t('premium.features.homeworkSolver.title'),
-            description: t('premium.features.homeworkSolver.description'),
         },
         {
             icon: Timer,

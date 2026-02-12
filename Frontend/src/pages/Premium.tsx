@@ -56,9 +56,9 @@ export default function Premium() {
   const features = [
     {
       icon: Brain,
-      title: t("premium.features.unlimitedAI.title"),
-      description: t("premium.features.unlimitedAI.description"),
-      key: "unlimitedAI"
+      title: "AI Tutor & Homework Solver",
+      description: "1-to-1 AI tutoring, step-by-step homework solutions, and unlimited practice questions. Free users get 10 prompts/day.",
+      key: "aiTutor"
     },
     {
       icon: Sparkles,

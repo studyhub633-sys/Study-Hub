@@ -335,12 +335,12 @@
                 "description": "Generate unlimited practice questions tailored to your exam format"
             },
             "aiTutor": {
-                "title": "AI Tutor",
-                "description": "1-to-1 AI tutoring, unlimited practice questions, and answer evaluation."
+                "title": "AI Tutor & Homework Solver",
+                "description": "1-to-1 AI tutoring, step-by-step homework solutions, and unlimited practice questions. Free users get 10 prompts/day."
             },
             "homeworkSolver": {
-                "title": "AI Homework Solver",
-                "description": "Get instant step-by-step solutions for any subject question."
+                "title": "AI Tutor & Homework Solver",
+                "description": "1-to-1 AI tutoring, step-by-step homework solutions, and unlimited practice questions. Free users get 10 prompts/day."
             },
             "noteCondenser": {
                 "title": "Note Condenser",
@@ -395,8 +395,8 @@
                 "description": "Access exclusive 2026 predicted exam papers before they're released publicly"
             },
             "unlimitedAI": {
-                "title": "Unlimited AI Generated Questions",
-                "description": "Generate unlimited AI questions tailored to your exam board and subjects (10/day for free users)"
+                "title": "Unlimited AI Prompts",
+                "description": "Unlimited AI Tutor and Homework Solver prompts for premium users. Free users get 10 prompts per day."
             },
             "studySuggestions": {
                 "title": "Groq AI Study Suggestions",
