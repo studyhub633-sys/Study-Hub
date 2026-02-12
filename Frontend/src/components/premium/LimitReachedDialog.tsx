@@ -40,7 +40,7 @@ export function LimitReachedDialog({ open, onOpenChange }: LimitReachedDialogPro
                         <Button
                             variant="ghost"
                             className="w-full"
-                            onClick={() => navigate("/dashboard")}
+                            onClick={() => navigate("/")}
                         >
                             Back to Dashboard
                         </Button>

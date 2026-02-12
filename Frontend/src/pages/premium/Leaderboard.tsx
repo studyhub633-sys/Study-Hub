@@ -176,7 +176,7 @@ export default function Leaderboard() {
                                 Create notes, flashcards, or use the AI Tutor to earn XP and appear on the leaderboard!
                             </p>
                             <div className="flex gap-3 mt-4">
-                                <a href="/dashboard" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                                <a href="/" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
                                     Start Studying
                                 </a>
                             </div>
