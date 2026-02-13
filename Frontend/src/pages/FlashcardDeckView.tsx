@@ -95,6 +95,11 @@ export default function FlashcardDeckView() {
     const [isTransitioning, setIsTransitioning] = useState(false);
     const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    // Study mode: dedicated card list and index to prevent repeats / state resets
+    const [studyCards, setStudyCards] = useState<Flashcard[]>([]);
+    const [studyIndex, setStudyIndex] = useState(0);
+    const pendingReviewsRef = useRef<string[]>([]);
+
     // Card editing
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
@@ -179,18 +184,23 @@ export default function FlashcardDeckView() {
     }, [cards, filterMode, searchQuery]);
 
     // Current card for carousel
-    const currentCard = cards[currentIndex];
+    // In study mode use the dedicated study list; otherwise use the main cards list
+    const currentCard = studyMode ? studyCards[studyIndex] : cards[currentIndex];
 
-    const transitionToCard = useCallback((getNewIndex: (prev: number) => number) => {
+    const transitionToCard = useCallback((getNewIndex: (prev: number) => number, isStudy = false) => {
         if (isTransitioning) return;
         setIsTransitioning(true);
         setIsFlipped(false);
 
         if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
         transitionTimeoutRef.current = setTimeout(() => {
-            setCurrentIndex(getNewIndex);
+            if (isStudy) {
+                setStudyIndex(getNewIndex);
+            } else {
+                setCurrentIndex(getNewIndex);
+            }
             setIsTransitioning(false);
-        }, 180);
+        }, 250);
     }, [isTransitioning]);
 
     // Cleanup timeout on unmount
@@ -222,19 +232,40 @@ export default function FlashcardDeckView() {
             setScore((prev) => ({ ...prev, incorrect: prev.incorrect + 1 }));
         }
 
+        // Queue the review update instead of fetching immediately (prevents state reset)
         if (currentCard) {
-            handleMarkReview(currentCard.id).catch(console.error);
+            pendingReviewsRef.current.push(currentCard.id);
+            // Fire-and-forget DB update without refetching
+            if (user) {
+                supabase
+                    .from("flashcards")
+                    .select("review_count")
+                    .eq("id", currentCard.id)
+                    .eq("user_id", user.id)
+                    .single()
+                    .then(({ data }) => {
+                        supabase
+                            .from("flashcards")
+                            .update({
+                                last_reviewed: new Date().toISOString(),
+                                review_count: (data?.review_count || 0) + 1,
+                            })
+                            .eq("id", currentCard.id)
+                            .eq("user_id", user.id)
+                            .then(() => { });
+                    });
+            }
         }
 
         const newProgress = studyProgress + 1;
         setStudyProgress(newProgress);
 
-        if (newProgress >= cards.length) {
+        if (newProgress >= studyCards.length) {
             // All cards answered — show completion screen
             setStudyComplete(true);
         } else {
-            // Move to next card
-            transitionToCard((prev) => (prev + 1) % cards.length);
+            // Move to the next card in the study list (no wrapping)
+            transitionToCard((prev) => prev + 1, true);
         }
     };
 
@@ -464,8 +495,8 @@ export default function FlashcardDeckView() {
                         <div className="mb-8 animate-slide-up">
                             {currentCard && (
                                 <div
-                                    className="relative w-full min-h-[220px] sm:min-h-[260px] cursor-pointer transition-opacity duration-150"
-                                    style={{ perspective: "1200px", opacity: isTransitioning ? 0 : 1 }}
+                                    className={cn("relative w-full min-h-[220px] sm:min-h-[260px] cursor-pointer transition-all duration-250", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}
+                                    style={{ perspective: "1200px" }}
                                     onClick={handleFlip}
                                 >
                                     <div
@@ -736,13 +767,17 @@ export default function FlashcardDeckView() {
                         size="lg"
                         className="pointer-events-auto px-8 py-6 text-base font-semibold rounded-xl shadow-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white gap-2"
                         onClick={() => {
+                            // Create a shuffled copy of cards for study
+                            const shuffled = [...cards].sort(() => Math.random() - 0.5);
+                            setStudyCards(shuffled);
+                            setStudyIndex(0);
                             setStudyMode(true);
-                            setCurrentIndex(0);
                             setIsFlipped(false);
                             setScore({ correct: 0, incorrect: 0 });
                             setStudyProgress(0);
                             setStudyComplete(false);
                             setIsTransitioning(false);
+                            pendingReviewsRef.current = [];
                         }}
                     >
                         <Play className="h-5 w-5" />
@@ -756,7 +791,7 @@ export default function FlashcardDeckView() {
                 <div className="fixed inset-0 z-50 bg-background flex flex-col">
                     {/* Study Header */}
                     <div className="flex items-center justify-between p-4 border-b border-border">
-                        <Button variant="ghost" onClick={() => setStudyMode(false)} className="gap-2">
+                        <Button variant="ghost" onClick={() => { setStudyMode(false); fetchCards(); }} className="gap-2">
                             <X className="h-5 w-5" />
                             Exit Study
                         </Button>
@@ -774,22 +809,31 @@ export default function FlashcardDeckView() {
                     {/* Progress */}
                     <div className="px-4 pt-4">
                         <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                            <span>{studyProgress} / {cards.length} answered</span>
+                            <span>{studyProgress} / {studyCards.length} answered</span>
                             <div className="flex gap-2">
-                                <Button variant="outline" size="sm" onClick={handleShuffle} className="gap-1 h-8">
+                                <Button variant="outline" size="sm" onClick={() => {
+                                    const shuffled = [...studyCards].sort(() => Math.random() - 0.5);
+                                    setStudyCards(shuffled);
+                                    setStudyIndex(0);
+                                    setIsFlipped(false);
+                                    setScore({ correct: 0, incorrect: 0 });
+                                    setStudyProgress(0);
+                                    setStudyComplete(false);
+                                    setIsTransitioning(false);
+                                }} className="gap-1 h-8">
                                     <Shuffle className="h-3.5 w-3.5" />
                                     Shuffle
                                 </Button>
-                                <Button variant="outline" size="sm" onClick={() => { setCurrentIndex(0); setIsFlipped(false); setScore({ correct: 0, incorrect: 0 }); setStudyProgress(0); setStudyComplete(false); }} className="gap-1 h-8">
+                                <Button variant="outline" size="sm" onClick={() => { setStudyIndex(0); setIsFlipped(false); setScore({ correct: 0, incorrect: 0 }); setStudyProgress(0); setStudyComplete(false); setIsTransitioning(false); }} className="gap-1 h-8">
                                     <RotateCcw className="h-3.5 w-3.5" />
                                     Reset
                                 </Button>
                             </div>
                         </div>
-                        <div className="w-full bg-muted rounded-full h-2">
+                        <div className="w-full bg-muted rounded-full h-2.5">
                             <div
-                                className="bg-gradient-to-r from-cyan-500 to-teal-500 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${(studyProgress / cards.length) * 100}%` }}
+                                className="bg-gradient-to-r from-cyan-500 to-teal-500 h-2.5 rounded-full transition-all duration-500 ease-out"
+                                style={{ width: `${studyCards.length > 0 ? (studyProgress / studyCards.length) * 100 : 0}%` }}
                             />
                         </div>
                     </div>
@@ -801,7 +845,7 @@ export default function FlashcardDeckView() {
                             <div className="w-full max-w-lg glass-card p-8 rounded-2xl text-center animate-fade-in">
                                 <div className="text-5xl mb-4">🎉</div>
                                 <h2 className="text-2xl font-bold mb-2">Study Complete!</h2>
-                                <p className="text-muted-foreground mb-6">You've gone through all {cards.length} cards.</p>
+                                <p className="text-muted-foreground mb-6">You've gone through all {studyCards.length} cards.</p>
                                 <div className="flex items-center justify-center gap-6 mb-8">
                                     <div className="text-center">
                                         <div className="text-3xl font-bold text-emerald-500">{score.correct}</div>
@@ -815,7 +859,7 @@ export default function FlashcardDeckView() {
                                     <div className="w-px h-12 bg-border" />
                                     <div className="text-center">
                                         <div className="text-3xl font-bold text-primary">
-                                            {cards.length > 0 ? Math.round((score.correct / cards.length) * 100) : 0}%
+                                            {studyCards.length > 0 ? Math.round((score.correct / studyCards.length) * 100) : 0}%
                                         </div>
                                         <div className="text-sm text-muted-foreground">Score</div>
                                     </div>
@@ -831,7 +875,9 @@ export default function FlashcardDeckView() {
                                     <Button
                                         className="px-6 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white"
                                         onClick={() => {
-                                            setCurrentIndex(0);
+                                            const shuffled = [...studyCards].sort(() => Math.random() - 0.5);
+                                            setStudyCards(shuffled);
+                                            setStudyIndex(0);
                                             setIsFlipped(false);
                                             setScore({ correct: 0, incorrect: 0 });
                                             setStudyProgress(0);
@@ -846,8 +892,8 @@ export default function FlashcardDeckView() {
                             </div>
                         ) : currentCard ? (
                             <div
-                                className="w-full max-w-lg min-h-[300px] cursor-pointer transition-opacity duration-150"
-                                style={{ perspective: "1200px", opacity: isTransitioning ? 0 : 1 }}
+                                className={cn("w-full max-w-lg min-h-[300px] cursor-pointer transition-all duration-250", isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100")}
+                                style={{ perspective: "1200px" }}
                                 onClick={handleFlip}
                             >
                                 <div
@@ -879,12 +925,9 @@ export default function FlashcardDeckView() {
                     {/* Study Controls */}
                     {!studyComplete && (
                         <div className="flex items-center justify-center gap-4 p-6 border-t border-border">
-                            <Button variant="ghost" size="icon" onClick={handlePrev} className="h-12 w-12 rounded-full" disabled={isTransitioning}>
-                                <ChevronLeft className="h-5 w-5" />
-                            </Button>
                             <Button
                                 variant="outline"
-                                className="h-12 px-6 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                className="h-12 px-8 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                                 onClick={() => handleAnswer(false)}
                                 disabled={isTransitioning}
                             >
@@ -892,15 +935,12 @@ export default function FlashcardDeckView() {
                                 Incorrect
                             </Button>
                             <Button
-                                className="h-12 px-6 bg-emerald-500 hover:bg-emerald-600 text-white"
+                                className="h-12 px-8 bg-emerald-500 hover:bg-emerald-600 text-white"
                                 onClick={() => handleAnswer(true)}
                                 disabled={isTransitioning}
                             >
                                 <Check className="h-5 w-5 mr-2" />
                                 Correct
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={handleNext} className="h-12 w-12 rounded-full" disabled={isTransitioning}>
-                                <ChevronRight className="h-5 w-5" />
                             </Button>
                         </div>
                     )}
