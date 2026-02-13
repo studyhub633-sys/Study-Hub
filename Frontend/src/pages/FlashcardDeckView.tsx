@@ -41,7 +41,7 @@ import {
     Volume2,
     X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface Flashcard {
@@ -90,6 +90,10 @@ export default function FlashcardDeckView() {
     const [filterMode, setFilterMode] = useState<FilterMode>("all");
     const [studyMode, setStudyMode] = useState(false);
     const [score, setScore] = useState({ correct: 0, incorrect: 0 });
+    const [studyProgress, setStudyProgress] = useState(0);
+    const [studyComplete, setStudyComplete] = useState(false);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Card editing
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -177,29 +181,60 @@ export default function FlashcardDeckView() {
     // Current card for carousel
     const currentCard = cards[currentIndex];
 
-    const handleNext = () => {
+    const transitionToCard = useCallback((getNewIndex: (prev: number) => number) => {
+        if (isTransitioning) return;
+        setIsTransitioning(true);
         setIsFlipped(false);
-        setCurrentIndex((prev) => (prev + 1) % cards.length);
+
+        if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+        transitionTimeoutRef.current = setTimeout(() => {
+            setCurrentIndex(getNewIndex);
+            setIsTransitioning(false);
+        }, 180);
+    }, [isTransitioning]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+        };
+    }, []);
+
+    const handleNext = () => {
+        transitionToCard((prev) => (prev + 1) % cards.length);
     };
 
     const handlePrev = () => {
-        setIsFlipped(false);
-        setCurrentIndex((prev) => (prev - 1 + cards.length) % cards.length);
+        transitionToCard((prev) => (prev - 1 + cards.length) % cards.length);
     };
 
-    const handleFlip = () => setIsFlipped(!isFlipped);
+    const handleFlip = () => {
+        if (!isTransitioning) setIsFlipped(!isFlipped);
+    };
 
     // Study mode handlers
     const handleAnswer = async (correct: boolean) => {
+        if (studyComplete || isTransitioning) return;
+
         if (correct) {
             setScore((prev) => ({ ...prev, correct: prev.correct + 1 }));
         } else {
             setScore((prev) => ({ ...prev, incorrect: prev.incorrect + 1 }));
         }
-        handleNext();
 
         if (currentCard) {
             handleMarkReview(currentCard.id).catch(console.error);
+        }
+
+        const newProgress = studyProgress + 1;
+        setStudyProgress(newProgress);
+
+        if (newProgress >= cards.length) {
+            // All cards answered — show completion screen
+            setStudyComplete(true);
+        } else {
+            // Move to next card
+            transitionToCard((prev) => (prev + 1) % cards.length);
         }
     };
 
@@ -429,8 +464,8 @@ export default function FlashcardDeckView() {
                         <div className="mb-8 animate-slide-up">
                             {currentCard && (
                                 <div
-                                    className="relative w-full min-h-[220px] sm:min-h-[260px] cursor-pointer"
-                                    style={{ perspective: "1200px" }}
+                                    className="relative w-full min-h-[220px] sm:min-h-[260px] cursor-pointer transition-opacity duration-150"
+                                    style={{ perspective: "1200px", opacity: isTransitioning ? 0 : 1 }}
                                     onClick={handleFlip}
                                 >
                                     <div
@@ -705,6 +740,9 @@ export default function FlashcardDeckView() {
                             setCurrentIndex(0);
                             setIsFlipped(false);
                             setScore({ correct: 0, incorrect: 0 });
+                            setStudyProgress(0);
+                            setStudyComplete(false);
+                            setIsTransitioning(false);
                         }}
                     >
                         <Play className="h-5 w-5" />
@@ -736,13 +774,13 @@ export default function FlashcardDeckView() {
                     {/* Progress */}
                     <div className="px-4 pt-4">
                         <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                            <span>{currentIndex + 1} / {cards.length}</span>
+                            <span>{studyProgress} / {cards.length} answered</span>
                             <div className="flex gap-2">
                                 <Button variant="outline" size="sm" onClick={handleShuffle} className="gap-1 h-8">
                                     <Shuffle className="h-3.5 w-3.5" />
                                     Shuffle
                                 </Button>
-                                <Button variant="outline" size="sm" onClick={() => { setCurrentIndex(0); setIsFlipped(false); setScore({ correct: 0, incorrect: 0 }); }} className="gap-1 h-8">
+                                <Button variant="outline" size="sm" onClick={() => { setCurrentIndex(0); setIsFlipped(false); setScore({ correct: 0, incorrect: 0 }); setStudyProgress(0); setStudyComplete(false); }} className="gap-1 h-8">
                                     <RotateCcw className="h-3.5 w-3.5" />
                                     Reset
                                 </Button>
@@ -751,17 +789,65 @@ export default function FlashcardDeckView() {
                         <div className="w-full bg-muted rounded-full h-2">
                             <div
                                 className="bg-gradient-to-r from-cyan-500 to-teal-500 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${((currentIndex + 1) / cards.length) * 100}%` }}
+                                style={{ width: `${(studyProgress / cards.length) * 100}%` }}
                             />
                         </div>
                     </div>
 
                     {/* Flashcard */}
                     <div className="flex-1 flex items-center justify-center p-6">
-                        {currentCard && (
+                        {studyComplete ? (
+                            /* Completion Screen */
+                            <div className="w-full max-w-lg glass-card p-8 rounded-2xl text-center animate-fade-in">
+                                <div className="text-5xl mb-4">🎉</div>
+                                <h2 className="text-2xl font-bold mb-2">Study Complete!</h2>
+                                <p className="text-muted-foreground mb-6">You've gone through all {cards.length} cards.</p>
+                                <div className="flex items-center justify-center gap-6 mb-8">
+                                    <div className="text-center">
+                                        <div className="text-3xl font-bold text-emerald-500">{score.correct}</div>
+                                        <div className="text-sm text-muted-foreground">Correct</div>
+                                    </div>
+                                    <div className="w-px h-12 bg-border" />
+                                    <div className="text-center">
+                                        <div className="text-3xl font-bold text-destructive">{score.incorrect}</div>
+                                        <div className="text-sm text-muted-foreground">Incorrect</div>
+                                    </div>
+                                    <div className="w-px h-12 bg-border" />
+                                    <div className="text-center">
+                                        <div className="text-3xl font-bold text-primary">
+                                            {cards.length > 0 ? Math.round((score.correct / cards.length) * 100) : 0}%
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">Score</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-center gap-3">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setStudyMode(false)}
+                                        className="px-6"
+                                    >
+                                        Exit
+                                    </Button>
+                                    <Button
+                                        className="px-6 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white"
+                                        onClick={() => {
+                                            setCurrentIndex(0);
+                                            setIsFlipped(false);
+                                            setScore({ correct: 0, incorrect: 0 });
+                                            setStudyProgress(0);
+                                            setStudyComplete(false);
+                                            setIsTransitioning(false);
+                                        }}
+                                    >
+                                        <RotateCcw className="h-4 w-4 mr-2" />
+                                        Study Again
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : currentCard ? (
                             <div
-                                className="w-full max-w-lg min-h-[300px] cursor-pointer"
-                                style={{ perspective: "1200px" }}
+                                className="w-full max-w-lg min-h-[300px] cursor-pointer transition-opacity duration-150"
+                                style={{ perspective: "1200px", opacity: isTransitioning ? 0 : 1 }}
                                 onClick={handleFlip}
                             >
                                 <div
@@ -787,33 +873,37 @@ export default function FlashcardDeckView() {
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        ) : null}
                     </div>
 
                     {/* Study Controls */}
-                    <div className="flex items-center justify-center gap-4 p-6 border-t border-border">
-                        <Button variant="ghost" size="icon" onClick={handlePrev} className="h-12 w-12 rounded-full">
-                            <ChevronLeft className="h-5 w-5" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="h-12 px-6 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                            onClick={() => handleAnswer(false)}
-                        >
-                            <X className="h-5 w-5 mr-2" />
-                            Incorrect
-                        </Button>
-                        <Button
-                            className="h-12 px-6 bg-emerald-500 hover:bg-emerald-600 text-white"
-                            onClick={() => handleAnswer(true)}
-                        >
-                            <Check className="h-5 w-5 mr-2" />
-                            Correct
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={handleNext} className="h-12 w-12 rounded-full">
-                            <ChevronRight className="h-5 w-5" />
-                        </Button>
-                    </div>
+                    {!studyComplete && (
+                        <div className="flex items-center justify-center gap-4 p-6 border-t border-border">
+                            <Button variant="ghost" size="icon" onClick={handlePrev} className="h-12 w-12 rounded-full" disabled={isTransitioning}>
+                                <ChevronLeft className="h-5 w-5" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="h-12 px-6 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                onClick={() => handleAnswer(false)}
+                                disabled={isTransitioning}
+                            >
+                                <X className="h-5 w-5 mr-2" />
+                                Incorrect
+                            </Button>
+                            <Button
+                                className="h-12 px-6 bg-emerald-500 hover:bg-emerald-600 text-white"
+                                onClick={() => handleAnswer(true)}
+                                disabled={isTransitioning}
+                            >
+                                <Check className="h-5 w-5 mr-2" />
+                                Correct
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={handleNext} className="h-12 w-12 rounded-full" disabled={isTransitioning}>
+                                <ChevronRight className="h-5 w-5" />
+                            </Button>
+                        </div>
+                    )}
                 </div>
             )}
 
