@@ -63,7 +63,9 @@ function getMasteryLevel(reviewCount: number): "new" | "learning" | "almostDone"
 
 function getMasteryPercent(deck: Deck): number {
   if (deck.totalCards === 0) return 0;
-  return Math.round((deck.mastered / deck.totalCards) * 100);
+  // Weighted progress: learning=33%, almostDone=66%, mastered=100%
+  const weightedScore = (deck.learning * 0.33) + (deck.almostDone * 0.66) + (deck.mastered * 1);
+  return Math.round((weightedScore / deck.totalCards) * 100);
 }
 
 export default function Flashcards() {
