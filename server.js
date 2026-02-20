@@ -46,22 +46,24 @@ const authDir = path.join(__dirname, 'Frontend', 'api', 'auth');
 async function loadRoutes() {
     // Map of endpoint paths to { directory, filename }
     const routeMap = {
-        // AI routes
-        '/api/ai/generate-flashcards': { dir: apiDir, file: 'generate-flashcards.js' },
-        '/api/ai/generate-knowledge-organizer': { dir: apiDir, file: 'generate-knowledge-organizer.js' },
-        '/api/ai/generate-question': { dir: apiDir, file: 'generate-question.js' },
-        '/api/ai/generate-simple-question': { dir: apiDir, file: 'generate-simple-question.js' },
-        '/api/ai/evaluate-answer': { dir: apiDir, file: 'evaluate-answer.js' },
-        '/api/ai/chat': { dir: apiDir, file: 'chat.js' },
-        '/api/ai/health': { dir: apiDir, file: 'probe.js' },
+        // AI routes → all handled by [action].js catch-all
+        '/api/ai/generate-flashcards': { dir: apiDir, file: '[action].js' },
+        '/api/ai/generate-knowledge-organizer': { dir: apiDir, file: '[action].js' },
+        '/api/ai/generate-question': { dir: apiDir, file: '[action].js' },
+        '/api/ai/generate-simple-question': { dir: apiDir, file: '[action].js' },
+        '/api/ai/evaluate-answer': { dir: apiDir, file: '[action].js' },
+        '/api/ai/chat': { dir: apiDir, file: '[action].js' },
+        '/api/ai/health': { dir: apiDir, file: '[action].js' },
+        '/api/ai/generate-mindmap': { dir: apiDir, file: '[action].js' },
+        '/api/ai/grade-exam': { dir: apiDir, file: '[action].js' },
 
-        // Payment routes
-        '/api/payments/create-subscription': { dir: paymentsDir, file: 'create-subscription.js' },
-        '/api/payments/activate': { dir: paymentsDir, file: 'activate.js' },
-        '/api/payments/subscription': { dir: paymentsDir, file: 'subscription.js' },
-        '/api/payments/cancel': { dir: paymentsDir, file: 'cancel.js' },
-        '/api/payments/payment-history': { dir: paymentsDir, file: 'payment-history.js' },
-        '/api/payments/webhook': { dir: paymentsDir, file: 'webhook.js' },
+        // Payment routes → all handled by [action].js catch-all
+        '/api/payments/create-subscription': { dir: paymentsDir, file: '[action].js' },
+        '/api/payments/activate': { dir: paymentsDir, file: '[action].js' },
+        '/api/payments/subscription': { dir: paymentsDir, file: '[action].js' },
+        '/api/payments/cancel': { dir: paymentsDir, file: '[action].js' },
+        '/api/payments/payment-history': { dir: paymentsDir, file: '[action].js' },
+        '/api/payments/webhook': { dir: paymentsDir, file: '[action].js' },
 
         // Auth routes
         '/api/auth/grant-beta-premium': { dir: authDir, file: 'grant-beta-premium.js' },
