@@ -72,7 +72,7 @@ export default function Landing() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between relative">
           <div className="flex items-center gap-3">
             <AnimatedLogoIcon />
-            <h1 className="font-bold text-xl">Scientia.ai</h1>
+            <h1 className="font-bold text-xl">Revisely.ai</h1>
           </div>
 
           {/* Desktop Navigation */}
@@ -111,7 +111,7 @@ export default function Landing() {
                 <div className="flex flex-col gap-6 mt-6">
                   <div className="flex items-center gap-2">
                     <AnimatedLogoIcon />
-                    <span className="font-bold text-lg">Scientia.ai</span>
+                    <span className="font-bold text-lg">Revisely.ai</span>
                   </div>
 
                   <div className="flex flex-col gap-4">
@@ -271,7 +271,7 @@ export default function Landing() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <AnimatedLogoIcon />
-                <h3 className="font-bold text-lg">Scientia.ai</h3>
+                <h3 className="font-bold text-lg">Revisely.ai</h3>
               </div>
               <p className="text-sm text-muted-foreground">
                 {t('footer.description')}

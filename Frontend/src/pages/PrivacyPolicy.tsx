@@ -32,11 +32,11 @@ export default function PrivacyPolicy() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Scientia.ai Privacy Policy</CardTitle>
+                        <CardTitle>Revisely.ai Privacy Policy</CardTitle>
                     </CardHeader>
                     <CardContent className="prose prose-sm max-w-none dark:prose-invert">
                         <p className="text-muted-foreground">
-                            This privacy policy will be updated with full details soon. By using Scientia.ai, you agree to the collection and use of information in accordance with this policy.
+                            This privacy policy will be updated with full details soon. By using Revisely.ai, you agree to the collection and use of information in accordance with this policy.
                         </p>
 
                         <h3 className="text-lg font-semibold mt-6 mb-3">1. Information We Collect</h3>

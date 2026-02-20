@@ -102,7 +102,7 @@ export default async function handler(req, res) {
                     email_address: user.email,
                 },
                 application_context: {
-                    brand_name: 'Scientia.ai',
+                    brand_name: 'Revisely.ai',
                     locale: 'en-GB',
                     shipping_preference: 'NO_SHIPPING',
                     user_action: 'SUBSCRIBE_NOW',

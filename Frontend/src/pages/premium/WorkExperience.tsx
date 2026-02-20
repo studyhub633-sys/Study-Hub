@@ -156,7 +156,7 @@ export default function WorkExperience() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                Scientia.ai Work Experience
+                Revisely.ai Work Experience
               </h1>
               <p className="text-muted-foreground">
                 Exclusive work experience opportunities for premium members

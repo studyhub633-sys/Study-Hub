@@ -42,7 +42,7 @@
         "getStarted": "始める",
         "featuresTitle": "成功に必要なすべて",
         "featuresSubtitle": "より賢く学ぶための強力なツール",
-        "whyChoose": "なぜScientia.aiを選ぶのか？",
+        "whyChoose": "なぜRevisely.aiを選ぶのか？",
         "whyChooseSubtitle": "すでに学習習慣を改善している何千人もの学生に参加しましょう",
         "stayUpdated": "最新情報を入手",
         "newsletterDescription": "学習のヒント、機能の更新、限定コンテンツのニュースレターを購読してください。",
@@ -184,7 +184,7 @@
         "faq": "よくある質問",
         "contactUs": "お問い合わせ",
         "account": "アカウント",
-        "copyright": "© 2026 Scientia.ai. All rights reserved.",
+        "copyright": "© 2026 Revisely.ai. All rights reserved.",
         "terms": "規約",
         "returns": "返品"
     },
@@ -257,7 +257,7 @@
             "yourBenefits": "プレミアム特典",
             "premiumFeatures": "プレミアム機能",
             "benefitsDescriptionPremium": "これらの限定機能にフルアクセスできます",
-            "benefitsDescriptionFree": "Scientia.ai プレミアムにアップグレードして得られるすべての特典",
+            "benefitsDescriptionFree": "Revisely.ai プレミアムにアップグレードして得られるすべての特典",
             "available": "利用可能",
             "comingSoon": "近日公開",
             "unlimitedAI": "無制限のAIコンテンツ生成",
@@ -342,7 +342,7 @@
                 "description": "最高評価を得るための限定グレード9ノートと学習教材にアクセス。"
             },
             "workExperience": {
-                "title": "Scientia.ai職場体験",
+                "title": "Revisely.ai職場体験",
                 "description": "プレミアムメンバー限定の職場体験の機会"
             },
             "predictedPapers": {

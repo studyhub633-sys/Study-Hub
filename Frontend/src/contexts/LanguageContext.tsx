@@ -15,8 +15,8 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const PERMISSION_DECLINED_KEY = 'scientia-language-permission-declined';
-const LANGUAGE_PROMPTED_KEY = 'scientia-language-prompted';
+const PERMISSION_DECLINED_KEY = 'revisely-language-permission-declined';
+const LANGUAGE_PROMPTED_KEY = 'revisely-language-prompted';
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
     const { i18n } = useTranslation();
@@ -30,7 +30,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const hasBeenPrompted = localStorage.getItem(LANGUAGE_PROMPTED_KEY);
         const hasDeclined = localStorage.getItem(PERMISSION_DECLINED_KEY);
-        const savedLanguage = localStorage.getItem('scientia-language');
+        const savedLanguage = localStorage.getItem('revisely-language');
 
         // Don't prompt if user has already chosen a language or declined
         if (hasBeenPrompted || hasDeclined || savedLanguage) {
@@ -54,7 +54,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const setLanguage = (code: LanguageCode) => {
         i18n.changeLanguage(code);
         setCurrentLanguage(code);
-        localStorage.setItem('scientia-language', code);
+        localStorage.setItem('revisely-language', code);
 
         // Update document direction for RTL languages
         const langInfo = getLanguageByCode(code);

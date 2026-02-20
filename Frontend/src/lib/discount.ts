@@ -1,5 +1,5 @@
 /**
- * Discount code management for Scientia.ai
+ * Discount code management for Revisely.ai
  */
 
 export interface DiscountCode {

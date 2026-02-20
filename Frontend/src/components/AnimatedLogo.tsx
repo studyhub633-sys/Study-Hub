@@ -18,13 +18,13 @@ const AnimatedLogo = () => {
         <div className="book-icon">
           <img
             src={theme === "dark" ? "/images/darkmode.png" : "/images/lightmode.png"}
-            alt="Scientia.ai Logo"
+            alt="Revisely.ai Logo"
             className="w-full h-full object-contain"
           />
         </div>
 
         <div className="brand-name">
-          <span className="study">Scientia</span>
+          <span className="study">Revisely</span>
           <span className="hub">.ai</span>
         </div>
         <div className="tagline">Learn smarter. Shine brighter.</div>

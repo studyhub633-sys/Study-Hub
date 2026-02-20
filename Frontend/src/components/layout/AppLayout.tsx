@@ -59,7 +59,7 @@ export function AppLayout({ children, fullWidth = false }: AppLayoutProps) {
                   <AnimatedLogoIcon />
                 </div>
               </div>
-              <h1 className="font-bold text-lg">Scientia.ai</h1>
+              <h1 className="font-bold text-lg">Revisely.ai</h1>
             </div>
 
             <div className="flex items-center gap-2">

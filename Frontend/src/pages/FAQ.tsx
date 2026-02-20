@@ -12,16 +12,16 @@ import { Link } from "react-router-dom";
 
 export const faqs = [
   {
-    question: "What is Scientia.ai?",
-    answer: "Scientia-AI is an all-in-one study companion platform that helps students organise notes, create flashcards, practice with past papers, and track their academic progress. It's designed to make studying more efficient and effective.",
+    question: "What is Revisely.ai?",
+    answer: "Revisely AI is an all-in-one study companion platform that helps students organise notes, create flashcards, practice with past papers, and track their academic progress. It's designed to make studying more efficient and effective.",
   },
   {
     question: "Where do the past papers come from?",
-    answer: "All past papers are accessed via direct links to verified third-party educational repositories like Physics & Maths Tutor (PMT). Scientia-AI acts as a search engine and organiser—we do not host, store, or modify any exam content ourselves. All papers open in a new tab on the original source website, ensuring full compliance with copyright and 'no framing' policies.",
+    answer: "All past papers are accessed via direct links to verified third-party educational repositories like Physics & Maths Tutor (PMT). Revisely AI acts as a search engine and organiser—we do not host, store, or modify any exam content ourselves. All papers open in a new tab on the original source website, ensuring full compliance with copyright and 'no framing' policies.",
   },
   {
-    question: "Is Scientia.ai free?",
-    answer: "Yes! Scientia-AI offers a free plan with access to basic features including notes, flashcards, and past papers. We also offer a Premium plan with advanced features like AI-powered tutoring and advanced analytics.",
+    question: "Is Revisely.ai free?",
+    answer: "Yes! Revisely AI offers a free plan with access to basic features including notes, flashcards, and past papers. We also offer a Premium plan with advanced features like AI-powered tutoring and advanced analytics.",
   },
   {
     question: "How do I create notes?",
@@ -29,11 +29,11 @@ export const faqs = [
   },
   {
     question: "Can I use flashcards offline?",
-    answer: "Currently, Scientia-AI requires an internet connection to sync your flashcards across devices. However, we're working on offline support for future updates.",
+    answer: "Currently, Revisely AI requires an internet connection to sync your flashcards across devices. However, we're working on offline support for future updates.",
   },
   {
     question: "What subjects are supported?",
-    answer: "Scientia-AI supports all subjects! You can create notes, flashcards, and organise materials for any subject you're studying. Popular subjects include Biology, Chemistry, Physics, Mathematics, and more.",
+    answer: "Revisely AI supports all subjects! You can create notes, flashcards, and organise materials for any subject you're studying. Popular subjects include Biology, Chemistry, Physics, Mathematics, and more.",
   },
   {
     question: "How does the AI tutoring feature work?",
@@ -56,7 +56,7 @@ export const faqs = [
     answer: "You can delete your account from the Settings page. Navigate to Settings → Privacy and click the 'Delete Account' button. Please note that this action is permanent and cannot be undone.",
   },
   {
-    question: "Does Scientia-AI comply with copyright laws for Past Papers?",
+    question: "Does Revisely AI comply with copyright laws for Past Papers?",
     answer: "Absolutely. We do not host any copyrighted exam material on our servers. Instead, we provide a curated directory of direct links to the official download servers of exam boards and verified educational repositories like PMT. Our platform acts as a reference tool, ensuring that you always access the original files from their legal sources while staying compliant with intellectual property regulations.",
   },
 ];
@@ -71,7 +71,7 @@ export default function FAQ() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <AnimatedLogoIcon />
-            <h1 className="font-bold text-xl">Scientia-AI</h1>
+            <h1 className="font-bold text-xl">Revisely.ai</h1>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -117,7 +117,7 @@ export default function FAQ() {
             </h1>
           </div>
           <p className="text-muted-foreground text-lg">
-            Find answers to common questions about Scientia-AI
+            Find answers to common questions about Revisely AI
           </p>
         </div>
 
@@ -153,7 +153,7 @@ export default function FAQ() {
       {/* Simple Footer */}
       <footer className="border-t border-border bg-background/80 backdrop-blur-xl mt-12">
         <div className="container mx-auto px-4 py-8 text-center">
-          <p className="text-sm text-muted-foreground">© 2026 Scientia.ai. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">© 2026 Revisely.ai. All rights reserved.</p>
         </div>
       </footer>
     </div>

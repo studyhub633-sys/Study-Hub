@@ -95,7 +95,7 @@ i18n
             // Cache user language in localStorage
             caches: ['localStorage'],
             // Key to store in localStorage
-            lookupLocalStorage: 'scientia-language',
+            lookupLocalStorage: 'revisely-language',
         },
     });
 

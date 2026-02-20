@@ -23,19 +23,19 @@ export default function Terms() {
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground leading-relaxed">
-                By accessing and using Scientia.ai ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                By accessing and using Revisely.ai ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">2. Use License</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Permission is granted to temporarily use Scientia.ai for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
+                Permission is granted to temporarily use Revisely.ai for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
               </p>
               <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
                 <li>Modify or copy the materials</li>
                 <li>Use the materials for any commercial purpose or for any public display</li>
-                <li>Attempt to reverse engineer any software contained on Scientia.ai</li>
+                <li>Attempt to reverse engineer any software contained on Revisely.ai</li>
                 <li>Remove any copyright or other proprietary notations from the materials</li>
               </ul>
             </section>
@@ -50,7 +50,7 @@ export default function Terms() {
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">4. Subscription and Payments</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Scientia.ai offers both free and premium subscription plans. By subscribing to a premium plan, you agree to:
+                Revisely.ai offers both free and premium subscription plans. By subscribing to a premium plan, you agree to:
               </p>
               <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
                 <li>Pay the subscription fees as specified at the time of purchase</li>
@@ -62,28 +62,28 @@ export default function Terms() {
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">5. User Content</h2>
               <p className="text-muted-foreground leading-relaxed">
-                You retain ownership of any content you create or upload to Scientia.ai. By uploading content, you grant us a license to store, display, and process your content solely for the purpose of providing the Service to you.
+                You retain ownership of any content you create or upload to Revisely.ai. By uploading content, you grant us a license to store, display, and process your content solely for the purpose of providing the Service to you.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">6. Privacy</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Your use of Scientia.ai is also governed by our Privacy Policy. Please review our Privacy Policy to understand our practices regarding the collection and use of your information.
+                Your use of Revisely.ai is also governed by our Privacy Policy. Please review our Privacy Policy to understand our practices regarding the collection and use of your information.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">7. Limitation of Liability</h2>
               <p className="text-muted-foreground leading-relaxed">
-                In no event shall Scientia.ai or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Scientia.ai.
+                In no event shall Revisely.ai or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Revisely.ai.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">8. Revisions</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Scientia.ai may revise these terms of service at any time without notice. By using this website you are agreeing to be bound by the then current version of these terms of service.
+                Revisely.ai may revise these terms of service at any time without notice. By using this website you are agreeing to be bound by the then current version of these terms of service.
               </p>
             </section>
 

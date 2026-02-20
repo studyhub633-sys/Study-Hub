@@ -1,5 +1,5 @@
 /**
- * Payment Client for Scientia.ai
+ * Payment Client for Revisely.ai
  * Handles PayPal payment integration
  */
 

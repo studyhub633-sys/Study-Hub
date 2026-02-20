@@ -1,13 +1,20 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { PayPalCheckout } from "@/components/premium/PayPalCheckout";
 import { TermsDialog } from "@/components/premium/TermsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { validateDiscountCode } from "@/lib/discount";
 import {
   cancelSubscription as cancelPaymentSubscription,
-  createCheckoutSession,
   getSubscription as getPaymentSubscription,
 } from "@/lib/payment-client";
 import { hasPremium } from "@/lib/premium";
@@ -53,6 +60,7 @@ export default function Premium() {
   const [applyingCode, setApplyingCode] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
   const [hasPredictedPapers, setHasPredictedPapers] = useState(false);
   const [hasWorkExperience, setHasWorkExperience] = useState(false);
   const [checkingContent, setCheckingContent] = useState(true);
@@ -292,24 +300,16 @@ export default function Premium() {
   const handleConfirmTerms = async () => {
     setShowTerms(false);
     if (!user || !supabase || !selectedPlan) return;
+    // Show the inline payment dialog instead of redirecting
+    setShowPayment(true);
+  };
 
-    setLoading(true);
-    try {
-      const result = await createCheckoutSession(selectedPlan, supabase);
-
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
-      }
-
-      // Redirect user to PayPal for payment approval
-      toast.info("Redirecting to PayPal...");
-      window.location.href = result.approvalUrl;
-    } catch (error: any) {
-      toast.error(error.message || "Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const handlePaymentSuccess = async () => {
+    setShowPayment(false);
+    toast.success("Payment successful! Your premium subscription is now active. 🎉");
+    setIsPremium(true);
+    await checkPremiumStatus();
+    navigate("/premium", { replace: true });
   };
 
   const handleApplyCode = () => {
@@ -386,7 +386,7 @@ export default function Premium() {
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-premium/10 text-premium mb-6">
             <Crown className="h-5 w-5" />
-            <span className="font-semibold">Scientia.ai Premium</span>
+            <span className="font-semibold">Revisely.ai Premium</span>
           </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             {isPremium ? (
@@ -689,10 +689,10 @@ export default function Premium() {
               </div>
 
               <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
-                Scientia.ai Work Experience
+                Revisely.ai Work Experience
               </h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Exclusive work experience opportunities specifically for Scientia.ai premium members
+                Exclusive work experience opportunities specifically for Revisely.ai premium members
               </p>
 
               {hasWorkExperience && (
@@ -871,6 +871,29 @@ export default function Premium() {
         onOpenChange={setShowTerms}
         onAccept={handleConfirmTerms}
       />
+
+      {/* Payment Dialog with PayPal buttons + Card Fields */}
+      <Dialog open={showPayment} onOpenChange={setShowPayment}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-premium" />
+              Complete Payment
+            </DialogTitle>
+            <DialogDescription>
+              Choose your preferred payment method for the{" "}
+              <span className="font-semibold capitalize">{selectedPlan}</span> plan.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedPlan && (
+            <PayPalCheckout
+              planType={selectedPlan}
+              onSuccess={handlePaymentSuccess}
+              onError={(err) => console.error("Payment error:", err)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

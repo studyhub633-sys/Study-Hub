@@ -3,7 +3,7 @@ import { Cookie, ExternalLink, Shield, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const COOKIE_CONSENT_KEY = "scientia_cookie_consent";
+const COOKIE_CONSENT_KEY = "revisely_cookie_consent";
 
 export function CookieBanner() {
     const [visible, setVisible] = useState(false);
@@ -67,7 +67,7 @@ export function CookieBanner() {
 
                             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                                 We use cookies to enhance your experience and analyse site
-                                usage. By continuing to use Scientia.ai, you agree to our{" "}
+                                usage. By continuing to use Revisely.ai, you agree to our{" "}
                                 <Link
                                     to="/terms"
                                     className="text-primary hover:underline inline-flex items-center gap-1 font-medium"

@@ -144,7 +144,7 @@ export function Sidebar() {
           <AnimatedLogoIcon />
           {!collapsed && (
             <div className="animate-fade-in">
-              <h1 className="font-bold text-lg text-sidebar-foreground">Scientia.ai</h1>
+              <h1 className="font-bold text-lg text-sidebar-foreground">Revisely.ai</h1>
               <p className="text-xs text-muted-foreground">{t("sidebar.learnSmarter")}</p>
             </div>
           )}

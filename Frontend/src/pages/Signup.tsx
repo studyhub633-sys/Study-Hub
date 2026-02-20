@@ -102,7 +102,7 @@ export default function Signup() {
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">Sign Up Complete!</h3>
                 <p className="text-sm text-muted-foreground">
-                  Check your email for a verification link from Scientia.ai. Please verify your email address to continue.
+                  Check your email for a verification link from Revisely.ai. Please verify your email address to continue.
                 </p>
               </div>
               <Button
