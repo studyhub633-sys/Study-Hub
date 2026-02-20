@@ -40,44 +40,50 @@ const wrapHandler = (handler) => async (req, res, next) => {
 
 // Dynamic route loader
 const apiDir = path.join(__dirname, 'Frontend', 'api', 'ai');
+const paymentsDir = path.join(__dirname, 'Frontend', 'api', 'payments');
+const authDir = path.join(__dirname, 'Frontend', 'api', 'auth');
 
 async function loadRoutes() {
-    if (!fs.existsSync(apiDir)) {
-        console.error(`API directory not found: ${apiDir}`);
-        return;
-    }
+    // Map of endpoint paths to { directory, filename }
+    const routeMap = {
+        // AI routes
+        '/api/ai/generate-flashcards': { dir: apiDir, file: 'generate-flashcards.js' },
+        '/api/ai/generate-knowledge-organizer': { dir: apiDir, file: 'generate-knowledge-organizer.js' },
+        '/api/ai/generate-question': { dir: apiDir, file: 'generate-question.js' },
+        '/api/ai/generate-simple-question': { dir: apiDir, file: 'generate-simple-question.js' },
+        '/api/ai/evaluate-answer': { dir: apiDir, file: 'evaluate-answer.js' },
+        '/api/ai/chat': { dir: apiDir, file: 'chat.js' },
+        '/api/ai/health': { dir: apiDir, file: 'probe.js' },
+
+        // Payment routes
+        '/api/payments/create-subscription': { dir: paymentsDir, file: 'create-subscription.js' },
+        '/api/payments/activate': { dir: paymentsDir, file: 'activate.js' },
+        '/api/payments/subscription': { dir: paymentsDir, file: 'subscription.js' },
+        '/api/payments/cancel': { dir: paymentsDir, file: 'cancel.js' },
+        '/api/payments/payment-history': { dir: paymentsDir, file: 'payment-history.js' },
+        '/api/payments/webhook': { dir: paymentsDir, file: 'webhook.js' },
+
+        // Auth routes
+        '/api/auth/grant-beta-premium': { dir: authDir, file: 'grant-beta-premium.js' },
+    };
 
     try {
-        // Map of endpoint paths to filenames
-        const routeMap = {
-            '/api/ai/generate-flashcards': 'generate-flashcards.js',
-            '/api/ai/generate-knowledge-organizer': 'generate-knowledge-organizer.js',
-            '/api/ai/generate-question': 'generate-question.js',
-            '/api/ai/generate-simple-question': 'generate-simple-question.js',
-            '/api/ai/evaluate-answer': 'evaluate-answer.js',
-            '/api/ai/chat': 'chat.js',
-            '/api/ai/health': 'probe.js'
-        };
-
-        for (const [route, filename] of Object.entries(routeMap)) {
-            const filePath = path.join(apiDir, filename);
+        for (const [route, { dir, file }] of Object.entries(routeMap)) {
+            const filePath = path.join(dir, file);
             if (fs.existsSync(filePath)) {
                 try {
-                    // Import the module dynamically
                     const module = await import(`file://${filePath}`);
                     if (module.default) {
-                        // Use correct method based on route usually POST, headers handles OPTIONS
                         app.all(route, wrapHandler(module.default));
-                        console.log(`Matched route: ${route} -> ${filename}`);
+                        console.log(`Matched route: ${route} -> ${file}`);
                     }
                 } catch (e) {
-                    console.error(`Failed to load ${filename}:`, e);
+                    console.error(`Failed to load ${file}:`, e);
                 }
             } else {
-                console.warn(`File not found for route ${route}: ${filename}`);
+                console.warn(`File not found for route ${route}: ${file}`);
             }
         }
-
     } catch (error) {
         console.error('Error loading routes:', error);
     }

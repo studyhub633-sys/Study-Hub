@@ -5,8 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { validateDiscountCode } from "@/lib/discount";
-import { getSubscription as getPaymentSubscription } from "@/lib/payment-client";
-import { grantBetaAccessWithBackend, hasPremium } from "@/lib/premium";
+import {
+  cancelSubscription as cancelPaymentSubscription,
+  createCheckoutSession,
+  getSubscription as getPaymentSubscription,
+} from "@/lib/payment-client";
+import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
@@ -159,23 +163,62 @@ export default function Premium() {
     },
   ];
 
-  // Check for Stripe redirect
+  // Handle PayPal redirect back
   useEffect(() => {
     const success = searchParams.get("success");
     const canceled = searchParams.get("canceled");
-    const sessionId = searchParams.get("session_id");
+    const subscriptionId = searchParams.get("subscription_id");
 
-    if (success && sessionId) {
-      toast.success("Payment successful! Your premium subscription is now active.");
-      // Refresh subscription status
-      checkPremiumStatus();
-      // Clean URL
-      navigate("/premium-dashboard", { replace: true });
+    if (success && subscriptionId) {
+      // Activate the subscription after PayPal redirect
+      activateSubscription(subscriptionId);
     } else if (canceled) {
       toast.info("Payment canceled. You can try again anytime.");
-      navigate("/premium-dashboard", { replace: true });
+      navigate("/premium", { replace: true });
     }
   }, [searchParams, navigate]);
+
+  const activateSubscription = async (subscriptionId: string) => {
+    if (!supabase) return;
+
+    setLoading(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      if (!token) {
+        toast.error("Please sign in to activate your subscription.");
+        return;
+      }
+
+      const API_BASE_URL = import.meta.env.VITE_API_URL ||
+        (import.meta.env.PROD ? window.location.origin : "http://localhost:3004");
+
+      const response = await fetch(`${API_BASE_URL}/api/payments/activate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ subscriptionId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success("Payment successful! Your premium subscription is now active. 🎉");
+        setIsPremium(true);
+        await checkPremiumStatus();
+      } else {
+        toast.error(data.error || "Failed to activate subscription.");
+      }
+    } catch (error: any) {
+      console.error("Activation error:", error);
+      toast.error("Failed to activate subscription. Please contact support.");
+    } finally {
+      setLoading(false);
+      // Clean URL parameters
+      navigate("/premium", { replace: true });
+    }
+  };
 
   // Check premium status on mount
   useEffect(() => {
@@ -248,19 +291,20 @@ export default function Premium() {
 
   const handleConfirmTerms = async () => {
     setShowTerms(false);
-    if (!user || !supabase) return;
+    if (!user || !supabase || !selectedPlan) return;
 
     setLoading(true);
     try {
-      const result = await grantBetaAccessWithBackend(supabase);
-      if (result.success) {
-        setIsPremium(true); // Immediate UI update
-        await checkPremiumStatus(); // Refresh status
-        toast.success("Lifetime beta access granted!");
-      } else {
-        toast.error(`Failed: ${result.error || "Please try again."}`);
-        console.error("Grant failure details:", result.error);
+      const result = await createCheckoutSession(selectedPlan, supabase);
+
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
       }
+
+      // Redirect user to PayPal for payment approval
+      toast.info("Redirecting to PayPal...");
+      window.location.href = result.approvalUrl;
     } catch (error: any) {
       toast.error(error.message || "Something went wrong. Please try again.");
     } finally {
@@ -305,7 +349,24 @@ export default function Premium() {
   };
 
   const handleCancel = async () => {
-    toast.info("Subscriptions are currently disabled during beta testing.");
+    if (!supabase) return;
+
+    setLoading(true);
+    try {
+      const result = await cancelPaymentSubscription(supabase);
+
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success(result.message || "Subscription cancelled successfully.");
+      await checkPremiumStatus();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to cancel subscription.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (checkingStatus) {
