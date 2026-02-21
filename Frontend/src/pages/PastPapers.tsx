@@ -26,20 +26,19 @@ import { SmartPaperParser } from "@/lib/paper-parser";
 import { cn } from "@/lib/utils";
 import {
   AlertCircle,
+  AlertTriangle,
   CheckCircle,
-  Download,
+  ExternalLink,
   Eye,
   FileText,
   Layers,
-  Link as LinkIcon,
   Loader2,
   Play,
   Plus,
   Search,
   Sparkles,
   Star,
-  Timer,
-  Upload
+  Timer
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -82,67 +81,15 @@ export default function PastPapers() {
     exam_board: "",
     tier: "" as "Foundation" | "Higher" | "",
     file_url: "",
-    file_type: "link" as "link" | "upload",
-    file: null as File | null,
+    file_type: "link" as "link",
     score: "",
     max_score: "",
   });
+
+
   const [reviewPaper, setReviewPaper] = useState<Paper | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [studyTime, setStudyTime] = useState<number>(0); // Total study time in seconds
+  const [studyTime, setStudyTime] = useState<number>(0);
   const [currentSessionStart, setCurrentSessionStart] = useState<Date | null>(null);
-  const [validatingFile, setValidatingFile] = useState(false);
-  const [fileError, setFileError] = useState(false);
-
-  useEffect(() => {
-    if (reviewPaper?.file_url) {
-      setValidatingFile(true);
-      setFileError(false);
-
-      // Check if file exists before trying to display it
-      // For external links, we skip validation to avoid CORS errors
-      // External links (http/https) are assumed to be valid
-      if (reviewPaper.file_url.startsWith("http://") || reviewPaper.file_url.startsWith("https://")) {
-        setValidatingFile(false);
-        setFileError(false);
-        return;
-      }
-
-      // For uploaded files, validate they exist
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
-      fetch(reviewPaper.file_url, {
-        method: 'HEAD', // Only fetch headers, not full file
-        signal: controller.signal
-      })
-        .then(res => {
-          clearTimeout(timeoutId);
-          if (!res.ok && res.status !== 0) { // Status 0 might be CORS, which is OK for our use case
-            console.error(`File validation failed: ${res.status}`);
-            setFileError(true);
-          } else {
-            setFileError(false);
-          }
-        })
-        .catch(err => {
-          clearTimeout(timeoutId);
-          // Don't set error for abort (timeout) or CORS issues - let user try to view it
-          if (err.name === 'AbortError') {
-            console.warn("File validation timeout - proceeding anyway");
-            setFileError(false); // Allow user to try viewing
-          } else {
-            console.error("File validation error:", err);
-            // Only set error for clear network failures
-            setFileError(false); // Be permissive - let user try to view
-          }
-        })
-        .finally(() => setValidatingFile(false));
-    } else {
-      setValidatingFile(false);
-      setFileError(false);
-    }
-  }, [reviewPaper]);
 
   useEffect(() => {
     if (user) {
@@ -239,7 +186,6 @@ export default function PastPapers() {
       tier: "",
       file_url: "",
       file_type: "link",
-      file: null,
       score: "",
       max_score: "",
     });
@@ -248,8 +194,6 @@ export default function PastPapers() {
 
   const handleEditPaper = (paper: Paper) => {
     setEditingPaper(paper);
-    // Determine file type: if file_url exists and starts with http, it's a link, otherwise it's an upload
-    const isLink = paper.file_url?.startsWith("http://") || paper.file_url?.startsWith("https://");
     setFormData({
       title: paper.title,
       subject: paper.subject || "",
@@ -257,50 +201,14 @@ export default function PastPapers() {
       exam_board: paper.exam_board || "",
       tier: paper.tier || "",
       file_url: paper.file_url || "",
-      file_type: (paper.file_type || (isLink ? "link" : "upload")) as "link" | "upload",
-      file: null,
+      file_type: "link",
       score: paper.score?.toString() || "",
       max_score: paper.max_score?.toString() || "",
     });
     setIsDialogOpen(true);
   };
 
-  const handleFileUpload = async (file: File): Promise<string | null> => {
-    if (!user) return null;
-
-    try {
-      setUploading(true);
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      // Remove redundant 'past-papers/' prefix as we are already in the 'past-papers' bucket
-      const filePath = fileName;
-
-      // Upload file to Supabase Storage
-      const { error: uploadError, data } = await supabase.storage
-        .from("past-papers")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage.from("past-papers").getPublicUrl(filePath);
-
-      return urlData.publicUrl;
-    } catch (error: any) {
-      console.error("Error uploading file:", error);
-      toast({
-        title: "Upload Error",
-        description: error.message || "Failed to upload file. Please try again.",
-        variant: "destructive",
-      });
-      return null;
-    } finally {
-      setUploading(false);
-    }
-  };
+  // File upload removed to prevent hosting copyrighted exam board content
 
   const handleAutoFill = () => {
     if (!formData.file_url) {
@@ -370,18 +278,7 @@ export default function PastPapers() {
     }
 
     try {
-      let fileUrl = formData.file_url;
-
-      // If uploading a file, upload it first
-      if (formData.file_type === "upload" && formData.file) {
-        const uploadedUrl = await handleFileUpload(formData.file);
-        if (!uploadedUrl) {
-          return; // Error already shown in handleFileUpload
-        }
-        fileUrl = uploadedUrl;
-      } else if (formData.file_type === "link" && !formData.file_url.trim()) {
-        fileUrl = null;
-      }
+      let fileUrl = formData.file_url?.trim() || null;
 
       const updateData: any = {
         user_id: user.id,
@@ -462,49 +359,17 @@ export default function PastPapers() {
     }
   };
 
-  const handleDownload = async (paper: Paper) => {
+  // All papers now open in new tabs - no downloading or hosting of copyrighted content
+  const handleOpenPaper = (paper: Paper) => {
     if (!paper.file_url) {
       toast({
-        title: "No file available",
-        description: "This paper doesn't have a file attached yet.",
+        title: "No link available",
+        description: "This paper doesn't have a link attached yet.",
         variant: "destructive",
       });
       return;
     }
-
-    // If it's an uploaded file, download it
-    if (paper.file_type === "upload" || (!paper.file_type && !paper.file_url.startsWith("http"))) {
-      try {
-        const response = await fetch(paper.file_url);
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
-        }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${paper.title.replace(/\s+/g, "_")}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      } catch (error) {
-        console.error("Download error:", error);
-        toast({
-          title: "Download failed",
-          description: "Could not download the file. It may have been deleted or moved.",
-          variant: "destructive",
-        });
-
-        // Optional: Still try to open in new tab as a last resort, but warn user
-        // window.open(paper.file_url, "_blank");
-      }
-    } else {
-      // For links, just open in new tab
-      window.open(paper.file_url, "_blank");
-    }
+    window.open(paper.file_url, "_blank", "noopener,noreferrer");
   };
 
   const handleReview = (paper: Paper) => {
@@ -648,6 +513,19 @@ export default function PastPapers() {
             <Plus className="h-4 w-4 mr-2" />
             {t("pastPapers.addPaper")}
           </Button>
+        </div>
+
+        {/* Copyright Disclaimer Banner */}
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 flex items-start gap-3 animate-fade-in">
+          <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+          <div className="text-sm text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">Copyright Notice</p>
+            <p>
+              All past examination papers are the copyright of their respective exam boards (AQA, Pearson Edexcel, OCR, Eduqas/WJEC).
+              Revisely.ai does not host, store, or reproduce any exam board content. Links provided open directly on the official exam board websites.
+              Revisely.ai is not affiliated with, endorsed by, or connected to any exam board.
+            </p>
+          </div>
         </div>
 
         {/* Stats */}
@@ -824,18 +702,10 @@ export default function PastPapers() {
                     </Button>
                     {paper.file_url && (
                       <>
-                        {/* Show Download button only for uploaded files */}
-                        {(paper.file_type === "upload" || (!paper.file_type && paper.file_url && !paper.file_url.startsWith("http"))) && (
-                          <Button variant="outline" size="icon" onClick={() => handleDownload(paper)}>
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {/* For links, show an external link button */}
-                        {paper.file_url && paper.file_url.startsWith("http") && (
-                          <Button variant="outline" size="icon" onClick={() => window.open(paper.file_url!, "_blank")}>
-                            <LinkIcon className="h-4 w-4" />
-                          </Button>
-                        )}
+                        {/* Open paper on official exam board website in new tab */}
+                        <Button variant="outline" size="icon" onClick={() => handleOpenPaper(paper)} title="Open on exam board website">
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
                       </>
                     )}
                     {/* Edit/Delete buttons hidden as requested
@@ -951,84 +821,28 @@ export default function PastPapers() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>File Attachment</Label>
-              <div className="flex gap-2 mb-2">
+              <Label>Link to Paper (Official Exam Board URL)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="file_url"
+                  value={formData.file_url}
+                  onChange={(e) => setFormData({ ...formData, file_url: e.target.value })}
+                  placeholder="https://www.aqa.org.uk/find-past-papers-and-mark-schemes"
+                  className="flex-1"
+                />
                 <Button
                   type="button"
-                  variant={formData.file_type === "link" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFormData({ ...formData, file_type: "link", file: null })}
+                  variant="secondary"
+                  size="icon"
+                  onClick={handleAutoFill}
+                  title="Auto-fill from link"
                 >
-                  <LinkIcon className="h-4 w-4 mr-2" />
-                  Link
-                </Button>
-                <Button
-                  type="button"
-                  variant={formData.file_type === "upload" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFormData({ ...formData, file_type: "upload", file_url: "" })}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload File
+                  <Sparkles className="h-4 w-4 text-primary" />
                 </Button>
               </div>
-              {formData.file_type === "link" ? (
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      id="file_url"
-                      value={formData.file_url}
-                      onChange={(e) => setFormData({ ...formData, file_url: e.target.value })}
-                      placeholder="https://example.com/past-paper.pdf"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="icon"
-                      onClick={handleAutoFill}
-                      title="Auto-fill from link"
-                    >
-                      <Sparkles className="h-4 w-4 text-primary" />
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Paste a link to the past paper and click the sparkles ✨ to auto-fill details.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Input
-                    id="file"
-                    type="file"
-                    accept=".pdf,.doc,.docx,.txt"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        // Validate file size (max 10MB)
-                        if (file.size > 10 * 1024 * 1024) {
-                          toast({
-                            title: "File too large",
-                            description: "Please upload a file smaller than 10MB.",
-                            variant: "destructive",
-                          });
-                          return;
-                        }
-                        setFormData({ ...formData, file });
-                      }
-                    }}
-                    className="cursor-pointer"
-                  />
-                  {formData.file && (
-                    <p className="text-xs text-muted-foreground">
-                      Selected: {formData.file.name} ({(formData.file.size / 1024 / 1024).toFixed(2)} MB)
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Upload PDF, Word, or text files (max 10MB)
-                  </p>
-                </div>
-              )}
+              <p className="text-xs text-muted-foreground">
+                Paste a link to the official exam board past papers page. Links must point to official exam board websites only (e.g. aqa.org.uk, pearson.com, ocr.org.uk, eduqas.co.uk).
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1057,17 +871,8 @@ export default function PastPapers() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSavePaper} disabled={uploading}>
-              {uploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  {editingPaper ? "Update" : "Create"} Paper
-                </>
-              )}
+            <Button onClick={handleSavePaper}>
+              {editingPaper ? "Update" : "Create"} Paper
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1087,72 +892,26 @@ export default function PastPapers() {
           </DialogHeader>
 
           <div className="flex-1 flex flex-col md:flex-row border-t overflow-hidden">
-            {/* Left: PDF Viewer (if link) or Instructions */}
+            {/* Left: Link to open paper on official exam board site */}
             <div className="flex-1 bg-muted/30 relative min-h-[300px]">
               {reviewPaper?.file_url ? (
-                validatingFile ? (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      <p className="text-sm text-muted-foreground">Loading preview...</p>
-                    </div>
-                  </div>
-                ) : fileError ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-background/50 backdrop-blur-sm">
-                    <div className="bg-destructive/10 p-4 rounded-full mb-4">
-                      <AlertCircle className="h-8 w-8 text-destructive" />
-                    </div>
-                    <h4 className="font-semibold mb-2 text-lg">File Not Found</h4>
-                    <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-                      The file for this past paper seems to be missing or deleted.
-                    </p>
-                    <div className="flex gap-2">
-                      <Button variant="outline" onClick={() => setReviewPaper(null)}>
-                        Close
-                      </Button>
-                      <Button
-                        variant="default"
-                        onClick={() => {
-                          // Retry validation
-                          setValidatingFile(true);
-                          setFileError(false);
-                          fetch(reviewPaper.file_url!)
-                            .then(res => {
-                              if (!res.ok) throw new Error("Status " + res.status);
-                              setFileError(false);
-                            })
-                            .catch(() => setFileError(true))
-                            .finally(() => setValidatingFile(false));
-                        }}
-                      >
-                        Retry
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  reviewPaper.file_url.startsWith('https://filestore.aqa.org.uk') ||
-                    reviewPaper.file_url.endsWith('.pdf') ? (
-                    <iframe
-                      src={reviewPaper.file_url}
-                      className="w-full h-full border-none"
-                      title="Paper Content"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                      <LinkIcon className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-                      <h4 className="font-semibold mb-2">External Content</h4>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        This paper is hosted on an external site. Open it in a new tab to study.
-                      </p>
-                      <Button onClick={() => window.open(reviewPaper.file_url!, "_blank")}>
-                        Open Paper in New Tab
-                      </Button>
-                    </div>
-                  )
-                )
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                  <ExternalLink className="h-12 w-12 text-primary mb-4 opacity-60" />
+                  <h4 className="font-semibold mb-2 text-lg">View on Official Website</h4>
+                  <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+                    This paper is hosted on the official exam board website. Click below to open it in a new tab.
+                  </p>
+                  <Button onClick={() => window.open(reviewPaper.file_url!, "_blank", "noopener,noreferrer")}>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Open Paper in New Tab
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-4 max-w-xs">
+                    © {reviewPaper.exam_board || "Exam Board"}. All rights reserved. Revisely.ai is not affiliated with or endorsed by any exam board.
+                  </p>
+                </div>
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                  No file content available.
+                  No link available for this paper.
                 </div>
               )}
             </div>

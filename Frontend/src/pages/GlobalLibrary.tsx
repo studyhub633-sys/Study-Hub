@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Calendar, ChevronDown, ExternalLink, FileText, Filter, Layers, Library, Plus, Search, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Brain, Calendar, ChevronDown, ExternalLink, FileText, Filter, Layers, Library, Plus, Search, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -404,6 +404,19 @@ export default function GlobalLibrary() {
 
                     {/* Tab 1: Past Papers */}
                     <TabsContent value="papers" className="space-y-8">
+                        {/* Copyright Disclaimer */}
+                        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 flex items-start gap-3">
+                            <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+                            <div className="text-sm text-muted-foreground">
+                                <p className="font-medium text-foreground mb-1">Copyright Notice</p>
+                                <p>
+                                    All past examination papers are the copyright of their respective exam boards (AQA, Pearson Edexcel, OCR, Eduqas/WJEC).
+                                    Revisely.ai does not host, store, or reproduce any exam board content. Links open directly on the official exam board websites.
+                                    Revisely.ai is not affiliated with, endorsed by, or connected to any exam board.
+                                </p>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredPapers.map((paper) => (
                                 <Card
