@@ -55,37 +55,35 @@
 }
 
 .brand-name .study {
-  background: linear-gradient(to bottom right, #f97316, #ea580c);
+  background: linear-gradient(to right, hsl(199, 89%, 48%), hsl(168, 76%, 42%));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 4px 6px rgba(234, 88, 12, 0.3));
+  filter: drop-shadow(0 4px 6px rgba(14, 165, 233, 0.3));
 }
 
 .dark .brand-name .study {
-  background: none;
-  -webkit-background-clip: initial;
-  background-clip: initial;
-  -webkit-text-fill-color: initial;
-  color: #fbbf24;
-  filter: none;
-}
-
-.brand-name .hub {
-  background: linear-gradient(to bottom right, #8b5cf6, #7c3aed);
+  background: linear-gradient(to right, hsl(199, 89%, 55%), hsl(168, 76%, 48%));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 4px 6px rgba(124, 58, 237, 0.3));
+  filter: drop-shadow(0 4px 6px rgba(14, 165, 233, 0.3));
+}
+
+.brand-name .hub {
+  background: linear-gradient(to right, hsl(168, 76%, 42%), hsl(150, 70%, 40%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 6px rgba(20, 184, 166, 0.3));
 }
 
 .dark .brand-name .hub {
-  background: none;
-  -webkit-background-clip: initial;
-  background-clip: initial;
-  -webkit-text-fill-color: initial;
-  color: #a78bfa;
-  filter: none;
+  background: linear-gradient(to right, hsl(168, 76%, 48%), hsl(150, 70%, 45%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 6px rgba(20, 184, 166, 0.3));
 }
 
 .tagline {
