@@ -1,9 +1,7 @@
 import { checkAndRecordUsage, updateAiResponse } from '../_utils/ai-usage.js';
 import { verifyAuth } from '../_utils/auth.js';
 
-const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.HUGGING_FACE_API_KEY;
-const HF_CHAT_URL = "https://router.huggingface.co/v1/chat/completions";
-const HF_EMBEDDINGS_URL = "https://router.huggingface.co/hf-inference/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2";
+// Groq API configuration (Llama 3.3 70B)
 
 // Initialize Groq config
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -89,8 +87,8 @@ async function handleChat(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    if (!HF_API_KEY) {
-        return res.status(503).json({ error: "Hugging Face API key not configured." });
+    if (!GROQ_API_KEY) {
+        return res.status(503).json({ error: "GROQ API key not configured." });
     }
 
     try {
@@ -117,42 +115,10 @@ async function handleChat(req, res) {
             systemPrompt += `\n\nContext/Notes provided by student:\n${context}`;
         }
 
-        const response = await fetch(HF_CHAT_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${HF_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: "google/gemma-2-2b-it",
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: message }
-                ],
-                max_tokens: 500,
-                temperature: 0.7,
-                top_p: 0.9,
-            }),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            if (response.status === 503) {
-                return res.status(503).json({ error: "Model is loading.", retryAfter: 30 });
-            }
-            return res.status(response.status).json({ error: errorData.error || "Failed to generate response" });
-        }
-
-        const data = await response.json();
-        let reply = "";
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            reply = data.choices[0].message.content.trim();
-        } else if (data.generated_text) {
-            reply = data.generated_text.trim();
-        } else if (typeof data === "string") {
-            reply = data.trim();
-        }
+        const reply = await callGroqAPI([
+            { role: "system", content: systemPrompt },
+            { role: "user", content: message }
+        ], 0.7, 500);
 
         if (usageData?.usageId) {
             await updateAiResponse(usageData.usageId, reply);
@@ -216,71 +182,38 @@ Requirements:
 
 Generate only the question, nothing else.`;
 
-        const response = await fetch(HF_CHAT_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${HF_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: "google/gemma-2-2b-it",
-                messages: [
-                    { role: "user", content: userPrompt }
-                ],
-                max_tokens: 250,
-                temperature: 0.8,
-                top_p: 0.9,
-            }),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            if (response.status === 503) {
-                return res.status(503).json({ error: "Model is loading. Please try again in a few moments.", retryAfter: 30 });
-            }
-            return res.status(response.status).json({ error: errorData.error || "Failed to generate question" });
-        }
-
-        const data = await response.json();
-        let question = "";
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            question = data.choices[0].message.content.trim();
-        } else if (data.generated_text) {
-            question = data.generated_text.trim();
-        } else if (typeof data === "string") {
-            question = data.trim();
-        }
+        const question = await callGroqAPI([
+            { role: "user", content: userPrompt }
+        ], 0.8, 250);
 
         if (!question) {
             return res.status(500).json({ error: "Failed to extract question from response" });
         }
 
-        // Clean up the question
-        question = question
+        let cleanedQuestion = question
             .replace(/^(Question:|Q:|Task:).*/i, "")
             .replace(/^Study Material:.*/i, "")
             .replace(/^Requirements:.*/i, "")
             .replace(/^Generate only.*$/i, "")
             .trim();
 
-        const questionMatch = question.match(/([^.!?\n]+\?)/);
+        const questionMatch = cleanedQuestion.match(/([^.!?\n]+\?)/);
         if (questionMatch) {
-            question = questionMatch[1].trim();
+            cleanedQuestion = questionMatch[1].trim();
         }
 
-        if (question.length < 20 || question.toLowerCase().includes(context.substring(0, 50).toLowerCase())) {
-            const lines = question.split('\n').filter(line => line.trim() && line.includes('?'));
+        if (cleanedQuestion.length < 20 || cleanedQuestion.toLowerCase().includes(context.substring(0, 50).toLowerCase())) {
+            const lines = cleanedQuestion.split('\n').filter(line => line.trim() && line.includes('?'));
             if (lines.length > 0) {
-                question = lines[0].trim();
+                cleanedQuestion = lines[0].trim();
             }
         }
 
-        if (!question.endsWith("?") && question.length > 0) {
-            question = question.replace(/[.!]$/, "") + "?";
+        if (!cleanedQuestion.endsWith("?") && cleanedQuestion.length > 0) {
+            cleanedQuestion = cleanedQuestion.replace(/[.!]$/, "") + "?";
         }
 
-        question = question
+        cleanedQuestion = cleanedQuestion
             .replace(/^(The question is|Here's the question|Question|Answer):\s*/i, "")
             .replace(/\s+/g, " ")
             .trim();
@@ -316,8 +249,8 @@ async function handleGenerateFlashcards(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    if (!HF_API_KEY) {
-        return res.status(503).json({ error: "Hugging Face API key not configured." });
+    if (!GROQ_API_KEY) {
+        return res.status(503).json({ error: "GROQ API key not configured." });
     }
 
     try {
@@ -344,62 +277,26 @@ async function handleGenerateFlashcards(req, res) {
         }
 
         const flashcards = [];
-        const promptBase = `Generate a flashcard (question and answer) for ${subject} based on: ${notes}. Format as: Q: [question] A: [answer]`;
+        const promptText = `Generate exactly ${count} flashcards for ${subject} based on these notes: ${notes}. 
+Format each flashcard on its own line as: Q: [question] A: [answer]
+Make each flashcard test a different concept. Output only the flashcards, nothing else.`;
 
-        const fetchPromises = [];
-        for (let i = 0; i < count; i++) {
-            fetchPromises.push(
-                fetch(HF_CHAT_URL, {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${HF_API_KEY}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        model: "google/gemma-2-2b-it",
-                        messages: [
-                            { role: "user", content: promptBase }
-                        ],
-                        max_tokens: 200,
-                        temperature: 0.8,
-                    }),
-                }).then(r => r.json().then(data => ({ status: r.status, ok: r.ok, data })))
-                    .catch(e => ({ ok: false, error: e }))
-            );
-        }
+        const generatedText = await callGroqAPI([
+            { role: "user", content: promptText }
+        ], 0.8, 2000);
 
-        const results = await Promise.all(fetchPromises);
+        // Parse flashcards from the response
+        const lines = generatedText.split('\n').filter(l => l.trim());
+        for (const line of lines) {
+            const questionMatch = line.match(/Q:\s*(.+?)(?:\s*A:|$)/i);
+            const answerMatch = line.match(/A:\s*(.+?)$/i);
 
-        for (const resItem of results) {
-            if (resItem.ok) {
-                const data = resItem.data;
-                let text = "";
-
-                if (data.choices && data.choices[0]?.message?.content) {
-                    text = data.choices[0].message.content.trim();
-                } else if (data.generated_text) {
-                    text = data.generated_text.trim();
-                }
-
-                const questionMatch = text.match(/Q:\s*(.+?)(?:\s*A:|$)/i);
-                const answerMatch = text.match(/A:\s*(.+?)$/i);
-
-                if (questionMatch && answerMatch) {
-                    flashcards.push({
-                        question: questionMatch[1].trim(),
-                        answer: answerMatch[1].trim(),
-                        subject,
-                    });
-                } else {
-                    const parts = text.split(/\n/).filter(p => p.trim());
-                    if (parts.length >= 2) {
-                        flashcards.push({
-                            question: parts[0].replace(/^Q:\s*/i, "").trim(),
-                            answer: parts.slice(1).join(" ").replace(/^A:\s*/i, "").trim(),
-                            subject,
-                        });
-                    }
-                }
+            if (questionMatch && answerMatch) {
+                flashcards.push({
+                    question: questionMatch[1].trim(),
+                    answer: answerMatch[1].trim(),
+                    subject,
+                });
             }
         }
 
@@ -437,8 +334,8 @@ async function handleGenerateKnowledgeOrganizer(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    if (!HF_API_KEY) {
-        return res.status(503).json({ error: "Hugging Face API key not configured." });
+    if (!GROQ_API_KEY) {
+        return res.status(503).json({ error: "GROQ API key not configured." });
     }
 
     try {
@@ -462,44 +359,12 @@ async function handleGenerateKnowledgeOrganizer(req, res) {
 
         const generationPrompt = `Create a structured knowledge organizer with sections and key points based on this topic: ${prompt}${subject ? ` Subject: ${subject}` : ""}${topic ? ` Topic: ${topic}` : ""}. Format the response as JSON with this structure: {"sections": [{"title": "Section Title", "content": "Detailed content", "keyPoints": ["Point 1", "Point 2"]}]}. Generate 3-5 sections with relevant content and 3-5 key points per section.`;
 
-        const response = await fetch(HF_CHAT_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${HF_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: "google/gemma-2-2b-it",
-                messages: [
-                    { role: "user", content: generationPrompt }
-                ],
-                max_tokens: 1000,
-                temperature: 0.7,
-                top_p: 0.9,
-            }),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            if (response.status === 503) {
-                return res.status(503).json({ error: "Model is loading.", retryAfter: 30 });
-            }
-            return res.status(response.status).json({ error: errorData.error || "Failed to generate knowledge organizer" });
-        }
-
-        const data = await response.json();
-        let generatedText = "";
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            generatedText = data.choices[0].message.content.trim();
-        } else if (data.generated_text) {
-            generatedText = data.generated_text.trim();
-        } else if (typeof data === "string") {
-            generatedText = data.trim();
-        }
+        const generatedText = await callGroqAPI([
+            { role: "user", content: generationPrompt }
+        ], 0.7, 1000, true);
 
         if (!generatedText) {
-            return res.status(500).json({ error: "Failed to extract content from response", rawResponse: data });
+            return res.status(500).json({ error: "Failed to extract content from response" });
         }
 
         let sections = [];
@@ -580,8 +445,8 @@ async function handleEvaluateAnswer(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    if (!HF_API_KEY) {
-        return res.status(503).json({ error: "Hugging Face API key not configured." });
+    if (!GROQ_API_KEY) {
+        return res.status(503).json({ error: "GROQ API key not configured." });
     }
 
     try {
@@ -592,82 +457,44 @@ async function handleEvaluateAnswer(req, res) {
             return res.status(400).json({ error: "Both 'correctAnswer' and 'studentAnswer' are required" });
         }
 
-        // Try to get embeddings for both sentences
-        const [correctEmbedding, studentEmbedding] = await Promise.all([
-            getEmbedding(correctAnswer),
-            getEmbedding(studentAnswer)
-        ]);
+        // Use AI to evaluate the answer instead of embeddings
+        const evaluationPrompt = `Compare the following correct answer and student answer. Return a JSON object with: {"similarity": <number between 0 and 1>, "isCorrect": <boolean>, "feedback": "<brief feedback>"}
 
-        let similarity = 0;
+Correct Answer: "${correctAnswer}"
+Student Answer: "${studentAnswer}"
+Threshold for correctness: ${threshold}
 
-        if (correctEmbedding && studentEmbedding) {
-            similarity = cosineSimilarity(correctEmbedding, studentEmbedding);
-        } else {
-            similarity = simpleTextSimilarity(correctAnswer, studentAnswer);
+Evaluate semantic similarity (0-1 scale). If similarity >= ${threshold}, mark as correct.`;
+
+        const resultText = await callGroqAPI([
+            { role: "user", content: evaluationPrompt }
+        ], 0.3, 200, true);
+
+        let result;
+        try {
+            result = JSON.parse(resultText);
+        } catch (e) {
+            // Fallback to simple text similarity
+            const similarity = simpleTextSimilarity(correctAnswer, studentAnswer);
+            const isCorrect = similarity >= threshold;
+            result = {
+                similarity: Math.round(similarity * 100) / 100,
+                isCorrect,
+                feedback: isCorrect ? "Your answer is correct!" : `Your answer is partially correct. Similarity: ${Math.round(similarity * 100)}%`
+            };
         }
 
-        similarity = Math.max(0, Math.min(1, similarity));
-        const isCorrect = similarity >= threshold;
-
         return res.status(200).json({
-            similarity: Math.round(similarity * 100) / 100,
-            isCorrect,
+            similarity: Math.round((result.similarity || 0) * 100) / 100,
+            isCorrect: result.isCorrect || false,
             threshold,
-            feedback: isCorrect
-                ? "Your answer is correct!"
-                : `Your answer is partially correct. Similarity: ${Math.round(similarity * 100)}%`,
+            feedback: result.feedback || (result.isCorrect ? "Your answer is correct!" : "Your answer needs improvement."),
         });
 
     } catch (error) {
         console.error("Answer evaluation error:", error);
         return res.status(500).json({ error: error.message || "Internal server error" });
     }
-}
-
-async function getEmbedding(text) {
-    try {
-        const response = await fetch(HF_EMBEDDINGS_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${HF_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ inputs: text }),
-        });
-
-        if (!response.ok) {
-            return null;
-        }
-
-        const data = await response.json();
-        if (Array.isArray(data) && data.length > 0) {
-            return Array.isArray(data[0]) ? data[0] : data;
-        }
-        return null;
-    } catch (error) {
-        return null;
-    }
-}
-
-function cosineSimilarity(a, b) {
-    if (!a || !b || a.length !== b.length) return 0;
-
-    let dotProduct = 0;
-    let normA = 0;
-    let normB = 0;
-
-    for (let i = 0; i < a.length; i++) {
-        dotProduct += a[i] * b[i];
-        normA += a[i] * a[i];
-        normB += b[i] * b[i];
-    }
-
-    normA = Math.sqrt(normA);
-    normB = Math.sqrt(normB);
-
-    if (normA === 0 || normB === 0) return 0;
-
-    return dotProduct / (normA * normB);
 }
 
 function simpleTextSimilarity(text1, text2) {
@@ -682,48 +509,42 @@ function simpleTextSimilarity(text1, text2) {
 }
 
 async function handleProbe(req, res) {
-    if (!HF_API_KEY) {
-        return res.status(500).json({ error: "No API Key found" });
+    if (!GROQ_API_KEY) {
+        return res.status(500).json({ error: "No GROQ API Key found" });
     }
-
-    const endpoints = [
-        { url: "https://router.huggingface.co/v1/chat/completions", name: "Chat Completions (New)" },
-    ];
 
     const results = {};
 
-    for (const endpoint of endpoints) {
-        try {
-            console.log(`Probing ${endpoint.url}...`);
-            const response = await fetch(endpoint.url, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${HF_API_KEY}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    model: "google/gemma-2-2b-it",
-                    messages: [{ role: "user", content: "Hello" }],
-                    max_tokens: 1
-                }),
-            });
+    try {
+        console.log(`Probing Groq API...`);
+        const response = await fetch(GROQ_API_URL, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${GROQ_API_KEY}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [{ role: "user", content: "Hello" }],
+                max_tokens: 1
+            }),
+        });
 
-            let errorDetail = "";
-            if (!response.ok) {
-                try {
-                    errorDetail = await response.text();
-                } catch (e) { }
-            }
-
-            results[endpoint.name] = {
-                url: endpoint.url,
-                status: response.status,
-                ok: response.ok,
-                error: errorDetail ? errorDetail.substring(0, 200) : null
-            };
-        } catch (error) {
-            results[endpoint.name] = { url: endpoint.url, error: error.message };
+        let errorDetail = "";
+        if (!response.ok) {
+            try {
+                errorDetail = await response.text();
+            } catch (e) { }
         }
+
+        results["Groq Llama 3.3 70B"] = {
+            url: GROQ_API_URL,
+            status: response.status,
+            ok: response.ok,
+            error: errorDetail ? errorDetail.substring(0, 200) : null
+        };
+    } catch (error) {
+        results["Groq Llama 3.3 70B"] = { url: GROQ_API_URL, error: error.message };
     }
 
     res.status(200).json(results);
@@ -743,8 +564,8 @@ async function handleGenerateSimpleQuestion(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    if (!HF_API_KEY) {
-        return res.status(503).json({ error: "Hugging Face API key not configured." });
+    if (!GROQ_API_KEY) {
+        return res.status(503).json({ error: "GROQ API key not configured." });
     }
 
     try {
@@ -766,85 +587,32 @@ async function handleGenerateSimpleQuestion(req, res) {
             throw error;
         }
 
-        const response = await fetch(HF_CHAT_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${HF_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: "google/gemma-2-2b-it",
-                messages: [
-                    {
-                        role: "user",
-                        content: `Create a simple single-sentence practice question about this text: "${context.substring(0, 1000)}". Only output the question, nothing else.`
-                    }
-                ],
-                max_tokens: 100,
-                temperature: 0.7,
-            }),
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            let errorData;
-            try {
-                errorData = JSON.parse(errorText);
-            } catch {
-                errorData = { error: errorText };
+        const question = await callGroqAPI([
+            {
+                role: "user",
+                content: `Create a simple single-sentence practice question about this text: "${context.substring(0, 1000)}". Only output the question, nothing else.`
             }
+        ], 0.7, 100);
 
-            if (response.status === 503) {
-                return res.status(503).json({
-                    error: "Model is loading. Please try again in 20 seconds.",
-                    retryAfter: 20
-                });
-            }
-
-            if (response.status === 401 || response.status === 403) {
-                return res.status(500).json({
-                    error: "Authentication failed. Please check your Hugging Face API key in Vercel settings."
-                });
-            }
-
-            return res.status(response.status).json({
-                error: errorData.error || "Failed to generate question",
-                details: errorData
-            });
-        }
-
-        const data = await response.json();
-
-        let question = "";
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            question = data.choices[0].message.content.trim();
-        } else if (data.generated_text) {
-            question = data.generated_text.trim();
-        } else if (typeof data === "string") {
-            question = data.trim();
-        }
-
-        question = question
+        let cleanedQuestion = question
             .replace(/^Question:\s*/i, "")
             .replace(/^Here's a question:\s*/i, "")
             .replace(/^Here is a question:\s*/i, "")
             .trim();
 
-        if (!question) {
+        if (!cleanedQuestion) {
             return res.status(500).json({
                 error: "Failed to generate question",
-                details: "Could not extract question from API response",
-                rawResponse: data
+                details: "Could not extract question from API response"
             });
         }
 
         if (usageData?.usageId) {
-            await updateAiResponse(usageData.usageId, question);
+            await updateAiResponse(usageData.usageId, cleanedQuestion);
         }
 
         return res.status(200).json({
-            question,
+            question: cleanedQuestion,
             subject: subject || "General",
             difficulty,
             context: context.substring(0, 50) + "..."
@@ -918,14 +686,14 @@ REMEMBER: Return ONLY the JSON object with no other text.`;
 
         // Clean and extract JSON from response (handle markdown code blocks)
         let cleanedText = generatedText.trim();
-        
+
         // Remove markdown code blocks if present
         if (cleanedText.startsWith('```json')) {
             cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/```\s*$/, '');
         } else if (cleanedText.startsWith('```')) {
             cleanedText = cleanedText.replace(/^```\s*/, '').replace(/```\s*$/, '');
         }
-        
+
         cleanedText = cleanedText.trim();
 
         let mindMapData;
@@ -938,7 +706,7 @@ REMEMBER: Return ONLY the JSON object with no other text.`;
             }
         } catch (e) {
             console.error('JSON parse error:', e, 'Raw response:', generatedText);
-            
+
             // Try to extract JSON from the response if it contains extra text
             const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
