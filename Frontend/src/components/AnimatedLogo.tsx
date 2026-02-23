@@ -27,7 +27,7 @@ const AnimatedLogo = () => {
           <span className="study">Revisely</span>
           <span className="hub">.ai</span>
         </div>
-        <div className="tagline">Learn smarter. Shine brighter.</div>
+        <div className="tagline">Revise wisely with Revisely</div>
       </div>
     </div>
   );
