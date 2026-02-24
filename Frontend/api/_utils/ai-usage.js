@@ -65,8 +65,7 @@ export async function checkAndRecordUsage(user, featureType, prompt = null, subj
 
     if (insertError) {
         console.error("Failed to record usage:", insertError);
-        // We generally don't block the user if tracking fails, but it's up to policy.
-        // For now, we'll log it and proceed.
+        throw new Error("Failed to record your usage. Please try again in a moment.");
     }
 
     return {
