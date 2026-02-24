@@ -18,6 +18,8 @@ export default async function handler(req, res) {
             return handlePaymentHistory(req, res);
         case 'pending-payments':
             return handlePendingPayments(req, res);
+        case 'wise-webhook':
+            return handleWiseWebhook(req, res);
         default:
             return res.status(404).json({ error: 'Payment action not found' });
     }
@@ -423,5 +425,146 @@ async function handlePendingPayments(req, res) {
     } catch (error) {
         console.error('[Payment] Pending payments error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
+    }
+}
+
+// ─── Wise Webhook (Auto-Activate on Incoming Payment) ──────────
+async function handleWiseWebhook(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Signature-SHA256');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+    // Always respond 200 quickly so Wise doesn't retry
+    res.status(200).json({ received: true });
+
+    try {
+        const event = req.body;
+        console.log('[Wise Webhook] Received event:', event?.event_type);
+
+        // Only handle incoming balance credits
+        if (event?.event_type !== 'balances.credit') {
+            console.log('[Wise Webhook] Ignoring non-credit event:', event?.event_type);
+            return;
+        }
+
+        const WISE_API_KEY = process.env.WISE_API_KEY;
+        const WISE_PROFILE_ID = process.env.WISE_PROFILE_ID;
+        const WISE_BASE_URL = process.env.WISE_ENV === 'sandbox'
+            ? 'https://api.sandbox.transferwise.tech'
+            : 'https://api.wise.com';
+
+        if (!WISE_API_KEY || !WISE_PROFILE_ID) {
+            console.error('[Wise Webhook] Missing WISE_API_KEY or WISE_PROFILE_ID env vars');
+            return;
+        }
+
+        // Fetch recent credit transactions from Wise to find the payment reference
+        const now = new Date();
+        const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+        const intervalStart = fiveMinutesAgo.toISOString().replace(/\.\d{3}Z$/, '.000Z');
+        const intervalEnd = now.toISOString().replace(/\.\d{3}Z$/, '.000Z');
+
+        const statementsRes = await fetch(
+            `${WISE_BASE_URL}/v1/profiles/${WISE_PROFILE_ID}/balance-statements/statement.json?currency=GBP&intervalStart=${intervalStart}&intervalEnd=${intervalEnd}&type=COMPACT`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${WISE_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        if (!statementsRes.ok) {
+            const errText = await statementsRes.text();
+            console.error('[Wise Webhook] Failed to fetch statement:', errText);
+            return;
+        }
+
+        const statement = await statementsRes.json();
+        const transactions = statement?.transactions || [];
+
+        // Look for a CREDIT transaction matching a pending subscription reference
+        for (const tx of transactions) {
+            if (tx.type !== 'CREDIT') continue;
+
+            const reference = tx.details?.paymentReference || tx.details?.description || '';
+            const amountValue = tx.amount?.value;
+            const currency = (tx.amount?.currency || '').toUpperCase();
+
+            if (!reference || !reference.startsWith('REV-')) {
+                console.log('[Wise Webhook] Skipping tx with non-REV reference:', reference);
+                continue;
+            }
+
+            console.log(`[Wise Webhook] Found REV reference: ${reference}, amount: ${amountValue} ${currency}`);
+
+            // Find matching pending subscription
+            const { data: subscription, error: fetchError } = await supabase
+                .from('subscriptions')
+                .select('*')
+                .eq('payment_reference', reference)
+                .eq('status', 'pending')
+                .maybeSingle();
+
+            if (fetchError || !subscription) {
+                console.log('[Wise Webhook] No pending subscription found for reference:', reference);
+                continue;
+            }
+
+            // Validate amount matches the plan
+            const expectedAmounts = { monthly: 4.99, yearly: 39.99 };
+            const expected = expectedAmounts[subscription.plan_type];
+
+            if (Math.abs(amountValue - expected) > 0.01) {
+                console.warn(`[Wise Webhook] Amount mismatch for ${reference}: got ${amountValue}, expected ${expected}`);
+                continue;
+            }
+
+            // ✅ Activate the subscription
+            const periodStart = new Date();
+            const periodEnd = new Date(periodStart);
+            if (subscription.plan_type === 'yearly') {
+                periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+            } else {
+                periodEnd.setMonth(periodEnd.getMonth() + 1);
+            }
+
+            await supabase
+                .from('subscriptions')
+                .update({
+                    status: 'active',
+                    current_period_start: periodStart.toISOString(),
+                    current_period_end: periodEnd.toISOString(),
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', subscription.id);
+
+            await supabase
+                .from('profiles')
+                .update({ is_premium: true })
+                .eq('id', subscription.user_id);
+
+            // Record the payment
+            const amountInPence = Math.round(amountValue * 100);
+            await supabase
+                .from('payments')
+                .insert({
+                    user_id: subscription.user_id,
+                    subscription_id: subscription.id,
+                    amount: amountInPence,
+                    currency: currency.toLowerCase(),
+                    status: 'succeeded',
+                    wise_transfer_id: tx.referenceNumber || null,
+                    plan_type: subscription.plan_type,
+                });
+
+            console.log(`[Wise Webhook] ✅ Auto-activated subscription ${subscription.id} for user ${subscription.user_id} (${subscription.plan_type})`);
+        }
+
+    } catch (error) {
+        console.error('[Wise Webhook] Processing error:', error);
     }
 }
