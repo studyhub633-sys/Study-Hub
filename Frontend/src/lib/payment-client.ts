@@ -1,6 +1,6 @@
 /**
  * Payment Client for Revisely.ai
- * Handles Wise bank transfer payment integration
+ * Handles PayPal subscription payment integration
  */
 
 // Use Vercel URL in production, localhost in development
@@ -41,12 +41,12 @@ async function getAuthToken(supabaseClient?: any): Promise<string | null> {
 }
 
 /**
- * Create a pending subscription via Wise bank transfer
+ * Activate a subscription after PayPal approval
  */
 export async function createCheckoutSession(
   planType: "monthly" | "yearly",
   supabaseClient?: any,
-  paymentReference?: string
+  paypalSubscriptionId?: string
 ): Promise<{ subscriptionId: string; status: string } | { error: string }> {
   try {
     const token = await getAuthToken(supabaseClient);
@@ -63,7 +63,7 @@ export async function createCheckoutSession(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ planType, paymentReference }),
+      body: JSON.stringify({ planType, paypalSubscriptionId }),
     });
 
     if (!response.ok) {

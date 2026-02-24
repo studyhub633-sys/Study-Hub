@@ -1,6 +1,6 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { PayPalCheckout } from "@/components/premium/PayPalCheckout";
 import { TermsDialog } from "@/components/premium/TermsDialog";
-import { WiseCheckout } from "@/components/premium/WiseCheckout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -156,7 +156,7 @@ export default function Premium() {
     },
     {
       name: t("premium.dashboard.yearly"),
-      price: "£39.99",
+      price: "£25.00",
       period: "/year",
       description: "Our best value - save over £19 annually!",
       features: [
@@ -819,21 +819,21 @@ export default function Premium() {
         onAccept={handleConfirmTerms}
       />
 
-      {/* Payment Dialog with Wise Bank Transfer */}
+      {/* Payment Dialog with PayPal */}
       <Dialog open={showPayment} onOpenChange={setShowPayment}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Crown className="h-5 w-5 text-premium" />
-              Complete Payment via Wise
+              Complete Payment via PayPal
             </DialogTitle>
             <DialogDescription>
-              Transfer the amount below to complete your{" "}
-              <span className="font-semibold capitalize">{selectedPlan}</span> plan purchase.
+              Subscribe to the{" "}
+              <span className="font-semibold capitalize">{selectedPlan}</span> plan securely with PayPal.
             </DialogDescription>
           </DialogHeader>
           {selectedPlan && (
-            <WiseCheckout
+            <PayPalCheckout
               planType={selectedPlan}
               onSuccess={handlePaymentSuccess}
               onError={(err) => console.error("Payment error:", err)}

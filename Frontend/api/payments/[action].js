@@ -8,24 +8,41 @@ export default async function handler(req, res) {
     switch (action) {
         case 'create-subscription':
             return handleCreateSubscription(req, res);
-        case 'verify-payment':
-            return handleVerifyPayment(req, res);
         case 'subscription':
             return handleGetSubscription(req, res);
         case 'cancel':
             return handleCancel(req, res);
         case 'payment-history':
             return handlePaymentHistory(req, res);
-        case 'pending-payments':
-            return handlePendingPayments(req, res);
-        case 'wise-webhook':
-            return handleWiseWebhook(req, res);
+        case 'paypal-webhook':
+            return handlePayPalWebhook(req, res);
         default:
             return res.status(404).json({ error: 'Payment action not found' });
     }
 }
 
-// ─── Create Subscription (Pending - Wise Bank Transfer) ────────
+// ─── Get PayPal Access Token ─────────────────────────────────────
+async function getPayPalAccessToken() {
+    const clientId = process.env.PAYPAL_CLIENT_ID;
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+    const base = process.env.PAYPAL_ENV === 'sandbox'
+        ? 'https://api-m.sandbox.paypal.com'
+        : 'https://api-m.paypal.com';
+
+    const response = await fetch(`${base}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        },
+        body: 'grant_type=client_credentials',
+    });
+
+    const data = await response.json();
+    return { token: data.access_token, base };
+}
+
+// ─── Create Subscription (called after PayPal approval) ─────────
 async function handleCreateSubscription(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -37,14 +54,32 @@ async function handleCreateSubscription(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { planType, paymentReference } = req.body;
+        const { planType, paypalSubscriptionId } = req.body;
 
         if (!planType || !['monthly', 'yearly'].includes(planType)) {
             return res.status(400).json({ error: 'Invalid plan type. Must be "monthly" or "yearly".' });
         }
 
-        if (!paymentReference) {
-            return res.status(400).json({ error: 'Payment reference is required.' });
+        if (!paypalSubscriptionId) {
+            return res.status(400).json({ error: 'PayPal subscription ID is required.' });
+        }
+
+        // Verify the subscription with PayPal API
+        const { token, base } = await getPayPalAccessToken();
+        const subRes = await fetch(`${base}/v1/billing/subscriptions/${paypalSubscriptionId}`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+        });
+
+        if (!subRes.ok) {
+            const errText = await subRes.text();
+            console.error('[PayPal] Failed to verify subscription:', errText);
+            return res.status(400).json({ error: 'Could not verify PayPal subscription.' });
+        }
+
+        const paypalSub = await subRes.json();
+
+        if (paypalSub.status !== 'ACTIVE') {
+            return res.status(400).json({ error: `PayPal subscription is not active (status: ${paypalSub.status}).` });
         }
 
         // Check for existing active subscription
@@ -59,32 +94,24 @@ async function handleCreateSubscription(req, res) {
             return res.status(400).json({ error: 'You already have an active subscription.' });
         }
 
-        // Check for existing pending subscription
-        const { data: pendingSub } = await supabase
-            .from('subscriptions')
-            .select('id, status, payment_reference')
-            .eq('user_id', user.id)
-            .eq('status', 'pending')
-            .maybeSingle();
-
-        if (pendingSub) {
-            return res.status(400).json({
-                error: 'You already have a pending payment being verified. Please wait for admin approval or contact support.',
-            });
+        const now = new Date();
+        const periodEnd = new Date(now);
+        if (planType === 'yearly') {
+            periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+        } else {
+            periodEnd.setMonth(periodEnd.getMonth() + 1);
         }
 
-        const now = new Date().toISOString();
-
-        // Insert a pending subscription record
+        // Insert active subscription
         const { data: newSub, error: dbError } = await supabase
             .from('subscriptions')
             .insert({
                 user_id: user.id,
                 plan_type: planType,
-                status: 'pending',
-                payment_reference: paymentReference,
-                current_period_start: now,
-                current_period_end: now,
+                status: 'active',
+                paypal_subscription_id: paypalSubscriptionId,
+                current_period_start: now.toISOString(),
+                current_period_end: periodEnd.toISOString(),
             })
             .select('id')
             .single();
@@ -94,135 +121,34 @@ async function handleCreateSubscription(req, res) {
             return res.status(500).json({ error: 'Failed to create subscription record.' });
         }
 
-        console.log(`[Payment] Created pending subscription ${newSub.id} for user ${user.id} (${planType}) - ref: ${paymentReference}`);
-
-        return res.status(200).json({
-            subscriptionId: newSub.id,
-            status: 'pending',
-            paymentReference,
-            message: 'Subscription created. Please transfer the payment to our Wise account using the reference code. Your premium will be activated once verified.',
-        });
-
-    } catch (error) {
-        console.error('[Payment] Create subscription error:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
-    }
-}
-
-// ─── Verify Payment (Admin Only) ──────────────────────────────
-async function handleVerifyPayment(req, res) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-    try {
-        const adminUser = await verifyAuth(req);
-
-        // Check admin status
-        const { data: adminProfile } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', adminUser.id)
-            .single();
-
-        if (!adminProfile?.is_admin) {
-            return res.status(403).json({ error: 'Admin access required.' });
-        }
-
-        const { subscriptionId, approve, wiseTransferId } = req.body;
-
-        if (!subscriptionId) {
-            return res.status(400).json({ error: 'Subscription ID is required.' });
-        }
-
-        // Get the pending subscription
-        const { data: subscription, error: fetchError } = await supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('id', subscriptionId)
-            .eq('status', 'pending')
-            .single();
-
-        if (fetchError || !subscription) {
-            return res.status(404).json({ error: 'Pending subscription not found.' });
-        }
-
-        if (approve === false) {
-            // Reject the subscription
-            await supabase
-                .from('subscriptions')
-                .update({
-                    status: 'canceled',
-                    canceled_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', subscriptionId);
-
-            console.log(`[Payment] Rejected subscription ${subscriptionId}`);
-            return res.status(200).json({ success: true, message: 'Subscription rejected.' });
-        }
-
-        // Approve and activate the subscription
-        const now = new Date();
-        const periodEnd = new Date(now);
-
-        if (subscription.plan_type === 'yearly') {
-            periodEnd.setFullYear(periodEnd.getFullYear() + 1);
-        } else {
-            periodEnd.setMonth(periodEnd.getMonth() + 1);
-        }
-
-        // Update subscription to active
-        const { error: updateError } = await supabase
-            .from('subscriptions')
-            .update({
-                status: 'active',
-                current_period_start: now.toISOString(),
-                current_period_end: periodEnd.toISOString(),
-                updated_at: now.toISOString(),
-            })
-            .eq('id', subscriptionId);
-
-        if (updateError) {
-            console.error('[DB] Failed to update subscription:', updateError);
-            return res.status(500).json({ error: 'Failed to activate subscription.' });
-        }
-
-        // Update user premium status
+        // Activate premium
         await supabase
             .from('profiles')
             .update({ is_premium: true })
-            .eq('id', subscription.user_id);
+            .eq('id', user.id);
 
-        // Record the payment
-        const planPrices = { monthly: 499, yearly: 3999 };
-        const amount = planPrices[subscription.plan_type] || 0;
+        // Record payment
+        const planAmounts = { monthly: 499, yearly: 2500 };
+        await supabase.from('payments').insert({
+            user_id: user.id,
+            subscription_id: newSub.id,
+            amount: planAmounts[planType] || 0,
+            currency: 'gbp',
+            status: 'succeeded',
+            paypal_subscription_id: paypalSubscriptionId,
+            plan_type: planType,
+        });
 
-        await supabase
-            .from('payments')
-            .insert({
-                user_id: subscription.user_id,
-                subscription_id: subscriptionId,
-                amount,
-                currency: 'gbp',
-                status: 'succeeded',
-                wise_transfer_id: wiseTransferId || null,
-                plan_type: subscription.plan_type,
-            });
-
-        console.log(`[Payment] Approved and activated subscription ${subscriptionId} for user ${subscription.user_id}`);
+        console.log(`[PayPal] Activated subscription ${newSub.id} for user ${user.id} (${planType})`);
 
         return res.status(200).json({
-            success: true,
-            message: 'Subscription approved and activated.',
+            subscriptionId: newSub.id,
+            status: 'active',
+            message: 'Subscription activated successfully.',
         });
 
     } catch (error) {
-        console.error('[Payment] Verify payment error:', error);
+        console.error('[PayPal] Create subscription error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
@@ -244,7 +170,7 @@ async function handleGetSubscription(req, res) {
             .from('subscriptions')
             .select('*')
             .eq('user_id', user.id)
-            .in('status', ['active', 'pending'])
+            .eq('status', 'active')
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -256,11 +182,11 @@ async function handleGetSubscription(req, res) {
 
         return res.status(200).json({
             subscription: subscription || null,
-            isPremium: !!subscription && subscription.status === 'active',
+            isPremium: !!subscription,
         });
 
     } catch (error) {
-        console.error('[Payment] Get subscription error:', error);
+        console.error('[PayPal] Get subscription error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
@@ -282,7 +208,7 @@ async function handleCancel(req, res) {
             .from('subscriptions')
             .select('*')
             .eq('user_id', user.id)
-            .in('status', ['active', 'pending'])
+            .eq('status', 'active')
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -293,7 +219,24 @@ async function handleCancel(req, res) {
         }
 
         if (!subscription) {
-            return res.status(404).json({ error: 'No active or pending subscription found.' });
+            return res.status(404).json({ error: 'No active subscription found.' });
+        }
+
+        // Cancel on PayPal side if we have a PayPal subscription ID
+        if (subscription.paypal_subscription_id) {
+            try {
+                const { token, base } = await getPayPalAccessToken();
+                await fetch(`${base}/v1/billing/subscriptions/${subscription.paypal_subscription_id}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ reason: 'User requested cancellation' }),
+                });
+            } catch (ppErr) {
+                console.warn('[PayPal] Could not cancel on PayPal side:', ppErr);
+            }
         }
 
         const { error: updateError } = await supabase
@@ -311,17 +254,7 @@ async function handleCancel(req, res) {
             return res.status(500).json({ error: 'Failed to cancel subscription.' });
         }
 
-        // If the subscription was pending, also revoke premium immediately
-        if (subscription.status === 'pending') {
-            console.log(`[Payment] Cancelled pending subscription ${subscription.id} for user ${user.id}`);
-            return res.status(200).json({
-                success: true,
-                message: 'Pending payment cancelled.',
-            });
-        }
-
-        // For active subscriptions, premium remains until period end
-        console.log(`[Payment] Cancelled subscription ${subscription.id} for user ${user.id}`);
+        console.log(`[PayPal] Cancelled subscription ${subscription.id} for user ${user.id}`);
 
         return res.status(200).json({
             success: true,
@@ -330,7 +263,7 @@ async function handleCancel(req, res) {
         });
 
     } catch (error) {
-        console.error('[Payment] Cancel error:', error);
+        console.error('[PayPal] Cancel error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
@@ -365,206 +298,83 @@ async function handlePaymentHistory(req, res) {
             amountFormatted: `£${(payment.amount / 100).toFixed(2)}`,
         }));
 
-        return res.status(200).json({
-            payments: formattedPayments,
-        });
+        return res.status(200).json({ payments: formattedPayments });
 
     } catch (error) {
-        console.error('[Payment] Payment history error:', error);
+        console.error('[PayPal] Payment history error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
 
-// ─── Pending Payments (Admin Only) ─────────────────────────────
-async function handlePendingPayments(req, res) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-
-    try {
-        const adminUser = await verifyAuth(req);
-
-        // Check admin status
-        const { data: adminProfile } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', adminUser.id)
-            .single();
-
-        if (!adminProfile?.is_admin) {
-            return res.status(403).json({ error: 'Admin access required.' });
-        }
-
-        const { data: pendingSubs, error } = await supabase
-            .from('subscriptions')
-            .select(`
-                id,
-                user_id,
-                plan_type,
-                status,
-                payment_reference,
-                created_at,
-                profiles!inner(email, full_name)
-            `)
-            .eq('status', 'pending')
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            console.error('[DB] Failed to fetch pending payments:', error);
-            return res.status(500).json({ error: 'Failed to fetch pending payments.' });
-        }
-
-        return res.status(200).json({
-            pendingPayments: pendingSubs || [],
-        });
-
-    } catch (error) {
-        console.error('[Payment] Pending payments error:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
-    }
-}
-
-// ─── Wise Webhook (Auto-Activate on Incoming Payment) ──────────
-async function handleWiseWebhook(req, res) {
+// ─── PayPal Webhook ────────────────────────────────────────────
+async function handlePayPalWebhook(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Signature-SHA256');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, PayPal-Transmission-Id, PayPal-Transmission-Time, PayPal-Cert-Url, PayPal-Auth-Algo, PayPal-Transmission-Sig');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    // Always respond 200 quickly so Wise doesn't retry
+    // Respond immediately to acknowledge receipt
     res.status(200).json({ received: true });
 
     try {
         const event = req.body;
-        console.log('[Wise Webhook] Received event:', event?.event_type);
+        const eventType = event?.event_type;
+        console.log('[PayPal Webhook] Received event:', eventType);
 
-        // Only handle incoming balance credits
-        if (event?.event_type !== 'balances.credit') {
-            console.log('[Wise Webhook] Ignoring non-credit event:', event?.event_type);
-            return;
-        }
+        // Handle subscription cancellation from PayPal side
+        if (eventType === 'BILLING.SUBSCRIPTION.CANCELLED') {
+            const subscriptionId = event?.resource?.id;
+            if (!subscriptionId) return;
 
-        const WISE_API_KEY = process.env.WISE_API_KEY;
-        const WISE_PROFILE_ID = process.env.WISE_PROFILE_ID;
-        const WISE_BASE_URL = process.env.WISE_ENV === 'sandbox'
-            ? 'https://api.sandbox.transferwise.tech'
-            : 'https://api.wise.com';
-
-        if (!WISE_API_KEY || !WISE_PROFILE_ID) {
-            console.error('[Wise Webhook] Missing WISE_API_KEY or WISE_PROFILE_ID env vars');
-            return;
-        }
-
-        // Fetch recent credit transactions from Wise to find the payment reference
-        const now = new Date();
-        const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
-        const intervalStart = fiveMinutesAgo.toISOString().replace(/\.\d{3}Z$/, '.000Z');
-        const intervalEnd = now.toISOString().replace(/\.\d{3}Z$/, '.000Z');
-
-        const statementsRes = await fetch(
-            `${WISE_BASE_URL}/v1/profiles/${WISE_PROFILE_ID}/balance-statements/statement.json?currency=GBP&intervalStart=${intervalStart}&intervalEnd=${intervalEnd}&type=COMPACT`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${WISE_API_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-            }
-        );
-
-        if (!statementsRes.ok) {
-            const errText = await statementsRes.text();
-            console.error('[Wise Webhook] Failed to fetch statement:', errText);
-            return;
-        }
-
-        const statement = await statementsRes.json();
-        const transactions = statement?.transactions || [];
-
-        // Look for a CREDIT transaction matching a pending subscription reference
-        for (const tx of transactions) {
-            if (tx.type !== 'CREDIT') continue;
-
-            const reference = tx.details?.paymentReference || tx.details?.description || '';
-            const amountValue = tx.amount?.value;
-            const currency = (tx.amount?.currency || '').toUpperCase();
-
-            if (!reference || !reference.startsWith('REV-')) {
-                console.log('[Wise Webhook] Skipping tx with non-REV reference:', reference);
-                continue;
-            }
-
-            console.log(`[Wise Webhook] Found REV reference: ${reference}, amount: ${amountValue} ${currency}`);
-
-            // Find matching pending subscription
-            const { data: subscription, error: fetchError } = await supabase
+            const { data: sub } = await supabase
                 .from('subscriptions')
-                .select('*')
-                .eq('payment_reference', reference)
-                .eq('status', 'pending')
+                .select('id, user_id')
+                .eq('paypal_subscription_id', subscriptionId)
                 .maybeSingle();
 
-            if (fetchError || !subscription) {
-                console.log('[Wise Webhook] No pending subscription found for reference:', reference);
-                continue;
-            }
-
-            // Validate amount matches the plan
-            const expectedAmounts = { monthly: 4.99, yearly: 39.99 };
-            const expected = expectedAmounts[subscription.plan_type];
-
-            if (Math.abs(amountValue - expected) > 0.01) {
-                console.warn(`[Wise Webhook] Amount mismatch for ${reference}: got ${amountValue}, expected ${expected}`);
-                continue;
-            }
-
-            // ✅ Activate the subscription
-            const periodStart = new Date();
-            const periodEnd = new Date(periodStart);
-            if (subscription.plan_type === 'yearly') {
-                periodEnd.setFullYear(periodEnd.getFullYear() + 1);
-            } else {
-                periodEnd.setMonth(periodEnd.getMonth() + 1);
-            }
-
-            await supabase
-                .from('subscriptions')
-                .update({
-                    status: 'active',
-                    current_period_start: periodStart.toISOString(),
-                    current_period_end: periodEnd.toISOString(),
+            if (sub) {
+                await supabase.from('subscriptions').update({
+                    status: 'canceled',
+                    canceled_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
-                })
-                .eq('id', subscription.id);
+                }).eq('id', sub.id);
 
-            await supabase
-                .from('profiles')
-                .update({ is_premium: true })
-                .eq('id', subscription.user_id);
+                await supabase.from('profiles')
+                    .update({ is_premium: false })
+                    .eq('id', sub.user_id);
 
-            // Record the payment
-            const amountInPence = Math.round(amountValue * 100);
-            await supabase
-                .from('payments')
-                .insert({
-                    user_id: subscription.user_id,
-                    subscription_id: subscription.id,
-                    amount: amountInPence,
-                    currency: currency.toLowerCase(),
-                    status: 'succeeded',
-                    wise_transfer_id: tx.referenceNumber || null,
-                    plan_type: subscription.plan_type,
-                });
+                console.log(`[PayPal Webhook] Cancelled subscription ${sub.id} for user ${sub.user_id}`);
+            }
+        }
 
-            console.log(`[Wise Webhook] ✅ Auto-activated subscription ${subscription.id} for user ${subscription.user_id} (${subscription.plan_type})`);
+        // Handle subscription expiry / failed payment
+        if (eventType === 'BILLING.SUBSCRIPTION.SUSPENDED' || eventType === 'BILLING.SUBSCRIPTION.EXPIRED') {
+            const subscriptionId = event?.resource?.id;
+            if (!subscriptionId) return;
+
+            const { data: sub } = await supabase
+                .from('subscriptions')
+                .select('id, user_id')
+                .eq('paypal_subscription_id', subscriptionId)
+                .maybeSingle();
+
+            if (sub) {
+                await supabase.from('subscriptions').update({
+                    status: 'canceled',
+                    updated_at: new Date().toISOString(),
+                }).eq('id', sub.id);
+
+                await supabase.from('profiles')
+                    .update({ is_premium: false })
+                    .eq('id', sub.user_id);
+
+                console.log(`[PayPal Webhook] Deactivated subscription ${sub.id} (${eventType})`);
+            }
         }
 
     } catch (error) {
-        console.error('[Wise Webhook] Processing error:', error);
+        console.error('[PayPal Webhook] Processing error:', error);
     }
 }
