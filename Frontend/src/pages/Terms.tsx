@@ -62,7 +62,7 @@ export default function Terms() {
                 3.1 Certain content and features on REVISELY are available only to paying subscribers ("Subscription"). Details of Subscription plans, pricing and term lengths are described on the Website from time to time.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
-                3.2 By starting a Subscription, you authorise us and our third‑party payment processors (including PayPal, Wise and Stripe) to charge you the Subscription fee and any applicable taxes at the rate notified to you at the time of purchase.
+                3.2 By starting a Subscription, you authorise us and our third‑party payment processors (including Wise and Stripe) to charge you the Subscription fee and any applicable taxes at the rate notified to you at the time of purchase.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
                 3.3 Unless otherwise stated, Subscriptions are provided on a recurring basis (e.g. monthly, termly, annually) and will automatically renew at the end of each billing period, using the payment method you provided, until you cancel.

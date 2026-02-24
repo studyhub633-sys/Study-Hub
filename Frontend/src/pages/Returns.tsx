@@ -102,7 +102,7 @@ export default function Returns() {
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Credit/Debit Cards: 5-10 business days</li>
-                  <li>PayPal: 3-5 business days</li>
+                  <li>Wise Bank Transfer: 3-5 business days</li>
                 </ul>
                 <p className="mt-4">
                   You will receive an email confirmation once the refund has been processed.

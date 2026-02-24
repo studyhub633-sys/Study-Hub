@@ -1,6 +1,6 @@
 /**
  * Payment Client for Revisely.ai
- * Handles PayPal payment integration
+ * Handles Wise bank transfer payment integration
  */
 
 // Use Vercel URL in production, localhost in development
@@ -41,12 +41,13 @@ async function getAuthToken(supabaseClient?: any): Promise<string | null> {
 }
 
 /**
- * Create PayPal subscription
+ * Create a pending subscription via Wise bank transfer
  */
 export async function createCheckoutSession(
   planType: "monthly" | "yearly",
-  supabaseClient?: any
-): Promise<{ subscriptionId: string; approvalUrl: string } | { error: string }> {
+  supabaseClient?: any,
+  paymentReference?: string
+): Promise<{ subscriptionId: string; status: string } | { error: string }> {
   try {
     const token = await getAuthToken(supabaseClient);
 
@@ -54,8 +55,7 @@ export async function createCheckoutSession(
       return { error: "Not authenticated. Please sign in." };
     }
 
-    console.log(`[Payment Client] Creating subscription for ${planType} plan`);
-    console.log(`[Payment Client] API URL: ${API_BASE_URL}`);
+    console.log(`[Payment Client] Creating pending subscription for ${planType} plan`);
 
     const response = await fetch(`${API_BASE_URL}/api/payments/create-subscription`, {
       method: "POST",
@@ -63,7 +63,7 @@ export async function createCheckoutSession(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ planType }),
+      body: JSON.stringify({ planType, paymentReference }),
     });
 
     if (!response.ok) {
@@ -84,7 +84,6 @@ export async function createCheckoutSession(
     console.error("[Payment Client] Network Error:", error);
     const errorMessage = error instanceof Error ? error.message : "Network error occurred";
 
-    // Provide more helpful error messages
     if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError")) {
       return {
         error: `Cannot connect to server. Make sure the backend is running at ${API_BASE_URL}`,
@@ -189,4 +188,3 @@ export async function getPaymentHistory(supabaseClient?: any) {
     };
   }
 }
-

@@ -1,6 +1,6 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { PayPalCheckout } from "@/components/premium/PayPalCheckout";
 import { TermsDialog } from "@/components/premium/TermsDialog";
+import { WiseCheckout } from "@/components/premium/WiseCheckout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -171,62 +171,9 @@ export default function Premium() {
     },
   ];
 
-  // Handle PayPal redirect back
-  useEffect(() => {
-    const success = searchParams.get("success");
-    const canceled = searchParams.get("canceled");
-    const subscriptionId = searchParams.get("subscription_id");
 
-    if (success && subscriptionId) {
-      // Activate the subscription after PayPal redirect
-      activateSubscription(subscriptionId);
-    } else if (canceled) {
-      toast.info("Payment canceled. You can try again anytime.");
-      navigate("/premium", { replace: true });
-    }
-  }, [searchParams, navigate]);
 
-  const activateSubscription = async (subscriptionId: string) => {
-    if (!supabase) return;
 
-    setLoading(true);
-    try {
-      const token = (await supabase.auth.getSession()).data.session?.access_token;
-      if (!token) {
-        toast.error("Please sign in to activate your subscription.");
-        return;
-      }
-
-      const API_BASE_URL = import.meta.env.VITE_API_URL ||
-        (import.meta.env.PROD ? window.location.origin : "http://localhost:3004");
-
-      const response = await fetch(`${API_BASE_URL}/api/payments/activate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ subscriptionId }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        toast.success("Payment successful! Your premium subscription is now active. 🎉");
-        setIsPremium(true);
-        await checkPremiumStatus();
-      } else {
-        toast.error(data.error || "Failed to activate subscription.");
-      }
-    } catch (error: any) {
-      console.error("Activation error:", error);
-      toast.error("Failed to activate subscription. Please contact support.");
-    } finally {
-      setLoading(false);
-      // Clean URL parameters
-      navigate("/premium", { replace: true });
-    }
-  };
 
   // Check premium status on mount
   useEffect(() => {
@@ -872,21 +819,21 @@ export default function Premium() {
         onAccept={handleConfirmTerms}
       />
 
-      {/* Payment Dialog with PayPal buttons + Card Fields */}
+      {/* Payment Dialog with Wise Bank Transfer */}
       <Dialog open={showPayment} onOpenChange={setShowPayment}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Crown className="h-5 w-5 text-premium" />
-              Complete Payment
+              Complete Payment via Wise
             </DialogTitle>
             <DialogDescription>
-              Choose your preferred payment method for the{" "}
-              <span className="font-semibold capitalize">{selectedPlan}</span> plan.
+              Transfer the amount below to complete your{" "}
+              <span className="font-semibold capitalize">{selectedPlan}</span> plan purchase.
             </DialogDescription>
           </DialogHeader>
           {selectedPlan && (
-            <PayPalCheckout
+            <WiseCheckout
               planType={selectedPlan}
               onSuccess={handlePaymentSuccess}
               onError={(err) => console.error("Payment error:", err)}
