@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, HelpCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, HelpCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
@@ -60,14 +60,8 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const result = await signUp(email, password);
-      if (result === "auto-confirmed") {
-        // User was auto-confirmed, redirect to home
-        navigate("/");
-      } else {
-        // Email verification required
-        setSuccess(true);
-      }
+      await signUp(email, password);
+      navigate("/");
     } catch (err: any) {
       setError(err.message || "Failed to create account. Please try again.");
     } finally {
@@ -98,27 +92,7 @@ export default function Signup() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {success ? (
-            <div className="space-y-4 text-center py-4">
-              <div className="flex justify-center">
-                <div className="rounded-full bg-primary/10 p-3">
-                  <CheckCircle2 className="h-8 w-8 text-primary" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Sign Up Complete!</h3>
-                <p className="text-sm text-muted-foreground">
-                  Check your email for a verification link from Revisely.ai. Please verify your email address to continue.
-                </p>
-              </div>
-              <Button
-                onClick={() => navigate("/login")}
-                className="w-full"
-              >
-                {t('common.login')}
-              </Button>
-            </div>
-          ) : (
+          {(
             <>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (

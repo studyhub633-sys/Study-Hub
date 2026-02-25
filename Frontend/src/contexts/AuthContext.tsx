@@ -93,7 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/login`,
+        data: {
+          email_confirmed: true,
+        },
       },
     });
 
@@ -104,9 +106,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error.message?.toLowerCase().includes("over_email_send_rate_limit")) {
         throw new Error("Too many signup attempts. Please wait a few minutes and try again.");
       }
-      if (error.message?.toLowerCase().includes("sending confirmation")) {
-        throw new Error("Unable to send confirmation email right now. Please try again in a few minutes, or contact us at hello@revisely.ai for help.");
-      }
       if (error.message?.toLowerCase().includes("already registered") ||
         error.message?.toLowerCase().includes("already been registered")) {
         throw new Error("This email is already registered. Please sign in instead.");
@@ -115,14 +114,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     if (!data.user) throw new Error("Failed to create user");
 
-    // Check if user was auto-confirmed (session returned immediately)
+    // If session was returned, user is already signed in
     if (data.session) {
       return "auto-confirmed";
     }
 
-    // Wait a moment for the trigger to create the profile
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return "email-sent";
+    // If no session, try signing in immediately
+    try {
+      await supabase.auth.signInWithPassword({ email, password });
+    } catch {
+      // If sign-in fails, they'll need to log in manually
+    }
+
+    return "auto-confirmed";
   };
 
   const signIn = async (email: string, password: string) => {
