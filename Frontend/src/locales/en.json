@@ -76,8 +76,8 @@
             "getStarted": "Ready to start your study session?",
             "makingProgress": "You're making great progress. Keep up the momentum!",
             "chatWithAI": "Chat with AI Tutor",
-            "lifetimeAccess": "Lifetime Access",
-            "unlockLifetime": "Unlock Lifetime Access",
+            "lifetimeAccess": "Premium Access",
+            "unlockLifetime": "Unlock Premium Access",
             "totalItems": "Total Items",
             "notes": "Notes",
             "flashcards": "Flashcards",
@@ -321,7 +321,7 @@
             "yearlyPeriod": "/year",
             "yearlyDescription": "Our best value - save over £19 annually!",
             "saveAmount": "Save £19.89",
-            "getLifetimeAccess": "Get Lifetime Access (Beta)",
+            "getLifetimeAccess": "Get Premium Access",
             "processing": "Processing...",
             "alreadyPremium": "Already Premium",
             "haveDiscount": "Have a discount code?",
@@ -430,8 +430,8 @@
         "page": {
             "title": "Supercharge Your Learning",
             "premiumMember": "You're a Premium Member",
-            "description": "During beta, premium features are reserved for authorized tester accounts.",
-            "descriptionPremium": "You have lifetime access to all premium features during our beta testing phase.",
+            "description": "Subscribe monthly or yearly to unlock all premium features.",
+            "descriptionPremium": "You have full access to all premium features with your subscription.",
             "upgradeNow": "UPGRADE NOW",
             "status": {
                 "active": "Active Premium Subscription",
@@ -442,7 +442,7 @@
             "discount": {
                 "title": "Have a discount code?",
                 "description": "Enter your code below to unlock premium access or get a special discount.",
-                "placeholder": "Enter code (e.g., FREE_BETA)"
+                "placeholder": "Enter your discount code"
             }
         }
     },
