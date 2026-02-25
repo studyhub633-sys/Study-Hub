@@ -1,6 +1,13 @@
-import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -10,40 +17,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Shield,
-  Users,
-  DollarSign,
-  TrendingUp,
-  Search,
-  Crown,
-  UserX,
-  UserCheck,
-  Loader2,
-  Eye,
-  X,
-} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { isAdmin } from "@/lib/premium";
-import { toast } from "sonner";
+import {
+  Crown,
+  DollarSign,
+  Eye,
+  Loader2,
+  Search,
+  Shield,
+  TrendingUp,
+  UserCheck,
+  Users,
+  UserX
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const API_BASE_URL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? window.location.origin
+    : "http://localhost:3001");
 
 interface User {
   id: string;

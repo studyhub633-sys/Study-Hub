@@ -37,7 +37,10 @@ interface ApiResponse<T> {
   message?: string;
 }
 
-const API_BASE_URL = "";
+const API_BASE_URL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? window.location.origin
+    : "");
 
 // Log API base URL for debugging (only in development)
 if (import.meta.env.DEV) {
