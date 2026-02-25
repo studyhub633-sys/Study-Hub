@@ -815,6 +815,7 @@ export default function Premium() {
               planType={selectedPlan}
               onSuccess={handlePaymentSuccess}
               onError={(err) => console.error("Payment error:", err)}
+              discountCode={appliedDiscount}
             />
           )}
         </DialogContent>

@@ -22,6 +22,18 @@ const DISCOUNT_CODES: DiscountCode[] = [
         value: 25,
         description: "25% Welcome Discount",
     },
+    {
+        code: "PUBE20",
+        type: "percent",
+        value: 20,
+        description: "20% Off Subscription",
+    },
+    {
+        code: "FRANQ20",
+        type: "percent",
+        value: 20,
+        description: "20% Off Subscription",
+    },
 ];
 
 /**

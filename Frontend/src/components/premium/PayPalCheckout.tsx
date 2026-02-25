@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { calculateDiscountedPrice, type DiscountCode } from "@/lib/discount";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -8,11 +9,12 @@ interface PayPalCheckoutProps {
     planType: "monthly" | "yearly";
     onSuccess: () => void;
     onError?: (error: string) => void;
+    discountCode?: DiscountCode | null;
 }
 
-const PLAN_PRICES: Record<string, string> = {
-    monthly: "£4.99",
-    yearly: "£25.00",
+const PLAN_PRICES: Record<string, number> = {
+    monthly: 4.99,
+    yearly: 25.00,
 };
 
 const PLAN_IDS: Record<string, string> = {
@@ -20,9 +22,14 @@ const PLAN_IDS: Record<string, string> = {
     yearly: import.meta.env.VITE_PAYPAL_PLAN_ID_YEARLY || "",
 };
 
-export function PayPalCheckout({ planType, onSuccess, onError }: PayPalCheckoutProps) {
+export function PayPalCheckout({ planType, onSuccess, onError, discountCode }: PayPalCheckoutProps) {
     const { user, supabase } = useAuth();
     const [processing, setProcessing] = useState(false);
+
+    const originalPrice = PLAN_PRICES[planType];
+    const finalPrice = discountCode
+        ? calculateDiscountedPrice(originalPrice, discountCode)
+        : originalPrice;
 
     const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "";
 
@@ -51,6 +58,7 @@ export function PayPalCheckout({ planType, onSuccess, onError }: PayPalCheckoutP
                 body: JSON.stringify({
                     planType,
                     paypalSubscriptionId: subscriptionID,
+                    discountCode: discountCode?.code || null,
                 }),
             });
 
@@ -87,7 +95,15 @@ export function PayPalCheckout({ planType, onSuccess, onError }: PayPalCheckoutP
             {/* Price Summary */}
             <div className="text-center p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20">
                 <p className="text-sm text-muted-foreground mb-1">Total due today</p>
-                <p className="text-3xl font-bold text-foreground">{PLAN_PRICES[planType]}</p>
+                {discountCode ? (
+                    <div>
+                        <p className="text-lg text-muted-foreground line-through">£{originalPrice.toFixed(2)}</p>
+                        <p className="text-3xl font-bold text-foreground">£{finalPrice.toFixed(2)}</p>
+                        <p className="text-xs text-green-500 font-medium mt-1">{discountCode.description} applied!</p>
+                    </div>
+                ) : (
+                    <p className="text-3xl font-bold text-foreground">£{originalPrice.toFixed(2)}</p>
+                )}
                 <p className="text-xs text-muted-foreground mt-1 capitalize">{planType} plan</p>
             </div>
 
