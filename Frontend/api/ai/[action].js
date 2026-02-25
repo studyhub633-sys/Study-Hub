@@ -93,7 +93,7 @@ async function handleChat(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { message, context } = req.body;
+        const { message, context, history, language } = req.body;
 
         if (!message) {
             return res.status(400).json({ error: "Message is required" });
@@ -110,15 +110,31 @@ async function handleChat(req, res) {
             throw error;
         }
 
-        let systemPrompt = "You are a helpful, encouraging, and knowledgeable AI tutor. Your goal is to help students learn and understand concepts clearly. Keep answers concise but informative.";
+        let systemPrompt = "You are a helpful, encouraging, and knowledgeable AI tutor for Revisely.ai. Your goal is to help students learn and understand concepts clearly. Keep answers concise but informative. You remember the full conversation and refer back to earlier messages when relevant.";
         if (context) {
             systemPrompt += `\n\nContext/Notes provided by student:\n${context}`;
         }
+        if (language && language !== 'en') {
+            systemPrompt += `\n\nPlease respond in the language code: ${language}`;
+        }
 
-        const reply = await callGroqAPI([
-            { role: "system", content: systemPrompt },
-            { role: "user", content: message }
-        ], 0.7, 500);
+        // Build messages array with conversation history for context retention
+        const messages = [{ role: "system", content: systemPrompt }];
+        if (history && Array.isArray(history)) {
+            // Include up to the last 20 conversation turns for good context
+            const recentHistory = history.slice(-20);
+            for (const msg of recentHistory) {
+                if (msg.role && msg.content) {
+                    messages.push({
+                        role: msg.role === "assistant" ? "assistant" : "user",
+                        content: msg.content
+                    });
+                }
+            }
+        }
+        messages.push({ role: "user", content: message });
+
+        const reply = await callGroqAPI(messages, 0.7, 2000);
 
         if (usageData?.usageId) {
             await updateAiResponse(usageData.usageId, reply);

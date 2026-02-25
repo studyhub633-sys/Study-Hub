@@ -5,7 +5,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<string>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -88,21 +88,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string): Promise<string> => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${window.location.origin}/login`,
       },
     });
 
-    if (error) throw error;
+    if (error) {
+      // Provide user-friendly messages for common Supabase errors
+      if (error.message?.toLowerCase().includes("rate limit") ||
+        error.message?.toLowerCase().includes("email rate limit") ||
+        error.message?.toLowerCase().includes("over_email_send_rate_limit")) {
+        throw new Error("Too many signup attempts. Please wait a few minutes and try again.");
+      }
+      if (error.message?.toLowerCase().includes("sending confirmation")) {
+        throw new Error("Unable to send confirmation email right now. Please try again in a few minutes, or contact us at hello@revisely.ai for help.");
+      }
+      if (error.message?.toLowerCase().includes("already registered") ||
+        error.message?.toLowerCase().includes("already been registered")) {
+        throw new Error("This email is already registered. Please sign in instead.");
+      }
+      throw error;
+    }
     if (!data.user) throw new Error("Failed to create user");
 
+    // Check if user was auto-confirmed (session returned immediately)
+    if (data.session) {
+      return "auto-confirmed";
+    }
 
     // Wait a moment for the trigger to create the profile
     await new Promise(resolve => setTimeout(resolve, 500));
+    return "email-sent";
   };
 
   const signIn = async (email: string, password: string) => {

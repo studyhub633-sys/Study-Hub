@@ -52,6 +52,7 @@ const Returns = lazy(() => import("./pages/Returns"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Signup = lazy(() => import("./pages/Signup"));
 const Terms = lazy(() => import("./pages/Terms"));
+const Contact = lazy(() => import("./pages/Contact"));
 
 const queryClient = new QueryClient();
 
@@ -87,6 +88,7 @@ const App = () => {
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/returns" element={<Returns />} />
                     <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/contact" element={<Contact />} />
                     <Route
                       path="/"
                       element={

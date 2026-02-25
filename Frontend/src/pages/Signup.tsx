@@ -60,8 +60,14 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      await signUp(email, password);
-      setSuccess(true);
+      const result = await signUp(email, password);
+      if (result === "auto-confirmed") {
+        // User was auto-confirmed, redirect to home
+        navigate("/");
+      } else {
+        // Email verification required
+        setSuccess(true);
+      }
     } catch (err: any) {
       setError(err.message || "Failed to create account. Please try again.");
     } finally {
