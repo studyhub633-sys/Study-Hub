@@ -266,34 +266,12 @@ export default function Premium() {
     if (discount) {
       setAppliedDiscount(discount);
       toast.success(`Discount code applied: ${discount.description} `);
-      if (discount.type === "free_lifetime") {
-        toast.info("This code provides lifetime free access!");
-      }
     } else {
       toast.error("Invalid discount code");
     }
   };
 
-  const handleApplyLifetime = async () => {
-    if (!user || !supabase) return;
 
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ is_premium: true })
-        .eq("id", user.id);
-
-      if (error) throw error;
-
-      toast.success("Lifetime premium access granted!");
-      setIsPremium(true);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to grant premium access");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCancel = async () => {
     if (!supabase) return;
@@ -524,7 +502,7 @@ export default function Premium() {
                     : ""
                 )}
                 variant={plan.popular ? "default" : "outline"}
-                onClick={() => handleSubscribe(plan.name.toLowerCase() as "monthly" | "yearly")}
+                onClick={() => handleSubscribe(plan.key as "monthly" | "yearly")}
                 disabled={loading || isPremium}
               >
                 {loading ? (

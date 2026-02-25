@@ -11,16 +11,6 @@ export interface DiscountCode {
 
 const DISCOUNT_CODES: DiscountCode[] = [
     {
-        code: "FREE_BETA",
-        type: "free_lifetime",
-        description: "Beta Tester Lifetime Access",
-    },
-    {
-        code: "LIFETIME",
-        type: "free_lifetime",
-        description: "Special Lifetime Access Code",
-    },
-    {
         code: "STUDY_HARD",
         type: "percent",
         value: 50,
