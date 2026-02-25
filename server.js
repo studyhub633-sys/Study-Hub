@@ -58,12 +58,11 @@ async function loadRoutes() {
         '/api/ai/grade-exam': { dir: apiDir, file: '[action].js' },
 
         // Payment routes → all handled by [action].js catch-all
-        '/api/payments/create-subscription': { dir: paymentsDir, file: '[action].js' },
+        '/api/payments/create-payment': { dir: paymentsDir, file: '[action].js' },
         '/api/payments/activate': { dir: paymentsDir, file: '[action].js' },
         '/api/payments/subscription': { dir: paymentsDir, file: '[action].js' },
         '/api/payments/cancel': { dir: paymentsDir, file: '[action].js' },
         '/api/payments/payment-history': { dir: paymentsDir, file: '[action].js' },
-        '/api/payments/webhook': { dir: paymentsDir, file: '[action].js' },
 
         // Auth routes
         '/api/auth/grant-beta-premium': { dir: authDir, file: 'grant-beta-premium.js' },

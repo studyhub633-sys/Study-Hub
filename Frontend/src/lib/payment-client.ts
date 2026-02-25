@@ -1,6 +1,6 @@
 /**
  * Payment Client for Revisely.ai
- * Handles PayPal subscription payment integration
+ * Handles PayPal one-time payment integration
  */
 
 // Use Vercel URL in production, localhost in development
@@ -41,12 +41,11 @@ async function getAuthToken(supabaseClient?: any): Promise<string | null> {
 }
 
 /**
- * Activate a subscription after PayPal approval
+ * Activate premium after PayPal one-time payment
  */
-export async function createCheckoutSession(
-  planType: "monthly" | "yearly",
+export async function createPayment(
   supabaseClient?: any,
-  paypalSubscriptionId?: string
+  paypalOrderId?: string
 ): Promise<{ subscriptionId: string; status: string } | { error: string }> {
   try {
     const token = await getAuthToken(supabaseClient);
@@ -55,15 +54,15 @@ export async function createCheckoutSession(
       return { error: "Not authenticated. Please sign in." };
     }
 
-    console.log(`[Payment Client] Creating pending subscription for ${planType} plan`);
+    console.log(`[Payment Client] Activating premium via one-time payment`);
 
-    const response = await fetch(`${API_BASE_URL}/api/payments/create-subscription`, {
+    const response = await fetch(`${API_BASE_URL}/api/payments/create-payment`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ planType, paypalSubscriptionId }),
+      body: JSON.stringify({ paypalOrderId }),
     });
 
     if (!response.ok) {
@@ -75,7 +74,7 @@ export async function createCheckoutSession(
         errorData = { error: errorText || `HTTP ${response.status}` };
       }
       console.error("[Payment Client] API Error:", errorData);
-      return { error: errorData.error || `Failed to create subscription (${response.status})` };
+      return { error: errorData.error || `Failed to activate premium (${response.status})` };
     }
 
     const data = await response.json();
@@ -95,7 +94,7 @@ export async function createCheckoutSession(
 }
 
 /**
- * Get user's current subscription
+ * Get user's current subscription / premium status
  */
 export async function getSubscription(supabaseClient?: any) {
   try {
@@ -126,7 +125,7 @@ export async function getSubscription(supabaseClient?: any) {
 }
 
 /**
- * Cancel subscription
+ * Cancel / deactivate premium
  */
 export async function cancelSubscription(supabaseClient?: any) {
   try {
@@ -147,7 +146,7 @@ export async function cancelSubscription(supabaseClient?: any) {
     const data = await response.json();
 
     if (!response.ok) {
-      return { error: data.error || "Failed to cancel subscription" };
+      return { error: data.error || "Failed to cancel premium" };
     }
 
     return data;

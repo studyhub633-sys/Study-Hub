@@ -7,7 +7,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 export interface Subscription {
   id: string;
   user_id: string;
-  plan_type: "monthly" | "yearly";
+  plan_type: "monthly" | "yearly" | "one_time";
   status: "active" | "canceled" | "expired" | "past_due";
   current_period_start: string;
   current_period_end: string;

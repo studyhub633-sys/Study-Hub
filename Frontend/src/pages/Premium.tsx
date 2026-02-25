@@ -10,9 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { calculateDiscountedPrice, validateDiscountCode } from "@/lib/discount";
 import {
   cancelSubscription as cancelPaymentSubscription,
   getSubscription as getPaymentSubscription,
@@ -33,10 +31,7 @@ import {
   Rocket,
   Shield,
   Sparkles,
-  Star,
-  Ticket,
   Users,
-  X,
   Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -55,11 +50,7 @@ export default function Premium() {
   const [isPremium, setIsPremium] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
   const [checkingStatus, setCheckingStatus] = useState(true);
-  const [discountCode, setDiscountCode] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
-  const [applyingCode, setApplyingCode] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const [hasPredictedPapers, setHasPredictedPapers] = useState(false);
   const [hasWorkExperience, setHasWorkExperience] = useState(false);
@@ -140,63 +131,6 @@ export default function Premium() {
     },
   ];
 
-  const PLAN_PRICES: Record<string, number> = {
-    monthly: 4.99,
-    yearly: 25.00,
-  };
-
-  const getDisplayPrice = (planKey: string) => {
-    const original = PLAN_PRICES[planKey];
-    if (appliedDiscount) {
-      const discounted = calculateDiscountedPrice(original, appliedDiscount);
-      return {
-        original: `£${original.toFixed(2)}`,
-        discounted: `£${discounted.toFixed(2)}`,
-        hasDiscount: true,
-      };
-    }
-    return {
-      original: `£${original.toFixed(2)}`,
-      discounted: null,
-      hasDiscount: false,
-    };
-  };
-
-  const plans = [
-    {
-      name: t("premium.dashboard.monthly"),
-      price: "£4.99",
-      period: "/month",
-      description: "Perfect for trying out premium features",
-      features: [
-        "All premium features",
-        "Cancel anytime",
-        "Monthly billing",
-      ],
-      popular: false,
-      key: "monthly"
-    },
-    {
-      name: t("premium.dashboard.yearly"),
-      price: "£25.00",
-      period: "/year",
-      description: "Our best value - save over £19 annually!",
-      features: [
-        "All premium features",
-        "4 months free",
-        "Priority new features",
-        "Exclusive content",
-      ],
-      popular: true,
-      savings: "Save £19.89",
-      key: "yearly"
-    },
-  ];
-
-
-
-
-
   // Check premium status on mount
   useEffect(() => {
     if (user) {
@@ -252,7 +186,6 @@ export default function Premium() {
       setHasWorkExperience((workExpCount || 0) > 0);
     } catch (error) {
       console.error("Error checking content availability:", error);
-      // If tables don't exist yet, assume coming soon
       setHasPredictedPapers(false);
       setHasWorkExperience(false);
     } finally {
@@ -260,37 +193,22 @@ export default function Premium() {
     }
   };
 
-  const handleSubscribe = async (planType: "monthly" | "yearly") => {
-    // Prompt for terms before proceeding to payment
-    setSelectedPlan(planType);
+  const handleSubscribe = () => {
     setShowTerms(true);
   };
 
   const handleConfirmTerms = async () => {
     setShowTerms(false);
-    if (!user || !supabase || !selectedPlan) return;
-    // Show the inline payment dialog instead of redirecting
+    if (!user || !supabase) return;
     setShowPayment(true);
   };
 
   const handlePaymentSuccess = async () => {
     setShowPayment(false);
-    toast.success("Payment successful! Your premium subscription is now active. 🎉");
+    toast.success("Payment successful! Your premium access is now active. 🎉");
     setIsPremium(true);
     await checkPremiumStatus();
     navigate("/premium", { replace: true });
-  };
-
-  const handleApplyCode = () => {
-    if (!discountCode) return;
-
-    const discount = validateDiscountCode(discountCode);
-    if (discount) {
-      setAppliedDiscount(discount);
-      toast.success(`Discount code applied: ${discount.description} `);
-    } else {
-      toast.error("Invalid discount code");
-    }
   };
 
 
@@ -357,7 +275,7 @@ export default function Premium() {
             <Button
               size="lg"
               className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white shadow-lg shadow-amber-500/20 animate-pulse-subtle"
-              onClick={() => handleSubscribe("yearly")}
+              onClick={() => handleSubscribe()}
             >
               <Rocket className="mr-2 h-5 w-5" />
               {t("premium.page.upgradeNow")}
@@ -391,7 +309,7 @@ export default function Premium() {
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/30 whitespace-nowrap"
-                    onClick={() => handleSubscribe("yearly")}
+                    onClick={() => handleSubscribe()}
                   >
                     <Crown className="mr-2 h-5 w-5" />
                     Claim Offer
@@ -412,31 +330,12 @@ export default function Premium() {
                   <h3 className="text-lg font-semibold text-foreground">{t("premium.status.active")}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Plan: <span className="font-medium text-foreground capitalize">{subscription.plan_type}</span>
+                  Premium — One-Time Purchase
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {t("premium.status.renews")}: {new Date(subscription.current_period_end).toLocaleDateString()}
+                  Purchased: {new Date(subscription.current_period_start).toLocaleDateString()}
                 </p>
-                {subscription.cancel_at_period_end && (
-                  <p className="text-sm text-destructive mt-2">
-                    ⚠️ Subscription will cancel at the end of the billing period
-                  </p>
-                )}
               </div>
-              {!subscription.cancel_at_period_end && (
-                <Button
-                  variant="outline"
-                  onClick={handleCancel}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <X className="h-4 w-4 mr-2" />
-                  )}
-                  {t("premium.status.cancelSubscription")}
-                </Button>
-              )}
             </div>
           </div>
         )}
@@ -463,82 +362,40 @@ export default function Premium() {
           ))}
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {plans.map((plan, index) => (
+        {/* Pricing Card — One-Time Payment */}
+        {!isPremium && (
+          <div className="max-w-lg mx-auto mb-12">
             <div
-              key={plan.name}
-              className={cn(
-                "relative rounded-2xl p-6 md:p-8 transition-all duration-300 animate-scale-in",
-                plan.popular
-                  ? "border-2 border-premium shadow-lg"
-                  : "glass-card"
-              )}
-              style={{ animationDelay: `${0.3 + 0.1 * index} s`, opacity: 0 }}
+              className="relative rounded-2xl p-6 md:p-8 border-2 border-premium shadow-lg transition-all duration-300 animate-scale-in"
+              style={{ animationDelay: "0.3s", opacity: 0 }}
             >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="premium-badge">
-                    <Star className="h-3 w-3 fill-current" />
-                    Most Popular
-                  </span>
-                </div>
-              )}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="premium-badge">
+                  <Sparkles className="h-3 w-3 fill-current" />
+                  One-Time Payment
+                </span>
+              </div>
 
               <div className="text-center mb-6">
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {plan.key ? t(`premium.dashboard.${plan.key}`) : plan.name}
+                  Premium Access
                 </h3>
-                {(() => {
-                  const pricing = plan.key ? getDisplayPrice(plan.key) : null;
-                  if (pricing?.hasDiscount) {
-                    return (
-                      <div>
-                        <div className="flex items-baseline justify-center gap-1">
-                          <span className="text-xl text-muted-foreground line-through">
-                            {pricing.original}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {plan.key ? t(`premium.dashboard.${plan.key}Period`) : plan.period}
-                          </span>
-                        </div>
-                        <div className="flex items-baseline justify-center gap-1 mt-1">
-                          <span className="text-4xl font-bold text-green-500">
-                            {pricing.discounted}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {plan.key ? t(`premium.dashboard.${plan.key}Period`) : plan.period}
-                          </span>
-                        </div>
-                        <span className="inline-block mt-2 text-sm font-medium text-green-500 px-2 py-0.5 bg-green-500/10 rounded-full">
-                          {appliedDiscount.description}
-                        </span>
-                      </div>
-                    );
-                  }
-                  return (
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-4xl font-bold text-foreground">
-                        {plan.key ? t(`premium.dashboard.${plan.key}Price`) : plan.price}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {plan.key ? t(`premium.dashboard.${plan.key}Period`) : plan.period}
-                      </span>
-                    </div>
-                  );
-                })()}
-                {plan.savings && !appliedDiscount && (
-                  <span className="inline-block mt-2 text-sm font-medium text-secondary px-2 py-0.5 bg-secondary/10 rounded-full">
-                    {t("premium.dashboard.saveAmount")}
-                  </span>
-                )}
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-4xl font-bold text-foreground">£25.00</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">One-time payment — no recurring charges</p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  {plan.key ? t(`premium.dashboard.${plan.key}Description`) : plan.description}
+                  Full access to all premium features for the 2026 GCSE season
                 </p>
               </div>
 
               <ul className="space-y-3 mb-6">
-                {plan.features.map((feature) => (
+                {[
+                  "All premium features",
+                  "No recurring charges",
+                  "Priority new features",
+                  "Exclusive content",
+                ].map((feature) => (
                   <li key={feature} className="flex items-center gap-2 text-sm text-foreground">
                     <CheckCircle className="h-4 w-4 text-secondary flex-shrink-0" />
                     {feature}
@@ -547,14 +404,8 @@ export default function Premium() {
               </ul>
 
               <Button
-                className={cn(
-                  "w-full",
-                  plan.popular
-                    ? "bg-premium hover:bg-premium/90 text-premium-foreground"
-                    : ""
-                )}
-                variant={plan.popular ? "default" : "outline"}
-                onClick={() => handleSubscribe(plan.key as "monthly" | "yearly")}
+                className="w-full bg-premium hover:bg-premium/90 text-premium-foreground"
+                onClick={() => handleSubscribe()}
                 disabled={loading || isPremium}
               >
                 {loading ? (
@@ -569,46 +420,11 @@ export default function Premium() {
                   </>
                 ) : (
                   <>
-                    {plan.popular && <Rocket className="h-4 w-4 mr-2" />}
-                    {t("premium.dashboard.getLifetimeAccess")}
+                    <Rocket className="h-4 w-4 mr-2" />
+                    Buy Premium — £25
                   </>
                 )}
               </Button>
-            </div>
-          ))}
-        </div>
-
-        {/* Discount Code Section */}
-        {!isPremium && (
-          <div className="glass-card p-6 mb-12 animate-slide-up" style={{ animationDelay: "0.4s", opacity: 0 }}>
-            <div className="flex flex-col md:flex-row items-center gap-4">
-              <div className="flex-1 w-full">
-                <div className="flex items-center gap-2 mb-2">
-                  <Ticket className="h-5 w-5 text-premium" />
-                  <h3 className="text-lg font-semibold text-foreground">{t("premium.discount.title")}</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {t("premium.discount.description")}
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Enter discount code"
-                    value={discountCode}
-                    onChange={(e) => setDiscountCode(e.target.value)}
-                    className="max-w-xs"
-                  />
-                  <Button variant="secondary" onClick={handleApplyCode}>
-                    {t("premium.dashboard.apply")}
-                  </Button>
-                </div>
-              </div>
-              {appliedDiscount && (
-                <div className="p-4 rounded-xl bg-premium/10 border border-premium/20 w-full md:w-auto">
-                  <div className="text-sm font-semibold text-premium mb-1">Applied:</div>
-                  <div className="text-lg font-bold text-foreground">{appliedDiscount.code}</div>
-                  <div className="text-xs text-muted-foreground">{appliedDiscount.description}</div>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -833,7 +649,7 @@ export default function Premium() {
           ) : (
             <Button
               className="bg-premium hover:bg-premium/90 text-premium-foreground"
-              onClick={() => handleSubscribe("yearly")}
+              onClick={() => handleSubscribe()}
               disabled={loading}
             >
               <Crown className="h-4 w-4 mr-2" />
@@ -858,18 +674,13 @@ export default function Premium() {
               Complete Payment via PayPal
             </DialogTitle>
             <DialogDescription>
-              Subscribe to the{" "}
-              <span className="font-semibold capitalize">{selectedPlan}</span> plan securely with PayPal.
+              Pay £25.00 one-time to unlock all premium features.
             </DialogDescription>
           </DialogHeader>
-          {selectedPlan && (
-            <PayPalCheckout
-              planType={selectedPlan}
-              onSuccess={handlePaymentSuccess}
-              onError={(err) => console.error("Payment error:", err)}
-              discountCode={appliedDiscount}
-            />
-          )}
+          <PayPalCheckout
+            onSuccess={handlePaymentSuccess}
+            onError={(err) => console.error("Payment error:", err)}
+          />
         </DialogContent>
       </Dialog>
     </AppLayout>

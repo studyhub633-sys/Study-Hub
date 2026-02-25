@@ -6,16 +6,14 @@ export default async function handler(req, res) {
     const action = url.pathname.split('/').pop();
 
     switch (action) {
-        case 'create-subscription':
-            return handleCreateSubscription(req, res);
+        case 'create-payment':
+            return handleCreatePayment(req, res);
         case 'subscription':
             return handleGetSubscription(req, res);
         case 'cancel':
             return handleCancel(req, res);
         case 'payment-history':
             return handlePaymentHistory(req, res);
-        case 'paypal-webhook':
-            return handlePayPalWebhook(req, res);
         default:
             return res.status(404).json({ error: 'Payment action not found' });
     }
@@ -42,8 +40,8 @@ async function getPayPalAccessToken() {
     return { token: data.access_token, base };
 }
 
-// ─── Create Subscription (called after PayPal approval) ─────────
-async function handleCreateSubscription(req, res) {
+// ─── Create Payment (one-time, called after PayPal order capture) ─────────
+async function handleCreatePayment(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
@@ -54,35 +52,31 @@ async function handleCreateSubscription(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { planType, paypalSubscriptionId } = req.body;
+        const { paypalOrderId } = req.body;
 
-        if (!planType || !['monthly', 'yearly'].includes(planType)) {
-            return res.status(400).json({ error: 'Invalid plan type. Must be "monthly" or "yearly".' });
+        if (!paypalOrderId) {
+            return res.status(400).json({ error: 'PayPal order ID is required.' });
         }
 
-        if (!paypalSubscriptionId) {
-            return res.status(400).json({ error: 'PayPal subscription ID is required.' });
-        }
-
-        // Verify the subscription with PayPal API
+        // Verify the order with PayPal API
         const { token, base } = await getPayPalAccessToken();
-        const subRes = await fetch(`${base}/v1/billing/subscriptions/${paypalSubscriptionId}`, {
+        const orderRes = await fetch(`${base}/v2/checkout/orders/${paypalOrderId}`, {
             headers: { 'Authorization': `Bearer ${token}` },
         });
 
-        if (!subRes.ok) {
-            const errText = await subRes.text();
-            console.error('[PayPal] Failed to verify subscription:', errText);
-            return res.status(400).json({ error: 'Could not verify PayPal subscription.' });
+        if (!orderRes.ok) {
+            const errText = await orderRes.text();
+            console.error('[PayPal] Failed to verify order:', errText);
+            return res.status(400).json({ error: 'Could not verify PayPal order.' });
         }
 
-        const paypalSub = await subRes.json();
+        const paypalOrder = await orderRes.json();
 
-        if (paypalSub.status !== 'ACTIVE') {
-            return res.status(400).json({ error: `PayPal subscription is not active (status: ${paypalSub.status}).` });
+        if (paypalOrder.status !== 'COMPLETED') {
+            return res.status(400).json({ error: `PayPal order is not completed (status: ${paypalOrder.status}).` });
         }
 
-        // Check for existing active subscription
+        // Check for existing active subscription / purchase
         const { data: existingSub } = await supabase
             .from('subscriptions')
             .select('id, status')
@@ -91,34 +85,28 @@ async function handleCreateSubscription(req, res) {
             .maybeSingle();
 
         if (existingSub) {
-            return res.status(400).json({ error: 'You already have an active subscription.' });
+            return res.status(400).json({ error: 'You already have active premium access.' });
         }
 
         const now = new Date();
-        const periodEnd = new Date(now);
-        if (planType === 'yearly') {
-            periodEnd.setFullYear(periodEnd.getFullYear() + 1);
-        } else {
-            periodEnd.setMonth(periodEnd.getMonth() + 1);
-        }
 
-        // Insert active subscription
+        // Insert active one-time purchase record
         const { data: newSub, error: dbError } = await supabase
             .from('subscriptions')
             .insert({
                 user_id: user.id,
-                plan_type: planType,
+                plan_type: 'one_time',
                 status: 'active',
-                paypal_subscription_id: paypalSubscriptionId,
+                paypal_subscription_id: paypalOrderId, // reuse column for order ID
                 current_period_start: now.toISOString(),
-                current_period_end: periodEnd.toISOString(),
+                current_period_end: null, // one-time = no expiry
             })
             .select('id')
             .single();
 
         if (dbError) {
-            console.error('[DB] Failed to insert subscription:', dbError);
-            return res.status(500).json({ error: 'Failed to create subscription record.' });
+            console.error('[DB] Failed to insert payment record:', dbError);
+            return res.status(500).json({ error: 'Failed to create payment record.' });
         }
 
         // Activate premium
@@ -128,27 +116,26 @@ async function handleCreateSubscription(req, res) {
             .eq('id', user.id);
 
         // Record payment
-        const planAmounts = { monthly: 499, yearly: 2500 };
         await supabase.from('payments').insert({
             user_id: user.id,
             subscription_id: newSub.id,
-            amount: planAmounts[planType] || 0,
+            amount: 2500, // £25.00 in pence
             currency: 'gbp',
             status: 'succeeded',
-            paypal_subscription_id: paypalSubscriptionId,
-            plan_type: planType,
+            paypal_subscription_id: paypalOrderId,
+            plan_type: 'one_time',
         });
 
-        console.log(`[PayPal] Activated subscription ${newSub.id} for user ${user.id} (${planType})`);
+        console.log(`[PayPal] Activated one-time premium for user ${user.id} (order: ${paypalOrderId})`);
 
         return res.status(200).json({
             subscriptionId: newSub.id,
             status: 'active',
-            message: 'Subscription activated successfully.',
+            message: 'Premium activated successfully.',
         });
 
     } catch (error) {
-        console.error('[PayPal] Create subscription error:', error);
+        console.error('[PayPal] Create payment error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
@@ -191,7 +178,7 @@ async function handleGetSubscription(req, res) {
     }
 }
 
-// ─── Cancel Subscription ───────────────────────────────────────
+// ─── Cancel / Deactivate Premium ───────────────────────────────
 async function handleCancel(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -219,24 +206,7 @@ async function handleCancel(req, res) {
         }
 
         if (!subscription) {
-            return res.status(404).json({ error: 'No active subscription found.' });
-        }
-
-        // Cancel on PayPal side if we have a PayPal subscription ID
-        if (subscription.paypal_subscription_id) {
-            try {
-                const { token, base } = await getPayPalAccessToken();
-                await fetch(`${base}/v1/billing/subscriptions/${subscription.paypal_subscription_id}/cancel`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ reason: 'User requested cancellation' }),
-                });
-            } catch (ppErr) {
-                console.warn('[PayPal] Could not cancel on PayPal side:', ppErr);
-            }
+            return res.status(404).json({ error: 'No active premium access found.' });
         }
 
         const { error: updateError } = await supabase
@@ -251,15 +221,20 @@ async function handleCancel(req, res) {
 
         if (updateError) {
             console.error('[DB] Failed to update subscription:', updateError);
-            return res.status(500).json({ error: 'Failed to cancel subscription.' });
+            return res.status(500).json({ error: 'Failed to cancel premium.' });
         }
 
-        console.log(`[PayPal] Cancelled subscription ${subscription.id} for user ${user.id}`);
+        // Deactivate premium
+        await supabase
+            .from('profiles')
+            .update({ is_premium: false })
+            .eq('id', user.id);
+
+        console.log(`[PayPal] Deactivated premium for user ${user.id}`);
 
         return res.status(200).json({
             success: true,
-            message: 'Subscription cancelled. You will retain premium access until the end of your billing period.',
-            periodEnd: subscription.current_period_end,
+            message: 'Premium access has been deactivated.',
         });
 
     } catch (error) {
@@ -303,78 +278,5 @@ async function handlePaymentHistory(req, res) {
     } catch (error) {
         console.error('[PayPal] Payment history error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
-    }
-}
-
-// ─── PayPal Webhook ────────────────────────────────────────────
-async function handlePayPalWebhook(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, PayPal-Transmission-Id, PayPal-Transmission-Time, PayPal-Cert-Url, PayPal-Auth-Algo, PayPal-Transmission-Sig');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-    // Respond immediately to acknowledge receipt
-    res.status(200).json({ received: true });
-
-    try {
-        const event = req.body;
-        const eventType = event?.event_type;
-        console.log('[PayPal Webhook] Received event:', eventType);
-
-        // Handle subscription cancellation from PayPal side
-        if (eventType === 'BILLING.SUBSCRIPTION.CANCELLED') {
-            const subscriptionId = event?.resource?.id;
-            if (!subscriptionId) return;
-
-            const { data: sub } = await supabase
-                .from('subscriptions')
-                .select('id, user_id')
-                .eq('paypal_subscription_id', subscriptionId)
-                .maybeSingle();
-
-            if (sub) {
-                await supabase.from('subscriptions').update({
-                    status: 'canceled',
-                    canceled_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                }).eq('id', sub.id);
-
-                await supabase.from('profiles')
-                    .update({ is_premium: false })
-                    .eq('id', sub.user_id);
-
-                console.log(`[PayPal Webhook] Cancelled subscription ${sub.id} for user ${sub.user_id}`);
-            }
-        }
-
-        // Handle subscription expiry / failed payment
-        if (eventType === 'BILLING.SUBSCRIPTION.SUSPENDED' || eventType === 'BILLING.SUBSCRIPTION.EXPIRED') {
-            const subscriptionId = event?.resource?.id;
-            if (!subscriptionId) return;
-
-            const { data: sub } = await supabase
-                .from('subscriptions')
-                .select('id, user_id')
-                .eq('paypal_subscription_id', subscriptionId)
-                .maybeSingle();
-
-            if (sub) {
-                await supabase.from('subscriptions').update({
-                    status: 'canceled',
-                    updated_at: new Date().toISOString(),
-                }).eq('id', sub.id);
-
-                await supabase.from('profiles')
-                    .update({ is_premium: false })
-                    .eq('id', sub.user_id);
-
-                console.log(`[PayPal Webhook] Deactivated subscription ${sub.id} (${eventType})`);
-            }
-        }
-
-    } catch (error) {
-        console.error('[PayPal Webhook] Processing error:', error);
     }
 }
