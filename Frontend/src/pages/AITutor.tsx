@@ -166,9 +166,9 @@ export default function AITutor() {
         [setSearchParams]
     );
 
-    // Build conversation history for context
+    // Build conversation history for context (exclude welcome message, send last 20 for good context)
     const buildConversationHistory = useCallback((msgs: Message[]) => {
-        return msgs.slice(-10).map(msg => ({
+        return msgs.filter(msg => msg.id !== "1").slice(-20).map(msg => ({
             role: msg.role,
             content: msg.content
         }));

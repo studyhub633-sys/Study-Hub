@@ -7,13 +7,13 @@ import { verifyAuth } from '../_utils/auth.js';
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-async function callGroqAPI(messages, temperature = 0.5, max_tokens = 4000, jsonMode = false) {
+async function callGroqAPI(messages, temperature = 0.5, max_tokens = 4000, jsonMode = false, model = null) {
     if (!GROQ_API_KEY) {
         throw new Error("GROQ API key not configured");
     }
 
     const body = {
-        model: "llama-3.3-70b-versatile",
+        model: model || "llama-3.3-70b-versatile",
         messages: messages,
         temperature: temperature,
         max_tokens: max_tokens,
@@ -93,7 +93,7 @@ async function handleChat(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { message, context, history, language } = req.body;
+        const { message, context, history, language, image } = req.body;
 
         if (!message) {
             return res.status(400).json({ error: "Message is required" });
@@ -132,9 +132,22 @@ async function handleChat(req, res) {
                 }
             }
         }
-        messages.push({ role: "user", content: message });
+        // Build user message - support text + image multimodal input
+        if (image) {
+            messages.push({
+                role: "user",
+                content: [
+                    { type: "text", text: message },
+                    { type: "image_url", image_url: { url: image } }
+                ]
+            });
+        } else {
+            messages.push({ role: "user", content: message });
+        }
 
-        const reply = await callGroqAPI(messages, 0.7, 2000);
+        // Use vision-capable model when image is present
+        const model = image ? "llama-4-scout-17b-16e-instruct" : undefined;
+        const reply = await callGroqAPI(messages, 0.7, 2000, false, model);
 
         if (usageData?.usageId) {
             await updateAiResponse(usageData.usageId, reply);
