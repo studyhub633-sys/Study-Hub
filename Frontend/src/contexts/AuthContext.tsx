@@ -1,4 +1,3 @@
-// Beta premium grant logic moved to manual button click in Premium.tsx
 import { createClient, Session, SupabaseClient, User } from "@supabase/supabase-js";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
@@ -101,8 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
     if (!data.user) throw new Error("Failed to create user");
 
-    // During Beta: Automatic premium will be handled by the auth state change 
-    // listener when the user eventually logs in after email confirmation.
 
     // Wait a moment for the trigger to create the profile
     await new Promise(resolve => setTimeout(resolve, 500));

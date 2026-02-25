@@ -4,8 +4,8 @@
 
 export interface DiscountCode {
     code: string;
-    type: "percent" | "free_lifetime";
-    value?: number; // percentage amount if type is "percent"
+    type: "percent";
+    value: number; // percentage amount
     description: string;
 }
 
@@ -38,7 +38,6 @@ export function validateDiscountCode(code: string): DiscountCode | null {
  * Apply a discount to a price
  */
 export function calculateDiscountedPrice(price: number, discount: DiscountCode): number {
-    if (discount.type === "free_lifetime") return 0;
     if (discount.type === "percent" && discount.value) {
         return price * (1 - discount.value / 100);
     }

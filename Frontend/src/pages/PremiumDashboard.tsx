@@ -1,14 +1,25 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { PayPalCheckout } from "@/components/premium/PayPalCheckout";
 import { TermsDialog } from "@/components/premium/TermsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { validateDiscountCode } from "@/lib/discount";
-import { getSubscription as getPaymentSubscription } from "@/lib/payment-client";
-import { grantBetaAccessWithBackend, hasPremium } from "@/lib/premium";
+import {
+    cancelSubscription as cancelPaymentSubscription,
+    getSubscription as getPaymentSubscription,
+} from "@/lib/payment-client";
+import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
     BarChart3,
@@ -56,6 +67,7 @@ export default function PremiumDashboard() {
     const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [showTerms, setShowTerms] = useState(false);
+    const [showPayment, setShowPayment] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | null>(null);
     const [hasPredictedPapers, setHasPredictedPapers] = useState(false);
     const [hasWorkExperience, setHasWorkExperience] = useState(false);
@@ -64,6 +76,7 @@ export default function PremiumDashboard() {
     const plans = [
         {
             name: t('premium.dashboard.monthly'),
+            key: "monthly",
             price: t('premium.dashboard.monthlyPrice'),
             period: t('premium.dashboard.monthlyPeriod'),
             description: t('premium.dashboard.monthlyDescription'),
@@ -76,6 +89,7 @@ export default function PremiumDashboard() {
         },
         {
             name: t('premium.dashboard.yearly'),
+            key: "yearly",
             price: t('premium.dashboard.yearlyPrice'),
             period: t('premium.dashboard.yearlyPeriod'),
             description: t('premium.dashboard.yearlyDescription'),
@@ -367,23 +381,17 @@ export default function PremiumDashboard() {
 
     const handleConfirmTerms = async () => {
         setShowTerms(false);
-        if (!user || !supabase) return;
+        if (!user || !supabase || !selectedPlan) return;
+        // Show the PayPal payment dialog
+        setShowPayment(true);
+    };
 
-        setLoading(true);
-        try {
-            const result = await grantBetaAccessWithBackend(supabase);
-            if (result.success) {
-                setIsPremium(true);
-                await checkPremiumStatus();
-                toast.success("Lifetime beta access granted!");
-            } else {
-                toast.error(`Failed: ${result.error || "Please try again."}`);
-            }
-        } catch (error: any) {
-            toast.error(error.message || "Something went wrong. Please try again.");
-        } finally {
-            setLoading(false);
-        }
+    const handlePaymentSuccess = async () => {
+        setShowPayment(false);
+        toast.success("Payment successful! Your premium subscription is now active. 🎉");
+        setIsPremium(true);
+        await checkPremiumStatus();
+        navigate("/premium-dashboard", { replace: true });
     };
 
     const handleApplyCode = () => {
@@ -393,16 +401,30 @@ export default function PremiumDashboard() {
         if (discount) {
             setAppliedDiscount(discount);
             toast.success(`Discount code applied: ${discount.description} `);
-            if (discount.type === "free_lifetime") {
-                toast.info("This code provides lifetime free access!");
-            }
         } else {
             toast.error("Invalid discount code");
         }
     };
 
     const handleCancel = async () => {
-        toast.info("Subscriptions are currently disabled during beta testing.");
+        if (!supabase) return;
+
+        setLoading(true);
+        try {
+            const result = await cancelPaymentSubscription(supabase);
+
+            if (result.error) {
+                toast.error(result.error);
+                return;
+            }
+
+            toast.success(result.message || "Subscription cancelled successfully.");
+            await checkPremiumStatus();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to cancel subscription.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (checking) {
@@ -667,7 +689,7 @@ export default function PremiumDashboard() {
                                                 : ""
                                         )}
                                         variant={plan.popular ? "default" : "outline"}
-                                        onClick={() => handleSubscribe(plan.name.toLowerCase() as "monthly" | "yearly")}
+                                        onClick={() => handleSubscribe(plan.key as "monthly" | "yearly")}
                                         disabled={loading || isPremium}
                                     >
                                         {loading ? (
@@ -701,7 +723,7 @@ export default function PremiumDashboard() {
                                     </div>
                                     <div className="flex gap-2">
                                         <Input
-                                            placeholder="Enter code (e.g., FREE_BETA)"
+                                            placeholder="Enter discount code"
                                             value={discountCode}
                                             onChange={(e) => setDiscountCode(e.target.value)}
                                             className="max-w-xs"
@@ -738,6 +760,29 @@ export default function PremiumDashboard() {
                 onOpenChange={setShowTerms}
                 onAccept={handleConfirmTerms}
             />
+
+            {/* Payment Dialog with PayPal */}
+            <Dialog open={showPayment} onOpenChange={setShowPayment}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Crown className="h-5 w-5 text-premium" />
+                            Complete Payment via PayPal
+                        </DialogTitle>
+                        <DialogDescription>
+                            Subscribe to the{" "}
+                            <span className="font-semibold capitalize">{selectedPlan}</span> plan securely with PayPal.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {selectedPlan && (
+                        <PayPalCheckout
+                            planType={selectedPlan}
+                            onSuccess={handlePaymentSuccess}
+                            onError={(err) => console.error("Payment error:", err)}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

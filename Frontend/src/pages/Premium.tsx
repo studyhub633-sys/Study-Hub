@@ -239,7 +239,7 @@ export default function Premium() {
   };
 
   const handleSubscribe = async (planType: "monthly" | "yearly") => {
-    // BETA MODE: Prompt for terms first
+    // Prompt for terms before proceeding to payment
     setSelectedPlan(planType);
     setShowTerms(true);
   };
@@ -540,7 +540,7 @@ export default function Premium() {
                 </p>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Enter code (e.g., FREE_BETA)"
+                    placeholder="Enter discount code"
                     value={discountCode}
                     onChange={(e) => setDiscountCode(e.target.value)}
                     className="max-w-xs"

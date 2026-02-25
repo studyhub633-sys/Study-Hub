@@ -24,10 +24,10 @@ export function TermsDialog({ open, onOpenChange, onAccept }: TermsDialogProps) 
                 <AlertDialogHeader>
                     <AlertDialogTitle className="flex items-center gap-2 text-2xl">
                         <Shield className="h-6 w-6 text-primary" />
-                        Beta Testing Terms & Policies
+                        Subscription Terms & Policies
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                        Please review and accept our beta testing agreement to unlock lifetime premium access.
+                        Please review and accept our terms before proceeding to payment.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
 
@@ -36,20 +36,20 @@ export function TermsDialog({ open, onOpenChange, onAccept }: TermsDialogProps) 
                         <section>
                             <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-secondary" />
-                                1. Beta Access Agreement
+                                1. Subscription Agreement
                             </h3>
                             <p>
-                                By participating in the Revisely.ai Beta, you agree to help us improve the platform by providing feedback and reporting any issues you encounter. In exchange, you will receive lifetime access to all current premium features.
+                                By subscribing to Revisely.ai Premium, you agree to pay the applicable subscription fee (monthly or yearly) via PayPal. Your subscription will automatically renew at the end of each billing period unless cancelled.
                             </p>
                         </section>
 
                         <section>
                             <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-secondary" />
-                                2. Data & Usage
+                                2. Data & Privacy
                             </h3>
                             <p>
-                                During the beta phase, we may collect anonymous usage data to identify performance bottlenecks and improve user experience. Your personal study materials remain private and accessible only to you.
+                                We may collect anonymous usage data to improve user experience. Your personal study materials remain private and accessible only to you. For full details, please refer to our Privacy Policy.
                             </p>
                         </section>
 
@@ -59,24 +59,24 @@ export function TermsDialog({ open, onOpenChange, onAccept }: TermsDialogProps) 
                                 3. Content Accuracy
                             </h3>
                             <p>
-                                While our AI tools aim for high accuracy, please verify important information. Beta features may undergo significant changes as we refine the platform.
+                                While our AI tools aim for high accuracy, please verify important information independently. Features may be updated or improved over time.
                             </p>
                         </section>
 
                         <section>
                             <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-secondary" />
-                                4. Lifetime Benefit
+                                4. Cancellation & Refunds
                             </h3>
                             <p>
-                                The "Lifetime Premium" status granted during this beta period will persist even after the official public launch. No future subscription fees will be required for features available during your beta participation.
+                                You may cancel your subscription at any time. After cancellation, you will retain premium access until the end of your current billing period. Refund requests are handled on a case-by-case basis within 7 days of purchase.
                             </p>
                         </section>
 
                         <div className="p-4 bg-muted/50 rounded-lg border border-dashed border-border">
                             <p className="font-medium text-foreground mb-1">Confirmation</p>
                             <p className="text-xs">
-                                By clicking "Accept and Unlock", you confirm that you have read and understood these terms and agree to participate in the Revisely.ai Beta Testing Program.
+                                By clicking "Accept & Continue to Payment", you confirm that you have read and understood these terms and agree to the Revisely.ai Premium Subscription Terms.
                             </p>
                         </div>
                     </div>
@@ -88,7 +88,7 @@ export function TermsDialog({ open, onOpenChange, onAccept }: TermsDialogProps) 
                         onClick={onAccept}
                         className="bg-premium hover:bg-premium/90 text-premium-foreground"
                     >
-                        Accept and Unlock
+                        Accept & Continue to Payment
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
