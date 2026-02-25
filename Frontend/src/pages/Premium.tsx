@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { validateDiscountCode } from "@/lib/discount";
+import { calculateDiscountedPrice, validateDiscountCode } from "@/lib/discount";
 import {
   cancelSubscription as cancelPaymentSubscription,
   getSubscription as getPaymentSubscription,
@@ -139,6 +139,28 @@ export default function Premium() {
       key: "heatmap"
     },
   ];
+
+  const PLAN_PRICES: Record<string, number> = {
+    monthly: 4.99,
+    yearly: 25.00,
+  };
+
+  const getDisplayPrice = (planKey: string) => {
+    const original = PLAN_PRICES[planKey];
+    if (appliedDiscount) {
+      const discounted = calculateDiscountedPrice(original, appliedDiscount);
+      return {
+        original: `£${original.toFixed(2)}`,
+        discounted: `£${discounted.toFixed(2)}`,
+        hasDiscount: true,
+      };
+    }
+    return {
+      original: `£${original.toFixed(2)}`,
+      discounted: null,
+      hasDiscount: false,
+    };
+  };
 
   const plans = [
     {
@@ -467,15 +489,45 @@ export default function Premium() {
                 <h3 className="text-lg font-semibold text-foreground mb-2">
                   {plan.key ? t(`premium.dashboard.${plan.key}`) : plan.name}
                 </h3>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-foreground">
-                    {plan.key ? t(`premium.dashboard.${plan.key}Price`) : plan.price}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {plan.key ? t(`premium.dashboard.${plan.key}Period`) : plan.period}
-                  </span>
-                </div>
-                {plan.savings && (
+                {(() => {
+                  const pricing = plan.key ? getDisplayPrice(plan.key) : null;
+                  if (pricing?.hasDiscount) {
+                    return (
+                      <div>
+                        <div className="flex items-baseline justify-center gap-1">
+                          <span className="text-xl text-muted-foreground line-through">
+                            {pricing.original}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {plan.key ? t(`premium.dashboard.${plan.key}Period`) : plan.period}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline justify-center gap-1 mt-1">
+                          <span className="text-4xl font-bold text-green-500">
+                            {pricing.discounted}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {plan.key ? t(`premium.dashboard.${plan.key}Period`) : plan.period}
+                          </span>
+                        </div>
+                        <span className="inline-block mt-2 text-sm font-medium text-green-500 px-2 py-0.5 bg-green-500/10 rounded-full">
+                          {appliedDiscount.description}
+                        </span>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-4xl font-bold text-foreground">
+                        {plan.key ? t(`premium.dashboard.${plan.key}Price`) : plan.price}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {plan.key ? t(`premium.dashboard.${plan.key}Period`) : plan.period}
+                      </span>
+                    </div>
+                  );
+                })()}
+                {plan.savings && !appliedDiscount && (
                   <span className="inline-block mt-2 text-sm font-medium text-secondary px-2 py-0.5 bg-secondary/10 rounded-full">
                     {t("premium.dashboard.saveAmount")}
                   </span>
