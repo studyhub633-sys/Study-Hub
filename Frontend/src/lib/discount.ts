@@ -34,6 +34,12 @@ const DISCOUNT_CODES: DiscountCode[] = [
         value: 20,
         description: "20% Off Subscription",
     },
+    {
+        code: "FREE100",
+        type: "percent",
+        value: 100,
+        description: "100% Off Lifetime Premium",
+    },
 ];
 
 /**

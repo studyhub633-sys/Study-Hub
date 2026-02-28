@@ -10,6 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 const DISCOUNT_CODES = {
     PUBE20: 0.2,
     FRANQ20: 0.2,
+    FREE100: 1.0,  // 100% off for lifetime premium
 };
 
 // ─── Main Router ────────────────────────────────────────────────
@@ -80,6 +81,52 @@ async function handleCreatePayment(req, res) {
 
         if (existingSub) {
             return res.status(400).json({ error: 'You already have active premium access.' });
+        }
+
+        // If the final amount is 0, we bypass Stripe entirely and activate premium directly
+        if (finalAmount <= 0) {
+            const now = new Date();
+
+            const { data: newSub, error: dbError } = await supabase
+                .from('subscriptions')
+                .insert({
+                    user_id: user.id,
+                    plan_type: 'one_time',
+                    status: 'active',
+                    stripe_payment_intent_id: `free_${Math.random().toString(36).substring(2, 15)}`,
+                    current_period_start: now.toISOString(),
+                    current_period_end: null,
+                })
+                .select('id')
+                .single();
+
+            if (dbError) {
+                console.error('[DB] Failed to insert free premium record:', dbError);
+                return res.status(500).json({ error: 'Failed to create premium record.', detail: dbError.message });
+            }
+
+            await supabase
+                .from('profiles')
+                .update({ is_premium: true })
+                .eq('id', user.id);
+
+            await supabase.from('payments').insert({
+                user_id: user.id,
+                subscription_id: newSub.id,
+                amount: 0,
+                currency: currency.toLowerCase(),
+                status: 'succeeded',
+                stripe_payment_intent_id: null,
+                plan_type: 'one_time',
+            });
+
+            console.log(`Activated free one-time premium for user ${user.id} with code ${appliedCode}`);
+
+            return res.status(200).json({
+                clientSecret: null,
+                isFree: true,
+                message: "Premium activated successfully for free"
+            });
         }
 
         const paymentIntent = await stripe.paymentIntents.create({

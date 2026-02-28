@@ -23,6 +23,7 @@ const CURRENCY = "GBP";
 const DISCOUNT_CODES: Record<string, number> = {
     PUBE20: 0.2,
     FRANQ20: 0.2,
+    FREE100: 1.0,
 };
 
 const STRIPE_PUBLISHABLE_KEY =
@@ -287,8 +288,18 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
             if (!response.ok) {
                 throw new Error(
                     data.error ||
-                    "Failed to initialise Stripe payment. Please try again.",
+                    "Failed to initialise payment. Please try again.",
                 );
+            }
+
+            if (data.isFree) {
+                // If it's a 100% free discount code
+                toast.success(
+                    "🎉 Premium activated successfully!",
+                    { duration: 6000 },
+                );
+                onSuccess();
+                return;
             }
 
             if (!data.clientSecret) {
@@ -449,29 +460,31 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
             </div>
 
             {/* Card payment form */}
-            {loadingIntent || !clientSecret ? (
-                <div className="flex items-center justify-center py-6 gap-3 text-muted-foreground">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="text-sm">
-                        Preparing secure Stripe payment…
-                    </span>
-                </div>
-            ) : (
-                <Elements
-                    stripe={stripePromise}
-                    options={{
-                        clientSecret,
-                        appearance: { theme: "stripe" },
-                    }}
-                >
-                    <StripeCheckoutForm
-                        clientSecret={clientSecret}
-                        finalPrice={finalPrice}
-                        discountCode={appliedCode ?? ""}
-                        onSuccess={onSuccess}
-                        onError={onError}
-                    />
-                </Elements>
+            {finalPrice > 0 && (
+                loadingIntent || !clientSecret ? (
+                    <div className="flex items-center justify-center py-6 gap-3 text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span className="text-sm">
+                            Preparing secure Stripe payment…
+                        </span>
+                    </div>
+                ) : (
+                    <Elements
+                        stripe={stripePromise}
+                        options={{
+                            clientSecret,
+                            appearance: { theme: "stripe" },
+                        }}
+                    >
+                        <StripeCheckoutForm
+                            clientSecret={clientSecret}
+                            finalPrice={finalPrice}
+                            discountCode={appliedCode ?? ""}
+                            onSuccess={onSuccess}
+                            onError={onError}
+                        />
+                    </Elements>
+                )
             )}
         </div>
     );
