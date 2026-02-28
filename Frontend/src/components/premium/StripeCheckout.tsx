@@ -94,63 +94,67 @@ function StripeCheckoutForm({
                 (paymentIntent.status === "succeeded" ||
                     paymentIntent.status === "requires_capture")
             ) {
-                // After successful Stripe payment, confirm on our backend and activate premium
+                // Payment confirmed by Stripe — show success immediately so the user
+                // is never left thinking their charge failed.
+                toast.success(
+                    "🎉 Payment successful! Your premium is now active.",
+                    { duration: 6000 },
+                );
+
+                // Attempt to activate premium on our backend. If this fails we log
+                // for debugging but do NOT surface an error to the user — their card
+                // was charged and Stripe webhooks / manual reconciliation can fix it.
                 try {
                     const {
                         data: { session },
                     } = await supabase.auth.getSession();
 
-                    if (!session?.access_token) {
-                        throw new Error("Not authenticated");
-                    }
+                    if (session?.access_token) {
+                        const API_BASE_URL =
+                            import.meta.env.VITE_API_URL ||
+                            (import.meta.env.PROD
+                                ? window.location.origin
+                                : "http://localhost:3004");
 
-                    const API_BASE_URL =
-                        import.meta.env.VITE_API_URL ||
-                        (import.meta.env.PROD
-                            ? window.location.origin
-                            : "http://localhost:3004");
-
-                    const confirmRes = await fetch(
-                        `${API_BASE_URL}/api/payments/confirm-stripe`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${session.access_token}`,
+                        const confirmRes = await fetch(
+                            `${API_BASE_URL}/api/payments/confirm-stripe`,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${session.access_token}`,
+                                },
+                                body: JSON.stringify({
+                                    paymentIntentId: paymentIntent.id,
+                                }),
                             },
-                            body: JSON.stringify({
-                                paymentIntentId: paymentIntent.id,
-                            }),
-                        },
-                    );
+                        );
 
-                    const confirmData = await confirmRes.json();
-
-                    if (!confirmRes.ok) {
-                        const msg =
-                            confirmData.error ||
-                            "Payment was processed but failed to activate premium. Please contact support.";
-                        toast.error(msg);
-                        onError?.(msg);
-                        return;
+                        if (!confirmRes.ok) {
+                            const confirmData = await confirmRes.json().catch(() => ({}));
+                            console.error(
+                                "[Stripe Checkout] Backend activation failed (payment still succeeded):",
+                                confirmData.error,
+                            );
+                            // Soft warning — doesn't block the success flow
+                            toast.info(
+                                "Your payment was received. Premium access is being activated — please refresh in a moment.",
+                                { duration: 8000 },
+                            );
+                        }
                     }
                 } catch (confirmError: any) {
+                    // Log only — do not show an error to the user whose payment went through
                     console.error(
-                        "[Stripe Checkout] Error confirming payment on backend:",
+                        "[Stripe Checkout] Error confirming payment on backend (payment still succeeded):",
                         confirmError,
                     );
-                    const msg =
-                        confirmError.message ||
-                        "Payment was processed but failed to activate premium. Please contact support.";
-                    toast.error(msg);
-                    onError?.(msg);
-                    return;
+                    toast.info(
+                        "Your payment was received. Premium access is being activated — please refresh in a moment.",
+                        { duration: 8000 },
+                    );
                 }
 
-                toast.success(
-                    "🎉 Payment successful! Your premium is now active.",
-                    { duration: 6000 },
-                );
                 onSuccess();
             } else {
                 const msg =
