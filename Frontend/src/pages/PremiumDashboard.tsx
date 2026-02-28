@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { PayPalCheckout } from "@/components/premium/PayPalCheckout";
+import { StripeCheckout } from "@/components/premium/StripeCheckout";
 import { TermsDialog } from "@/components/premium/TermsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -643,19 +643,19 @@ export default function PremiumDashboard() {
                 onAccept={handleConfirmTerms}
             />
 
-            {/* Payment Dialog with PayPal */}
+            {/* Payment Dialog with Stripe */}
             <Dialog open={showPayment} onOpenChange={setShowPayment}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Crown className="h-5 w-5 text-premium" />
-                            Complete Payment via PayPal
+                            Complete Payment securely with card
                         </DialogTitle>
                         <DialogDescription>
                             Pay £25.00 one-time to unlock all premium features.
                         </DialogDescription>
                     </DialogHeader>
-                    <PayPalCheckout
+                    <StripeCheckout
                         onSuccess={handlePaymentSuccess}
                         onError={(err) => console.error("Payment error:", err)}
                     />

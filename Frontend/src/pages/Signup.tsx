@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Eye, EyeOff, HelpCircle, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { faqs } from "./FAQ";
@@ -28,6 +28,7 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const submittingRef = useRef(false);
   const { signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -42,6 +43,7 @@ export default function Signup() {
     e.preventDefault();
     setError("");
 
+    if (submittingRef.current) return;
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -57,15 +59,18 @@ export default function Signup() {
       return;
     }
 
+    submittingRef.current = true;
     setLoading(true);
 
     try {
       await signUp(email, password);
+      setSuccess(true);
       navigate("/");
     } catch (err: any) {
       setError(err.message || "Failed to create account. Please try again.");
     } finally {
       setLoading(false);
+      submittingRef.current = false;
     }
   };
 

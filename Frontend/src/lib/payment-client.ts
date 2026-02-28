@@ -1,6 +1,6 @@
 /**
  * Payment Client for Revisely.ai
- * Handles PayPal one-time payment integration
+ * Handles premium payment integration (Stripe or other providers)
  */
 
 // Use Vercel URL in production, localhost in development
@@ -41,11 +41,12 @@ async function getAuthToken(supabaseClient?: any): Promise<string | null> {
 }
 
 /**
- * Activate premium after PayPal one-time payment
+ * Activate premium after a successful payment.
+ * The exact payload depends on the payment provider (e.g. Stripe session/intent).
  */
 export async function createPayment(
   supabaseClient?: any,
-  paypalOrderId?: string
+  paymentPayload?: Record<string, unknown>
 ): Promise<{ subscriptionId: string; status: string } | { error: string }> {
   try {
     const token = await getAuthToken(supabaseClient);
@@ -62,7 +63,7 @@ export async function createPayment(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ paypalOrderId }),
+      body: JSON.stringify(paymentPayload ?? {}),
     });
 
     if (!response.ok) {

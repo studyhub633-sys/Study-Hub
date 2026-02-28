@@ -100,10 +100,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (error) {
-      // Provide user-friendly messages for common Supabase errors
-      if (error.message?.toLowerCase().includes("rate limit") ||
-        error.message?.toLowerCase().includes("email rate limit") ||
-        error.message?.toLowerCase().includes("over_email_send_rate_limit")) {
+      // Provide user-friendly messages for common Supabase errors (incl. 429 from Supabase)
+      const msg = (error.message ?? "").toLowerCase();
+      const is429 = (error as { status?: number }).status === 429;
+      if (
+        is429 ||
+        msg.includes("rate limit") ||
+        msg.includes("email rate limit") ||
+        msg.includes("over_email_send_rate_limit")
+      ) {
         throw new Error("Too many signup attempts. Please wait a few minutes and try again.");
       }
       if (error.message?.toLowerCase().includes("already registered") ||

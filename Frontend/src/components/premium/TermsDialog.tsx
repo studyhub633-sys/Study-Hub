@@ -36,10 +36,10 @@ export function TermsDialog({ open, onOpenChange, onAccept }: TermsDialogProps) 
                         <section>
                             <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-secondary" />
-                                1. Subscription Agreement
+                                1. Payment Agreement
                             </h3>
                             <p>
-                                By subscribing to Revisely.ai Premium, you agree to pay the applicable subscription fee (monthly or yearly) via PayPal. Your subscription will automatically renew at the end of each billing period unless cancelled.
+                                By purchasing Revisely.ai Premium, you agree to pay the applicable premium fee using our secure card payment provider (such as Stripe). If we later introduce recurring plans, details will be clearly shown before you confirm payment.
                             </p>
                         </section>
 
