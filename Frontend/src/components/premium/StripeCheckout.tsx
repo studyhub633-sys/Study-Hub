@@ -16,7 +16,7 @@ interface StripeCheckoutProps {
     onError?: (error: string) => void;
 }
 
-const ONE_TIME_PRICE = 1.0;
+const ONE_TIME_PRICE = 25.0;
 const CURRENCY = "GBP";
 
 const STRIPE_PUBLISHABLE_KEY =
