@@ -132,8 +132,12 @@ async function handleConfirmStripe(req, res) {
             .single();
 
         if (dbError) {
-            console.error('[DB] Failed to insert Stripe payment record:', dbError);
-            return res.status(500).json({ error: 'Failed to create payment record.' });
+            console.error('[DB] Failed to insert Stripe payment record:', JSON.stringify(dbError));
+            return res.status(500).json({
+                error: 'Failed to create payment record.',
+                detail: dbError.message,   // <-- expose this temporarily
+                code: dbError.code
+            });
         }
 
         // Activate premium
