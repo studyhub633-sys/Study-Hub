@@ -93,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
+        emailRedirectTo: undefined,
         data: {
           email_confirmed: true,
         },
@@ -107,28 +108,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         is429 ||
         msg.includes("rate limit") ||
         msg.includes("email rate limit") ||
-        msg.includes("over_email_send_rate_limit")
+        msg.includes("over_email_send_rate_limit") ||
+        msg.includes("sending confirmation email") ||
+        msg.includes("confirmation email")
       ) {
-        throw new Error("Too many signup attempts. Please wait a few minutes and try again.");
+        // Try to sign in directly — works if account was already created previously
+        // or if Supabase has email confirmation disabled
+        try {
+          const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+          if (!signInError) return "auto-confirmed";
+        } catch {
+          // ignore
+        }
+        throw new Error("Account created but email confirmation is required. Please disable 'Confirm email' in your Supabase Auth settings.");
       }
       if (error.message?.toLowerCase().includes("already registered") ||
         error.message?.toLowerCase().includes("already been registered")) {
+        // User exists — sign them in directly
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (!signInError) return "auto-confirmed";
         throw new Error("This email is already registered. Please sign in instead.");
       }
       throw error;
     }
     if (!data.user) throw new Error("Failed to create user");
 
-    // If session was returned, user is already signed in
+    // If session was returned, user is already signed in — done!
     if (data.session) {
       return "auto-confirmed";
     }
 
-    // If no session, try signing in immediately
-    try {
-      await supabase.auth.signInWithPassword({ email, password });
-    } catch {
-      // If sign-in fails, they'll need to log in manually
+    // No session yet — sign in immediately (works when email confirmation is disabled)
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) {
+      const msg = (signInError.message ?? "").toLowerCase();
+      if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
+        throw new Error("Email confirmation is required. Please go to your Supabase Dashboard → Authentication → Providers → Email and disable 'Confirm email'.");
+      }
+      // Non-fatal — user is created, they can log in manually
     }
 
     return "auto-confirmed";
