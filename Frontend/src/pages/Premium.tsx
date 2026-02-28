@@ -381,7 +381,7 @@ export default function Premium() {
                   Premium Access
                 </h3>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-foreground">£25.00</span>
+                  <span className="text-4xl font-bold text-foreground">£1.00</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">One-time payment — no recurring charges</p>
                 <p className="text-sm text-muted-foreground mt-2">
@@ -674,7 +674,7 @@ export default function Premium() {
               Complete Payment securely with card
             </DialogTitle>
             <DialogDescription>
-              Pay £25.00 one-time to unlock all premium features.
+              Pay £1.00 one-time to unlock all premium features.
             </DialogDescription>
           </DialogHeader>
           <StripeCheckout
