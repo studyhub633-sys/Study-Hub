@@ -1,46 +1,32 @@
-import { supabase, verifyAuth } from '../_utils/auth.js';
+import Stripe from "stripe";
+import { supabase, verifyAuth } from "../_utils/auth.js";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2024-06-20",
+});
 
 // ─── Main Router ────────────────────────────────────────────────
 export default async function handler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
-    const action = url.pathname.split('/').pop();
+    const action = url.pathname.split("/").pop();
 
     switch (action) {
-        case 'create-payment':
+        case "create-payment":
             return handleCreatePayment(req, res);
-        case 'subscription':
+        case "confirm-stripe":
+            return handleConfirmStripe(req, res);
+        case "subscription":
             return handleGetSubscription(req, res);
-        case 'cancel':
+        case "cancel":
             return handleCancel(req, res);
-        case 'payment-history':
+        case "payment-history":
             return handlePaymentHistory(req, res);
         default:
-            return res.status(404).json({ error: 'Payment action not found' });
+            return res.status(404).json({ error: "Payment action not found" });
     }
 }
 
-// ─── Get PayPal Access Token ─────────────────────────────────────
-async function getPayPalAccessToken() {
-    const clientId = process.env.PAYPAL_CLIENT_ID;
-    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-    const base = process.env.PAYPAL_ENV === 'sandbox'
-        ? 'https://api-m.sandbox.paypal.com'
-        : 'https://api-m.paypal.com';
-
-    const response = await fetch(`${base}/v1/oauth2/token`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-        },
-        body: 'grant_type=client_credentials',
-    });
-
-    const data = await response.json();
-    return { token: data.access_token, base };
-}
-
-// ─── Create Payment (one-time, called after PayPal order capture) ─────────
+// ─── Create Stripe PaymentIntent (one-time) ─────────
 async function handleCreatePayment(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -52,28 +38,69 @@ async function handleCreatePayment(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { paypalOrderId } = req.body;
+        const { amount, currency, provider } = req.body || {};
 
-        if (!paypalOrderId) {
-            return res.status(400).json({ error: 'PayPal order ID is required.' });
+        if (provider !== "stripe") {
+            return res.status(400).json({ error: "Unsupported payment provider." });
         }
 
-        // Verify the order with PayPal API
-        const { token, base } = await getPayPalAccessToken();
-        const orderRes = await fetch(`${base}/v2/checkout/orders/${paypalOrderId}`, {
-            headers: { 'Authorization': `Bearer ${token}` },
+        if (!amount || !currency) {
+            return res.status(400).json({ error: "Amount and currency are required." });
+        }
+
+        // Check for existing active subscription / purchase
+        const { data: existingSub } = await supabase
+            .from('subscriptions')
+            .select('id, status')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .maybeSingle();
+
+        if (existingSub) {
+            return res.status(400).json({ error: 'You already have active premium access.' });
+        }
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(amount * 100), // e.g. 25.0 -> 2500
+            currency: currency.toLowerCase(), // "GBP" -> "gbp"
+            metadata: {
+                user_id: user.id,
+                plan_type: "one_time",
+            },
         });
 
-        if (!orderRes.ok) {
-            const errText = await orderRes.text();
-            console.error('[PayPal] Failed to verify order:', errText);
-            return res.status(400).json({ error: 'Could not verify PayPal order.' });
+        return res.status(200).json({
+            clientSecret: paymentIntent.client_secret,
+        });
+
+    } catch (error) {
+        console.error('[Stripe] Create payment error:', error);
+        return res.status(500).json({ error: error.message || 'Internal server error' });
+    }
+}
+
+// ─── Confirm Stripe Payment & Activate Premium ─────────
+async function handleConfirmStripe(req, res) {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+    try {
+        const user = await verifyAuth(req);
+        const { paymentIntentId } = req.body || {};
+
+        if (!paymentIntentId) {
+            return res.status(400).json({ error: 'Stripe paymentIntentId is required.' });
         }
 
-        const paypalOrder = await orderRes.json();
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-        if (paypalOrder.status !== 'COMPLETED') {
-            return res.status(400).json({ error: `PayPal order is not completed (status: ${paypalOrder.status}).` });
+        if (!paymentIntent || !['succeeded', 'requires_capture'].includes(paymentIntent.status)) {
+            return res.status(400).json({ error: `Stripe payment is not completed (status: ${paymentIntent?.status}).` });
         }
 
         // Check for existing active subscription / purchase
@@ -97,15 +124,15 @@ async function handleCreatePayment(req, res) {
                 user_id: user.id,
                 plan_type: 'one_time',
                 status: 'active',
-                paypal_subscription_id: paypalOrderId, // reuse column for order ID
+                stripe_payment_intent_id: paymentIntentId,
                 current_period_start: now.toISOString(),
-                current_period_end: null, // one-time = no expiry
+                current_period_end: null,
             })
             .select('id')
             .single();
 
         if (dbError) {
-            console.error('[DB] Failed to insert payment record:', dbError);
+            console.error('[DB] Failed to insert Stripe payment record:', dbError);
             return res.status(500).json({ error: 'Failed to create payment record.' });
         }
 
@@ -119,14 +146,14 @@ async function handleCreatePayment(req, res) {
         await supabase.from('payments').insert({
             user_id: user.id,
             subscription_id: newSub.id,
-            amount: 2500, // £25.00 in pence
-            currency: 'gbp',
-            status: 'succeeded',
-            paypal_subscription_id: paypalOrderId,
+            amount: paymentIntent.amount,
+            currency: paymentIntent.currency,
+            status: paymentIntent.status,
+            stripe_payment_intent_id: paymentIntentId,
             plan_type: 'one_time',
         });
 
-        console.log(`[PayPal] Activated one-time premium for user ${user.id} (order: ${paypalOrderId})`);
+        console.log(`[Stripe] Activated one-time premium for user ${user.id} (paymentIntent: ${paymentIntentId})`);
 
         return res.status(200).json({
             subscriptionId: newSub.id,
@@ -135,7 +162,7 @@ async function handleCreatePayment(req, res) {
         });
 
     } catch (error) {
-        console.error('[PayPal] Create payment error:', error);
+        console.error('[Stripe] Confirm payment error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
@@ -173,7 +200,7 @@ async function handleGetSubscription(req, res) {
         });
 
     } catch (error) {
-        console.error('[PayPal] Get subscription error:', error);
+        console.error('[Stripe] Get subscription error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
@@ -230,7 +257,7 @@ async function handleCancel(req, res) {
             .update({ is_premium: false })
             .eq('id', user.id);
 
-        console.log(`[PayPal] Deactivated premium for user ${user.id}`);
+        console.log(`[Stripe] Deactivated premium for user ${user.id}`);
 
         return res.status(200).json({
             success: true,
@@ -238,7 +265,7 @@ async function handleCancel(req, res) {
         });
 
     } catch (error) {
-        console.error('[PayPal] Cancel error:', error);
+        console.error('[Stripe] Cancel error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
@@ -276,7 +303,7 @@ async function handlePaymentHistory(req, res) {
         return res.status(200).json({ payments: formattedPayments });
 
     } catch (error) {
-        console.error('[PayPal] Payment history error:', error);
+        console.error('[Stripe] Payment history error:', error);
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
