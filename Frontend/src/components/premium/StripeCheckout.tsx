@@ -486,6 +486,29 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                     </Elements>
                 )
             )}
+
+            {/* Free checkout button */}
+            {finalPrice === 0 && (
+                <button
+                    type="button"
+                    onClick={() => {
+                        // For 100% off codes, we just call the intent creation
+                        // which bypasses Stripe and returns success directly
+                        createPaymentIntent(0);
+                    }}
+                    disabled={loadingIntent}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                    {loadingIntent ? (
+                        <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Processing…</span>
+                        </>
+                    ) : (
+                        <span>Get Premium for Free</span>
+                    )}
+                </button>
+            )}
         </div>
     );
 }
