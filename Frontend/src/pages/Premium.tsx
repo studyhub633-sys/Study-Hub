@@ -421,7 +421,7 @@ export default function Premium() {
                 ) : (
                   <>
                     <Rocket className="h-4 w-4 mr-2" />
-                    Buy Premium — £25
+                    Buy Premium — £1
                   </>
                 )}
               </Button>
