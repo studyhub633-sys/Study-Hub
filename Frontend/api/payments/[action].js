@@ -52,7 +52,7 @@ async function handleCreatePayment(req, res) {
             return res.status(400).json({ error: "Unsupported payment provider." });
         }
 
-        if (!amount || !currency) {
+        if (amount === undefined || amount === null || !currency) {
             return res.status(400).json({ error: "Amount and currency are required." });
         }
 
