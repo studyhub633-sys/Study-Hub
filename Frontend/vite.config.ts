@@ -25,16 +25,7 @@ export default defineConfig(({ mode }) => {
       cssCodeSplit: true,
       sourcemap: false,
       minify: "esbuild",
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            "react-vendor": ["react", "react-dom", "react-router-dom"],
-            "ui-vendor": ["@radix-ui/react-dialog", "@radix-ui/react-slot", "lucide-react", "class-variance-authority", "clsx", "tailwind-merge"],
-            "query-vendor": ["@tanstack/react-query"],
-            "supabase-vendor": ["@supabase/supabase-js"],
-          },
-        },
-      },
+      rollupOptions: {},
     },
     esbuild: {
       drop: mode === "production" ? ["console", "debugger"] : [],
