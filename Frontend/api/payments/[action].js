@@ -5,6 +5,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2024-06-20",
 });
 
+// ─── Discount Codes ──────────────────────────────────────────────
+// code -> discount fraction (e.g. 0.2 = 20% off)
+const DISCOUNT_CODES = {
+    PUBE20: 0.2,
+    FRANQ20: 0.2,
+};
+
 // ─── Main Router ────────────────────────────────────────────────
 export default async function handler(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
@@ -38,7 +45,7 @@ async function handleCreatePayment(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { amount, currency, provider } = req.body || {};
+        const { amount, currency, provider, discountCode } = req.body || {};
 
         if (provider !== "stripe") {
             return res.status(400).json({ error: "Unsupported payment provider." });
@@ -46,6 +53,21 @@ async function handleCreatePayment(req, res) {
 
         if (!amount || !currency) {
             return res.status(400).json({ error: "Amount and currency are required." });
+        }
+
+        // Validate and apply discount code (server-side authoritative check)
+        let finalAmount = amount;
+        let appliedCode = null;
+        if (discountCode) {
+            const code = String(discountCode).trim().toUpperCase();
+            const fraction = DISCOUNT_CODES[code];
+            if (fraction !== undefined) {
+                finalAmount = parseFloat((amount * (1 - fraction)).toFixed(2));
+                appliedCode = code;
+            } else {
+                // Unknown code — reject so fraudulent amounts can't be submitted
+                return res.status(400).json({ error: `Invalid discount code: ${discountCode}` });
+            }
         }
 
         // Check for existing active subscription / purchase
@@ -61,11 +83,12 @@ async function handleCreatePayment(req, res) {
         }
 
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(amount * 100), // e.g. 25.0 -> 2500
-            currency: currency.toLowerCase(), // "GBP" -> "gbp"
+            amount: Math.round(finalAmount * 100), // e.g. 20.0 -> 2000
+            currency: currency.toLowerCase(),       // "GBP" -> "gbp"
             metadata: {
                 user_id: user.id,
                 plan_type: "one_time",
+                ...(appliedCode ? { discount_code: appliedCode, original_amount: Math.round(amount * 100) } : {}),
             },
         });
 

@@ -28,6 +28,7 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [welcomeStep, setWelcomeStep] = useState(1);
   const submittingRef = useRef(false);
   const { signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -65,7 +66,6 @@ export default function Signup() {
     try {
       await signUp(email, password);
       setSuccess(true);
-      navigate("/");
     } catch (err: any) {
       setError(err.message || "Failed to create account. Please try again.");
     } finally {
@@ -97,7 +97,51 @@ export default function Signup() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {(
+          {/* Replace success generic area with multi-step success screen */}
+          {success ? (
+            <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {welcomeStep === 1 && (
+                <>
+                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                    <AnimatedLogoIcon />
+                  </div>
+                  <h3 className="text-2xl font-bold tracking-tight">Welcome to Study Hub!</h3>
+                  <p className="text-muted-foreground text-sm">
+                    We're thrilled to have you join our community. Your journey to better studying starts here.
+                  </p>
+                  <Button className="w-full mt-6" onClick={() => setWelcomeStep(2)}>
+                    Continue
+                  </Button>
+                </>
+              )}
+              {welcomeStep === 2 && (
+                <>
+                  <h3 className="text-xl font-bold tracking-tight mb-2">Our Community Pledges</h3>
+                  <div className="text-left text-sm text-muted-foreground space-y-3 bg-muted/50 p-4 rounded-lg border border-border/50">
+                    <p><strong>📖 Respect & Integrity:</strong> Use our resources to learn and grow, but uphold academic honesty.</p>
+                    <p><strong>🤝 Community:</strong> Treat fellow students with respect in all interactions.</p>
+                    <p><strong>🔒 Privacy:</strong> We protect your data as outlined in our <Link to="/privacy" className="text-primary hover:underline" target="_blank">Privacy Policy</Link> and <Link to="/terms" className="text-primary hover:underline" target="_blank">Terms</Link>.</p>
+                  </div>
+                  <Button className="w-full mt-6" onClick={() => setWelcomeStep(3)}>
+                    I Understand
+                  </Button>
+                </>
+              )}
+              {welcomeStep === 3 && (
+                <>
+                  <div className="py-4">
+                    <h3 className="text-2xl font-bold tracking-tight text-primary mb-2">Enjoy your stay! 🎉</h3>
+                    <p className="text-muted-foreground">
+                      You are all set up. Dive in and explore all the tools we have prepared for you.
+                    </p>
+                  </div>
+                  <Button className="w-full mt-6" onClick={() => navigate("/")}>
+                    Start Studying
+                  </Button>
+                </>
+              )}
+            </div>
+          ) : (
             <>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
