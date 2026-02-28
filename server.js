@@ -63,6 +63,7 @@ async function loadRoutes() {
         '/api/payments/subscription': { dir: paymentsDir, file: '[action].js' },
         '/api/payments/cancel': { dir: paymentsDir, file: '[action].js' },
         '/api/payments/payment-history': { dir: paymentsDir, file: '[action].js' },
+        '/api/payments/confirm-stripe': { dir: paymentsDir, file: '[action].js' },
 
         // Auth routes
         '/api/auth/grant-beta-premium': { dir: authDir, file: 'grant-beta-premium.js' },
