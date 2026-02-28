@@ -1,14 +1,15 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { loadStripe } from "@stripe/stripe-js";
 import {
     CardElement,
     Elements,
     useElements,
     useStripe,
 } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import { Loader2 } from "lucide-react";
+import { useTheme } from "next-themes";
+import { FormEvent, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface StripeCheckoutProps {
     onSuccess: () => void;
@@ -41,6 +42,10 @@ function StripeCheckoutForm({
     const stripe = useStripe();
     const elements = useElements();
     const [processing, setProcessing] = useState(false);
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
+    const cardTextColor = isDark ? "#ffffff" : "#09090b";
+    const cardPlaceholderColor = isDark ? "#a1a1aa" : "#71717a";
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -171,9 +176,9 @@ function StripeCheckoutForm({
                         style: {
                             base: {
                                 fontSize: "16px",
-                                color: "hsl(var(--foreground))",
+                                color: cardTextColor,
                                 "::placeholder": {
-                                    color: "hsl(var(--muted-foreground))",
+                                    color: cardPlaceholderColor,
                                 },
                             },
                             invalid: {
@@ -254,7 +259,7 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                 if (!response.ok) {
                     throw new Error(
                         data.error ||
-                            "Failed to initialise Stripe payment. Please try again.",
+                        "Failed to initialise Stripe payment. Please try again.",
                     );
                 }
 
