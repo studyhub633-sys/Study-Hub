@@ -266,6 +266,11 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                 throw new Error("Not authenticated");
             }
 
+            // Send the base price (ONE_TIME_PRICE) when a discount code is applied,
+            // so the backend applies the discount once. Otherwise we'd double-apply
+            // (frontend already discounted, then backend discounts again).
+            const amountToSend = appliedCode ? ONE_TIME_PRICE : price;
+
             const response = await fetch(
                 `${API_BASE_URL}/api/payments/create-payment`,
                 {
@@ -276,7 +281,7 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                     },
                     body: JSON.stringify({
                         provider: "stripe",
-                        amount: price,
+                        amount: amountToSend,
                         currency: CURRENCY,
                         discountCode: appliedCode ?? undefined,
                     }),
