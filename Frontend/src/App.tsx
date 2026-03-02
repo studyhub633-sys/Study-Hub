@@ -54,7 +54,16 @@ const Signup = lazy(() => import("./pages/Signup"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Contact = lazy(() => import("./pages/Contact"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Disable automatic refetch when the window/tab regains focus
+      refetchOnWindowFocus: false,
+      // Optional: also avoid refetching when reconnecting
+      refetchOnReconnect: false,
+    },
+  },
+});
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
