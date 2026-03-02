@@ -17,7 +17,40 @@ const log = (msg) => {
     console.log(`[${new Date().toISOString()}] ${msg}`);
 };
 
-app.use(cors());
+const defaultAllowedOrigins = [
+    "https://revisely.ai",
+    "https://www.revisely.ai",
+    "http://localhost:5173",
+];
+
+const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const effectiveAllowedOrigins = allowedOrigins.length ? allowedOrigins : defaultAllowedOrigins;
+
+app.use(
+    cors({
+        origin: (origin, cb) => {
+            // Non-browser requests may not send Origin; allow them.
+            if (!origin) return cb(null, true);
+            return cb(null, effectiveAllowedOrigins.includes(origin));
+        },
+        credentials: false,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        optionsSuccessStatus: 204,
+    })
+);
+
+// Prevent caching of API responses (tokens, user data, payment state)
+app.use("/api", (req, res, next) => {
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    next();
+});
 app.use(express.json({ limit: '10mb' }));
 
 // Request logging

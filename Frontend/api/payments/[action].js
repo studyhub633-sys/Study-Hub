@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { supabase, verifyAuth } from "../_utils/auth.js";
+import { applyCors, setNoStore } from "../_utils/http.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2024-06-20",
@@ -15,6 +16,9 @@ const DISCOUNT_CODES = {
 
 // ─── Main Router ────────────────────────────────────────────────
 export default async function handler(req, res) {
+    setNoStore(res);
+    if (applyCors(req, res)) return;
+
     const url = new URL(req.url, `http://${req.headers.host}`);
     const action = url.pathname.split("/").pop();
 
@@ -36,12 +40,6 @@ export default async function handler(req, res) {
 
 // ─── Create Stripe PaymentIntent (one-time) ─────────
 async function handleCreatePayment(req, res) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
@@ -102,7 +100,10 @@ async function handleCreatePayment(req, res) {
 
             if (dbError) {
                 console.error('[DB] Failed to insert free premium record:', dbError);
-                return res.status(500).json({ error: 'Failed to create premium record.', detail: dbError.message });
+                return res.status(500).json({
+                    error: 'Failed to create premium record.',
+                    ...(process.env.NODE_ENV !== "production" ? { detail: dbError.message } : {}),
+                });
             }
 
             await supabase
@@ -145,18 +146,16 @@ async function handleCreatePayment(req, res) {
 
     } catch (error) {
         console.error('[Stripe] Create payment error:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
+        return res.status(500).json({
+            error: process.env.NODE_ENV !== "production"
+                ? (error.message || 'Internal server error')
+                : 'Payment processing failed.',
+        });
     }
 }
 
 // ─── Confirm Stripe Payment & Activate Premium ─────────
 async function handleConfirmStripe(req, res) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
@@ -205,8 +204,9 @@ async function handleConfirmStripe(req, res) {
             console.error('[DB] Failed to insert Stripe payment record:', JSON.stringify(dbError));
             return res.status(500).json({
                 error: 'Failed to create payment record.',
-                detail: dbError.message,   // <-- expose this temporarily
-                code: dbError.code
+                ...(process.env.NODE_ENV !== "production"
+                    ? { detail: dbError.message, code: dbError.code }
+                    : {}),
             });
         }
 
@@ -237,18 +237,16 @@ async function handleConfirmStripe(req, res) {
 
     } catch (error) {
         console.error('[Stripe] Confirm payment error:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
+        return res.status(500).json({
+            error: process.env.NODE_ENV !== "production"
+                ? (error.message || 'Internal server error')
+                : 'Payment confirmation failed.',
+        });
     }
 }
 
 // ─── Get Subscription ──────────────────────────────────────────
 async function handleGetSubscription(req, res) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
@@ -275,18 +273,16 @@ async function handleGetSubscription(req, res) {
 
     } catch (error) {
         console.error('[Stripe] Get subscription error:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
+        return res.status(500).json({
+            error: process.env.NODE_ENV !== "production"
+                ? (error.message || 'Internal server error')
+                : 'Internal server error',
+        });
     }
 }
 
 // ─── Cancel / Deactivate Premium ───────────────────────────────
 async function handleCancel(req, res) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
@@ -340,18 +336,16 @@ async function handleCancel(req, res) {
 
     } catch (error) {
         console.error('[Stripe] Cancel error:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
+        return res.status(500).json({
+            error: process.env.NODE_ENV !== "production"
+                ? (error.message || 'Internal server error')
+                : 'Internal server error',
+        });
     }
 }
 
 // ─── Payment History ───────────────────────────────────────────
 async function handlePaymentHistory(req, res) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
@@ -378,6 +372,10 @@ async function handlePaymentHistory(req, res) {
 
     } catch (error) {
         console.error('[Stripe] Payment history error:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
+        return res.status(500).json({
+            error: process.env.NODE_ENV !== "production"
+                ? (error.message || 'Internal server error')
+                : 'Internal server error',
+        });
     }
 }
