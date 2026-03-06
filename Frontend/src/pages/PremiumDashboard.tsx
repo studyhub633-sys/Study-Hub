@@ -39,6 +39,7 @@ import {
     Sparkles,
     Timer,
     Trophy,
+    School,
     Users,
     Zap
 } from "lucide-react";
@@ -113,7 +114,15 @@ export default function PremiumDashboard() {
             hoverBg: "bg-orange-500",
         },
         {
-            title: t('premium.features.virtualSessions.title'),
+            title: "Competition Classes",
+            description: "Create or join classes, log revision time, and compete on the class leaderboard.",
+            icon: School,
+            path: "/premium/competition-classes",
+            color: "text-amber-500",
+            bg: "bg-amber-500/10",
+            hoverBg: "bg-amber-500",
+        },
+        {
             description: t('premium.features.virtualSessions.description'),
             icon: Users,
             path: "/premium/virtual-sessions",

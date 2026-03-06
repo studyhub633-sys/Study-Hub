@@ -45,6 +45,7 @@ const PerformanceHeatMap = lazy(() => import("./pages/premium/PerformanceHeatMap
 const Grade9Notes = lazy(() => import("./pages/premium/Grade9Notes"));
 const Grade9Flashcards = lazy(() => import("./pages/premium/Grade9Flashcards"));
 const CramMode = lazy(() => import("./pages/premium/CramMode"));
+const CompetitionClasses = lazy(() => import("./pages/premium/CompetitionClasses"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const PremiumDashboard = lazy(() => import("./pages/PremiumDashboard"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -227,6 +228,14 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <Leaderboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/competition-classes"
+                      element={
+                        <ProtectedRoute>
+                          <CompetitionClasses />
                         </ProtectedRoute>
                       }
                     />
