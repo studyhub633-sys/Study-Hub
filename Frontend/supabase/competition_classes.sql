@@ -95,13 +95,7 @@ CREATE POLICY "Class members: users can join"
 DROP POLICY IF EXISTS "Class members: users can view own memberships" ON public.competition_class_members;
 CREATE POLICY "Class members: users can view own memberships"
   ON public.competition_class_members FOR SELECT
-  USING (
-    auth.uid() = user_id
-    OR EXISTS (
-      SELECT 1 FROM public.competition_class_members m
-      WHERE m.class_id = competition_class_members.class_id AND m.user_id = auth.uid()
-    )
-  );
+  USING (auth.uid() = user_id);
 
 -- revision_logs: users can insert/update/delete own; members of same class can SELECT (for leaderboard)
 DROP POLICY IF EXISTS "Revision logs: own full access" ON public.revision_logs;
