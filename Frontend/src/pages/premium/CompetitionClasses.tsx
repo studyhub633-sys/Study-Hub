@@ -33,6 +33,7 @@ import {
     LogOut,
     MessageCircle,
     Plus,
+    Settings,
     Star,
     ThumbsUp,
     Trash2,
@@ -49,6 +50,7 @@ interface CompetitionClass {
     created_at: string;
     member_count?: number;
     my_role?: "teacher" | "student";
+    creator_name?: string;
 }
 
 interface LeaderboardEntry {
@@ -137,11 +139,14 @@ export default function CompetitionClasses() {
     const [animatingUserId, setAnimatingUserId] = useState<string | null>(null);
     const [lastPointChange, setLastPointChange] = useState<{ id: string, amount: number } | null>(null);
 
-    // Leave/Delete State
+    // Leave/Delete/Edit State
     const [isLeaving, setIsLeaving] = useState(false);
     const [showLeaveDialog, setShowLeaveDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [showEditDialog, setShowEditDialog] = useState(false);
+    const [editName, setEditName] = useState("");
 
     useEffect(() => {
         const check = async () => {
@@ -197,6 +202,20 @@ export default function CompetitionClasses() {
 
             if (classError) throw classError;
 
+            const creatorIds = classRows ? [...new Set(classRows.map(c => c.created_by))] : [];
+            let creatorMap: Record<string, string> = {};
+            if (creatorIds.length > 0) {
+                const { data: creatorsData } = await supabase
+                    .from("profiles")
+                    .select("id, full_name, email")
+                    .in("id", creatorIds);
+                if (creatorsData) {
+                    creatorMap = Object.fromEntries(
+                        creatorsData.map(p => [p.id, p.full_name || p.email?.split('@')[0] || "Teacher"])
+                    );
+                }
+            }
+
             const memberCounts = await Promise.all(
                 classIds.map(async (id) => {
                     const { count } = await supabase
@@ -214,6 +233,7 @@ export default function CompetitionClasses() {
                     ...c,
                     member_count: countMap[c.id] ?? 0,
                     my_role: roleMap[c.id],
+                    creator_name: creatorMap[c.created_by],
                 }))
             );
         } catch (e: unknown) {
@@ -453,6 +473,33 @@ export default function CompetitionClasses() {
         }
     };
 
+    const handleEditClass = async () => {
+        if (!user || !supabase || !selectedClass || !editName.trim()) return;
+        setIsEditing(true);
+        try {
+            const { error } = await supabase
+                .from("competition_classes")
+                .update({ name: editName.trim() })
+                .eq("id", selectedClass.id);
+
+            if (error) throw error;
+
+            toast({ title: "Success", description: "Class updated successfully." });
+            setShowEditDialog(false);
+            setSelectedClass({ ...selectedClass, name: editName.trim() });
+            fetchMyClasses();
+        } catch (e: unknown) {
+            const err = e as { message?: string };
+            toast({
+                title: "Error",
+                description: err?.message || "Failed to edit class.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsEditing(false);
+        }
+    };
+
     // Predefined Behaviors
     const positiveBehaviors = [
         { name: "Hard Work", points: 1, icon: <Star className="w-5 h-5 text-yellow-500" /> },
@@ -596,10 +643,25 @@ export default function CompetitionClasses() {
                                 </Select>
 
                                 {selectedClass.my_role === "teacher" ? (
-                                    <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        Delete Class
-                                    </Button>
+                                    <>
+                                        {selectedClass.created_by === user?.id && (
+                                            <Button variant="outline" size="sm" onClick={() => { setEditName(selectedClass.name); setShowEditDialog(true); }}>
+                                                <Settings className="w-4 h-4 mr-2" />
+                                                Edit Class
+                                            </Button>
+                                        )}
+                                        {selectedClass.created_by === user?.id ? (
+                                            <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
+                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                Delete Class
+                                            </Button>
+                                        ) : (
+                                            <Button variant="destructive" size="sm" onClick={() => setShowLeaveDialog(true)}>
+                                                <LogOut className="w-4 h-4 mr-2" />
+                                                Leave Class
+                                            </Button>
+                                        )}
+                                    </>
                                 ) : (
                                     <Button variant="destructive" size="sm" onClick={() => setShowLeaveDialog(true)}>
                                         <LogOut className="w-4 h-4 mr-2" />
@@ -610,10 +672,17 @@ export default function CompetitionClasses() {
                         </div>
 
                         <div className="flex flex-col items-center mb-8">
-                            <h2 className="text-4xl font-black mb-2 flex items-center gap-3">
-                                {selectedClass.name}
-                                {selectedClass.my_role === "teacher" && (
-                                    <Badge variant="secondary" className="text-sm">Teacher View</Badge>
+                            <h2 className="text-4xl font-black mb-2 flex flex-col items-center gap-2">
+                                <div className="flex items-center gap-3">
+                                    {selectedClass.name}
+                                    {selectedClass.my_role === "teacher" && (
+                                        <Badge variant="secondary" className="text-sm">Teacher View</Badge>
+                                    )}
+                                </div>
+                                {selectedClass.my_role === "student" && selectedClass.creator_name && (
+                                    <span className="text-lg text-muted-foreground font-medium flex items-center gap-2 mt-1">
+                                        <Users className="w-5 h-5" /> Taught by {selectedClass.creator_name}
+                                    </span>
                                 )}
                             </h2>
 
@@ -845,6 +914,47 @@ export default function CompetitionClasses() {
                             ))}
                         </div>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit class dialog */}
+            <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Class</DialogTitle>
+                        <DialogDescription>
+                            Change the name of your classroom.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-class-name">Class name</Label>
+                            <Input
+                                id="edit-class-name"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                placeholder="e.g. 10B Maths 2025"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleEditClass}
+                            disabled={isEditing || !editName.trim()}
+                        >
+                            {isEditing ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Saving…
+                                </>
+                            ) : (
+                                "Save Changes"
+                            )}
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 
