@@ -27,6 +27,7 @@ import {
     AlertTriangle,
     BookOpen,
     ChevronLeft,
+    GraduationCap,
     HandHelping,
     Loader2,
     MessageCircle,
@@ -112,6 +113,8 @@ export default function CompetitionClasses() {
     const [classes, setClasses] = useState<CompetitionClass[]>([]);
     const [isPremium, setIsPremium] = useState(false);
     const [checkingPremium, setCheckingPremium] = useState(true);
+
+    const [roleView, setRoleView] = useState<'teacher' | 'student' | null>(null);
 
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [createName, setCreateName] = useState("");
@@ -443,22 +446,66 @@ export default function CompetitionClasses() {
         );
     }
 
+    const filteredClasses = classes.filter(c => c.my_role === roleView);
+
     return (
         <AppLayout>
             <div className="max-w-6xl mx-auto space-y-6 animate-fade-in pb-12">
-                <div className="flex items-center gap-4">
+
+                {/* Header */}
+                <div className="flex items-center gap-4 mb-6">
                     <div className="p-3 rounded-xl bg-orange-500/10 text-orange-500">
                         <Trophy className="w-8 h-8" />
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold">Competition Classes</h1>
                         <p className="text-muted-foreground">
-                            Join your class, grow your avatar, and earn points for your hard work!
+                            {!roleView && "Choose how you want to interact with Classes."}
+                            {roleView === 'teacher' && !selectedClass && "Manage your classrooms and award points."}
+                            {roleView === 'student' && !selectedClass && "Grow your monster avatar and earn points!"}
+                            {selectedClass && `Welcome to ${selectedClass.name}!`}
                         </p>
                     </div>
                 </div>
 
-                {selectedClass ? (
+                {/* Main Views */}
+                {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                ) : !roleView ? (
+                    /* Step 1: Role Selection View */
+                    <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-12">
+                        <Card
+                            className="cursor-pointer group hover:border-orange-500 hover:shadow-xl hover:scale-105 transition-all text-center p-8 border-2"
+                            onClick={() => setRoleView('student')}
+                        >
+                            <div className="w-24 h-24 mx-auto bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mb-6 group-hover:bg-orange-500 group-hover:text-white text-orange-600 transition-colors">
+                                <GraduationCap className="w-12 h-12" />
+                            </div>
+                            <h2 className="text-2xl font-bold mb-2">I am a Student</h2>
+                            <p className="text-muted-foreground">
+                                Join classes, get your monster avatar, and earn points for your hard work!
+                            </p>
+                            <Button className="mt-6 w-full group-hover:bg-orange-600">Select Student</Button>
+                        </Card>
+
+                        <Card
+                            className="cursor-pointer group hover:border-blue-500 hover:shadow-xl hover:scale-105 transition-all text-center p-8 border-2"
+                            onClick={() => setRoleView('teacher')}
+                        >
+                            <div className="w-24 h-24 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6 group-hover:bg-blue-500 group-hover:text-white text-blue-600 transition-colors">
+                                <Users className="w-12 h-12" />
+                            </div>
+                            <h2 className="text-2xl font-bold mb-2">I am a Teacher</h2>
+                            <p className="text-muted-foreground">
+                                Create classes, invite students, and award points for positive behaviors.
+                            </p>
+                            <Button className="mt-6 w-full group-hover:bg-blue-600">Select Teacher</Button>
+                        </Card>
+                    </div>
+                ) : selectedClass ? (
+                    /* Step 3: Class Detail View */
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
                             <Button
@@ -468,7 +515,7 @@ export default function CompetitionClasses() {
                                 onClick={() => setSelectedClass(null)}
                             >
                                 <ChevronLeft className="w-4 h-4" />
-                                Back to classes
+                                Back to my {roleView} classes
                             </Button>
 
                             <Select
@@ -493,12 +540,16 @@ export default function CompetitionClasses() {
                                     <Badge variant="secondary" className="text-sm">Teacher View</Badge>
                                 )}
                             </h2>
-                            <p className="text-muted-foreground flex items-center gap-2">
-                                <Users className="w-4 h-4" /> {selectedClass.member_count} Members
-                                <span className="mx-2">•</span> Code: <strong className="text-foreground">{selectedClass.join_code}</strong>
-                            </p>
+
+                            {roleView === 'teacher' && (
+                                <p className="text-muted-foreground flex items-center gap-2 bg-muted px-4 py-1.5 rounded-full mt-2">
+                                    <Users className="w-4 h-4" /> {selectedClass.member_count} Members
+                                    <span className="mx-2">•</span> Code: <strong className="text-foreground font-mono text-lg">{selectedClass.join_code}</strong>
+                                </p>
+                            )}
+
                             {selectedClass.my_role === "teacher" && (
-                                <p className="text-sm text-primary mt-2 flex items-center gap-1">
+                                <p className="text-sm text-primary mt-4 flex items-center gap-1">
                                     <Star className="w-4 h-4" /> Click a student below to award points!
                                 </p>
                             )}
@@ -546,7 +597,7 @@ export default function CompetitionClasses() {
                                                     {/* Points Bubble */}
                                                     <div className={`
                                                         absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center
-                                                        font-bold text-white text-sm shadow-md transition-transform
+                                                        font-bold text-white text-sm shadow-md transition-transform border-2 border-background
                                                         ${points > 0 ? 'bg-green-500' : points < 0 ? 'bg-red-500' : 'bg-slate-400'}
                                                         ${isAnimating ? 'scale-125' : 'scale-100'}
                                                     `}>
@@ -582,48 +633,62 @@ export default function CompetitionClasses() {
                         </Card>
                     </div>
                 ) : (
+                    /* Step 2: Class List View filtered by Role */
                     <>
-                        {/* Class List Mode */}
-                        <div className="flex flex-wrap gap-3">
-                            <Button onClick={() => setShowCreateDialog(true)}>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Create class
+                        <div className="flex items-center justify-between mb-6">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="gap-2 -ml-2"
+                                onClick={() => setRoleView(null)}
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                                Switch Role
                             </Button>
-                            <Button variant="outline" onClick={() => setShowJoinDialog(true)}>
-                                <Users className="w-4 h-4 mr-2" />
-                                Join with code
-                            </Button>
+
+                            <div className="flex gap-3">
+                                {roleView === 'teacher' ? (
+                                    <Button onClick={() => setShowCreateDialog(true)}>
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Create Class
+                                    </Button>
+                                ) : (
+                                    <Button variant="default" onClick={() => setShowJoinDialog(true)}>
+                                        <Users className="w-4 h-4 mr-2" />
+                                        Join with code
+                                    </Button>
+                                )}
+                            </div>
                         </div>
 
-                        {loading ? (
-                            <div className="flex items-center justify-center py-12">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            </div>
-                        ) : classes.length === 0 ? (
+                        {filteredClasses.length === 0 ? (
                             <Card className="p-8 text-center max-w-xl mx-auto mt-12 bg-muted/30">
                                 <div className="flex flex-col items-center gap-4">
                                     <div className="p-4 rounded-2xl bg-orange-500/10 mb-2">
                                         <Trophy className="w-16 h-16 text-orange-500" />
                                     </div>
-                                    <h3 className="text-2xl font-bold">Welcome to Classes!</h3>
+                                    <h3 className="text-2xl font-bold">No Classes Yet</h3>
                                     <p className="text-muted-foreground">
-                                        Teachers can create classes to award points to student monsters for hard work.
-                                        Students can join with a code to start earning points!
+                                        {roleView === 'teacher'
+                                            ? "Create your first class to start awarding points to your students!"
+                                            : "Ask your teacher for their 6-digit class code to join!"}
                                     </p>
-                                    <div className="flex gap-4 mt-6">
-                                        <Button size="lg" onClick={() => setShowCreateDialog(true)}>
-                                            <Plus className="w-5 h-5 mr-2" />
-                                            Create class
-                                        </Button>
-                                        <Button size="lg" variant="secondary" onClick={() => setShowJoinDialog(true)}>
-                                            Join with code
-                                        </Button>
+                                    <div className="mt-4">
+                                        {roleView === 'teacher' ? (
+                                            <Button size="lg" onClick={() => setShowCreateDialog(true)}>
+                                                Create Class
+                                            </Button>
+                                        ) : (
+                                            <Button size="lg" onClick={() => setShowJoinDialog(true)}>
+                                                Join Class
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                             </Card>
                         ) : (
-                            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-8">
-                                {classes.map((c) => (
+                            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+                                {filteredClasses.map((c) => (
                                     <Card
                                         key={c.id}
                                         className="cursor-pointer group hover:border-orange-500/50 hover:shadow-lg transition-all"
@@ -634,16 +699,13 @@ export default function CompetitionClasses() {
                                                 <div className="p-3 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 transition-colors group-hover:bg-orange-500 group-hover:text-white">
                                                     <Users className="w-6 h-6" />
                                                 </div>
-                                                {c.my_role === "teacher" && (
-                                                    <Badge className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-none pointer-events-none">
-                                                        Teacher
-                                                    </Badge>
-                                                )}
                                             </div>
                                             <CardTitle className="text-xl truncate">{c.name}</CardTitle>
                                             <CardDescription className="flex flex-col gap-1 mt-2">
                                                 <span className="font-medium">{c.member_count} member{c.member_count !== 1 ? "s" : ""}</span>
-                                                <span className="text-xs bg-muted px-2 py-1 rounded-md w-fit font-mono">Code: {c.join_code}</span>
+                                                {roleView === 'teacher' && (
+                                                    <span className="text-xs bg-muted px-2 py-1 rounded-md w-fit font-mono mt-1">Code: {c.join_code}</span>
+                                                )}
                                             </CardDescription>
                                         </CardHeader>
                                     </Card>
