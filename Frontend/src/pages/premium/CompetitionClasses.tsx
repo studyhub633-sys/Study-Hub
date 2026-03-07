@@ -30,10 +30,12 @@ import {
     GraduationCap,
     HandHelping,
     Loader2,
+    LogOut,
     MessageCircle,
     Plus,
     Star,
     ThumbsUp,
+    Trash2,
     Trophy,
     Users
 } from "lucide-react";
@@ -129,12 +131,17 @@ export default function CompetitionClasses() {
     const [leaderboardPeriod, setLeaderboardPeriod] = useState<"week" | "month" | "all_time">("all_time");
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
-    // Point Awarding State for Teachers
     const [showAwardDialog, setShowAwardDialog] = useState(false);
     const [awardingStudent, setAwardingStudent] = useState<LeaderboardEntry | null>(null);
     const [awardingPoints, setAwardingPoints] = useState(false);
     const [animatingUserId, setAnimatingUserId] = useState<string | null>(null);
     const [lastPointChange, setLastPointChange] = useState<{ id: string, amount: number } | null>(null);
+
+    // Leave/Delete State
+    const [isLeaving, setIsLeaving] = useState(false);
+    const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     useEffect(() => {
         const check = async () => {
@@ -391,6 +398,61 @@ export default function CompetitionClasses() {
         }
     };
 
+    const handleLeaveClass = async () => {
+        if (!user || !supabase || !selectedClass) return;
+        setIsLeaving(true);
+        try {
+            const { error } = await supabase
+                .from("competition_class_members")
+                .delete()
+                .eq("class_id", selectedClass.id)
+                .eq("user_id", user.id);
+
+            if (error) throw error;
+
+            toast({ title: "Success", description: "You have left the class." });
+            setShowLeaveDialog(false);
+            setSelectedClass(null);
+            fetchMyClasses();
+        } catch (e: unknown) {
+            const err = e as { message?: string };
+            toast({
+                title: "Error",
+                description: err?.message || "Failed to leave class.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLeaving(false);
+        }
+    };
+
+    const handleDeleteClass = async () => {
+        if (!user || !supabase || !selectedClass) return;
+        setIsDeleting(true);
+        try {
+            const { error } = await supabase
+                .from("competition_classes")
+                .delete()
+                .eq("id", selectedClass.id);
+
+            if (error) throw error;
+
+            toast({ title: "Success", description: "Class deleted successfully." });
+            setShowDeleteDialog(false);
+            setSelectedClass(null);
+            fetchMyClasses();
+        } catch (e: unknown) {
+            const err = e as { message?: string };
+            toast({
+                title: "Error",
+                description: err?.message || "Failed to delete class.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     // Predefined Behaviors
     const positiveBehaviors = [
         { name: "Hard Work", points: 1, icon: <Star className="w-5 h-5 text-yellow-500" /> },
@@ -507,7 +569,7 @@ export default function CompetitionClasses() {
                 ) : selectedClass ? (
                     /* Step 3: Class Detail View */
                     <div className="space-y-6">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-4">
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -518,19 +580,33 @@ export default function CompetitionClasses() {
                                 Back to my {roleView} classes
                             </Button>
 
-                            <Select
-                                value={leaderboardPeriod}
-                                onValueChange={(v) => setLeaderboardPeriod(v as any)}
-                            >
-                                <SelectTrigger className="w-[160px]">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all_time">All Time Points</SelectItem>
-                                    <SelectItem value="month">This Month</SelectItem>
-                                    <SelectItem value="week">This Week</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-2">
+                                <Select
+                                    value={leaderboardPeriod}
+                                    onValueChange={(v) => setLeaderboardPeriod(v as any)}
+                                >
+                                    <SelectTrigger className="w-[160px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all_time">All Time Points</SelectItem>
+                                        <SelectItem value="month">This Month</SelectItem>
+                                        <SelectItem value="week">This Week</SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                                {selectedClass.my_role === "teacher" ? (
+                                    <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Delete Class
+                                    </Button>
+                                ) : (
+                                    <Button variant="destructive" size="sm" onClick={() => setShowLeaveDialog(true)}>
+                                        <LogOut className="w-4 h-4 mr-2" />
+                                        Leave Class
+                                    </Button>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex flex-col items-center mb-8">
@@ -857,6 +933,47 @@ export default function CompetitionClasses() {
                 </DialogContent>
             </Dialog>
 
+            {/* Leave Class Dialog */}
+            <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Leave Class?</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to leave {selectedClass?.name}? All your earned points in this class will be lost.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowLeaveDialog(false)} disabled={isLeaving}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleLeaveClass} disabled={isLeaving}>
+                            {isLeaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                            Leave
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Class Dialog */}
+            <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Class?</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete {selectedClass?.name}? This will permanently remove all students and points from this class. This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleDeleteClass} disabled={isDeleting}>
+                            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }
