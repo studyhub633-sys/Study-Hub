@@ -64,24 +64,29 @@ CREATE POLICY "Competition classes: members can view"
     )
   );
 
+-- 1. Create a security definer function to check for teacher role without triggering RLS
+CREATE OR REPLACE FUNCTION public.is_class_teacher(p_class_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.competition_class_members
+    WHERE class_id = p_class_id AND user_id = auth.uid() AND role = 'teacher'
+  );
+END;
+$$;
+
 -- competition_class_members: teacher of class can manage; users can insert themselves (join) with role student
 DROP POLICY IF EXISTS "Class members: teacher can manage" ON public.competition_class_members;
 CREATE POLICY "Class members: teacher can manage"
   ON public.competition_class_members FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.competition_class_members m
-      WHERE m.class_id = competition_class_members.class_id AND m.user_id = auth.uid() AND m.role = 'teacher'
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.competition_class_members m
-      WHERE m.class_id = competition_class_members.class_id AND m.user_id = auth.uid() AND m.role = 'teacher'
-    )
-  );
+  USING (public.is_class_teacher(class_id))
+  WITH CHECK (public.is_class_teacher(class_id));
 
-DROP POLICY IF EXISTS "Class members: users can join as student" ON public.competition_class_members;
+DROP POLICY IF EXISTS "Class members: users can join" ON public.competition_class_members;
 CREATE POLICY "Class members: users can join"
   ON public.competition_class_members FOR INSERT
   WITH CHECK (

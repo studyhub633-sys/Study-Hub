@@ -24,14 +24,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { hasPremium } from "@/lib/premium";
 import {
-    Calendar,
+    AlertTriangle,
+    BookOpen,
     ChevronLeft,
+    HandHelping,
     Loader2,
-    Medal,
+    MessageCircle,
     Plus,
-    Timer,
+    Star,
+    ThumbsUp,
     Trophy,
-    Users,
+    Users
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -49,7 +52,8 @@ interface LeaderboardEntry {
     user_id: string;
     name: string;
     avatar_url: string | null;
-    total_minutes: number;
+    total_points?: number;
+    total_minutes?: number; // fallback for pre-migration
     rank: number;
 }
 
@@ -60,6 +64,45 @@ function generateJoinCode(): string {
         code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
+}
+
+const playSound = (type: 'positive' | 'negative') => {
+    try {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        if (type === 'positive') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0, ctx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.5);
+        } else {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.3);
+            gainNode.gain.setValueAtTime(0, ctx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.1);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.5);
+        }
+    } catch (e) {
+        console.error("Audio playback error:", e);
+    }
+};
+
+const getDicebearAvatar = (seed: string) => {
+    return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf,ffd5dc`;
 }
 
 export default function CompetitionClasses() {
@@ -80,12 +123,15 @@ export default function CompetitionClasses() {
 
     const [selectedClass, setSelectedClass] = useState<CompetitionClass | null>(null);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-    const [leaderboardPeriod, setLeaderboardPeriod] = useState<"week" | "month">("week");
+    const [leaderboardPeriod, setLeaderboardPeriod] = useState<"week" | "month" | "all_time">("all_time");
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
 
-    const [showLogDialog, setShowLogDialog] = useState(false);
-    const [logMinutes, setLogMinutes] = useState("30");
-    const [logging, setLogging] = useState(false);
+    // Point Awarding State for Teachers
+    const [showAwardDialog, setShowAwardDialog] = useState(false);
+    const [awardingStudent, setAwardingStudent] = useState<LeaderboardEntry | null>(null);
+    const [awardingPoints, setAwardingPoints] = useState(false);
+    const [animatingUserId, setAnimatingUserId] = useState<string | null>(null);
+    const [lastPointChange, setLastPointChange] = useState<{ id: string, amount: number } | null>(null);
 
     useEffect(() => {
         const check = async () => {
@@ -296,51 +342,65 @@ export default function CompetitionClasses() {
         }
     };
 
-    const handleLogRevision = async () => {
-        if (!user || !supabase || !selectedClass) return;
-        const mins = parseInt(logMinutes, 10);
-        if (isNaN(mins) || mins < 1 || mins > 1440) {
-            toast({
-                title: "Invalid time",
-                description: "Enter between 1 and 1440 minutes.",
-                variant: "destructive",
-            });
-            return;
-        }
-        setLogging(true);
+    const handleAwardPoints = async (points: number, reason: string) => {
+        if (!user || !supabase || !selectedClass || !awardingStudent) return;
+        setAwardingPoints(true);
         try {
-            const { error } = await supabase.from("revision_logs").insert({
-                user_id: user.id,
-                class_id: selectedClass.id,
-                minutes: mins,
-                logged_at: new Date().toISOString().slice(0, 10),
+            const { error } = await supabase.rpc("award_class_points", {
+                p_class_id: selectedClass.id,
+                p_student_id: awardingStudent.user_id,
+                p_points: points,
+                p_reason: reason
             });
-            if (error) throw error;
+            if (error) {
+                // If the RPC fails (likely because migration hasn't been run yet by the user)
+                throw new Error("Points system migration is required. Please ask the admin to run the updated SQL scripts.");
+            }
+
+            // Audio feedback
+            playSound(points > 0 ? 'positive' : 'negative');
+
+            // Animation state
+            setAnimatingUserId(awardingStudent.user_id);
+            setLastPointChange({ id: awardingStudent.user_id, amount: points });
+            setTimeout(() => {
+                setAnimatingUserId(null);
+                setLastPointChange(null);
+            }, 2000);
+
             toast({
-                title: "Revision logged",
-                description: `${mins} minutes added to your total.`,
+                title: points > 0 ? "Points Awarded!" : "Points Deducted",
+                description: `${points > 0 ? '+' : ''}${points} for ${reason}`,
             });
-            setShowLogDialog(false);
-            setLogMinutes("30");
-            fetchLeaderboard();
+
+            setShowAwardDialog(false);
+            setAwardingStudent(null);
+            fetchLeaderboard(); // Refresh points
         } catch (e: unknown) {
             const err = e as { message?: string };
             toast({
                 title: "Error",
-                description: err?.message || "Failed to log revision.",
+                description: err?.message || "Failed to award points.",
                 variant: "destructive",
             });
         } finally {
-            setLogging(false);
+            setAwardingPoints(false);
         }
     };
 
-    const formatMinutes = (m: number) => {
-        if (m < 60) return `${m}m`;
-        const h = Math.floor(m / 60);
-        const min = m % 60;
-        return min ? `${h}h ${min}m` : `${h}h`;
-    };
+    // Predefined Behaviors
+    const positiveBehaviors = [
+        { name: "Hard Work", points: 1, icon: <Star className="w-5 h-5 text-yellow-500" /> },
+        { name: "Helping Others", points: 1, icon: <HandHelping className="w-5 h-5 text-emerald-500" /> },
+        { name: "Participating", points: 1, icon: <MessageCircle className="w-5 h-5 text-blue-500" /> },
+        { name: "Great Answer", points: 2, icon: <ThumbsUp className="w-5 h-5 text-purple-500" /> },
+        { name: "On Task", points: 1, icon: <BookOpen className="w-5 h-5 text-cyan-500" /> },
+    ];
+
+    const negativeBehaviors = [
+        { name: "Off Task", points: -1, icon: <AlertTriangle className="w-5 h-5 text-red-500" /> },
+        { name: "Disrupting", points: -1, icon: <AlertTriangle className="w-5 h-5 text-orange-500" /> },
+    ];
 
     if (checkingPremium) {
         return (
@@ -363,12 +423,12 @@ export default function CompetitionClasses() {
                                 Premium Feature
                             </CardTitle>
                             <CardDescription>
-                                Competition Classes are a premium feature. Create or join classes and track revision time with your peers.
+                                Competition Classes are a premium feature. Create or join classes, earn points with monsters, and compete!
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <p className="text-muted-foreground mb-4">
-                                Join a class with a code, log how long you revise, and see your class leaderboard.
+                                Join a class with a code to get your own Avatar monster and earn points for hard work.
                             </p>
                             <Button
                                 onClick={() => (window.location.href = "/premium-dashboard")}
@@ -385,7 +445,7 @@ export default function CompetitionClasses() {
 
     return (
         <AppLayout>
-            <div className="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12">
+            <div className="max-w-6xl mx-auto space-y-6 animate-fade-in pb-12">
                 <div className="flex items-center gap-4">
                     <div className="p-3 rounded-xl bg-orange-500/10 text-orange-500">
                         <Trophy className="w-8 h-8" />
@@ -393,117 +453,129 @@ export default function CompetitionClasses() {
                     <div>
                         <h1 className="text-3xl font-bold">Competition Classes</h1>
                         <p className="text-muted-foreground">
-                            Join a class, log your revision time, and compete on the leaderboard.
+                            Join your class, grow your avatar, and earn points for your hard work!
                         </p>
                     </div>
                 </div>
 
                 {selectedClass ? (
                     <div className="space-y-6">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="gap-2 -ml-2"
-                            onClick={() => setSelectedClass(null)}
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                            Back to my classes
-                        </Button>
+                        <div className="flex items-center justify-between">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="gap-2 -ml-2"
+                                onClick={() => setSelectedClass(null)}
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                                Back to classes
+                            </Button>
 
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <div className="flex flex-wrap items-center justify-between gap-4">
-                                    <div>
-                                        <CardTitle>{selectedClass.name}</CardTitle>
-                                        <CardDescription className="flex items-center gap-2 mt-1">
-                                            <Users className="w-4 h-4" />
-                                            {selectedClass.member_count} member
-                                            {selectedClass.member_count !== 1 ? "s" : ""}
-                                            {selectedClass.my_role === "teacher" && (
-                                                <Badge variant="secondary" className="text-xs">
-                                                    Teacher
-                                                </Badge>
-                                            )}
-                                        </CardDescription>
-                                    </div>
-                                    <Button onClick={() => setShowLogDialog(true)}>
-                                        <Timer className="w-4 h-4 mr-2" />
-                                        Log revision
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                        </Card>
+                            <Select
+                                value={leaderboardPeriod}
+                                onValueChange={(v) => setLeaderboardPeriod(v as any)}
+                            >
+                                <SelectTrigger className="w-[160px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all_time">All Time Points</SelectItem>
+                                    <SelectItem value="month">This Month</SelectItem>
+                                    <SelectItem value="week">This Week</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <div className="flex flex-wrap items-center justify-between gap-4">
-                                    <CardTitle className="text-lg">Class leaderboard</CardTitle>
-                                    <Select
-                                        value={leaderboardPeriod}
-                                        onValueChange={(v) => setLeaderboardPeriod(v as "week" | "month")}
-                                    >
-                                        <SelectTrigger className="w-[140px]">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="week">This week</SelectItem>
-                                            <SelectItem value="month">This month</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-0">
+                        <div className="flex flex-col items-center mb-8">
+                            <h2 className="text-4xl font-black mb-2 flex items-center gap-3">
+                                {selectedClass.name}
+                                {selectedClass.my_role === "teacher" && (
+                                    <Badge variant="secondary" className="text-sm">Teacher View</Badge>
+                                )}
+                            </h2>
+                            <p className="text-muted-foreground flex items-center gap-2">
+                                <Users className="w-4 h-4" /> {selectedClass.member_count} Members
+                                <span className="mx-2">•</span> Code: <strong className="text-foreground">{selectedClass.join_code}</strong>
+                            </p>
+                            {selectedClass.my_role === "teacher" && (
+                                <p className="text-sm text-primary mt-2 flex items-center gap-1">
+                                    <Star className="w-4 h-4" /> Click a student below to award points!
+                                </p>
+                            )}
+                        </div>
+
+                        <Card className="bg-muted/10 border-none shadow-none">
+                            <CardContent className="p-6">
                                 {loadingLeaderboard ? (
                                     <div className="flex items-center justify-center py-12">
                                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                                     </div>
                                 ) : leaderboard.length === 0 ? (
                                     <div className="py-12 text-center text-muted-foreground">
-                                        <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                                        <p>No revision logged for this {leaderboardPeriod} yet.</p>
-                                        <p className="text-sm mt-1">Log your first revision to appear here.</p>
+                                        <div className="w-24 h-24 mx-auto mb-4 opacity-50 bg-muted rounded-full flex items-center justify-center">
+                                            <Users className="w-10 h-10" />
+                                        </div>
+                                        <p className="text-lg font-medium text-foreground">No students here yet.</p>
+                                        <p className="text-sm mt-1">Share the join code to invite them!</p>
                                     </div>
                                 ) : (
-                                    <div className="divide-y">
-                                        {leaderboard.map((entry) => (
-                                            <div
-                                                key={entry.user_id}
-                                                className={`flex items-center gap-4 p-4 ${entry.user_id === user?.id ? "bg-primary/5" : "hover:bg-muted/50"}`}
-                                            >
-                                                <div className="w-8 text-center font-bold text-muted-foreground">
-                                                    {entry.rank <= 3 ? (
-                                                        <Medal
-                                                            className={`w-5 h-5 mx-auto ${
-                                                                entry.rank === 1
-                                                                    ? "text-yellow-500"
-                                                                    : entry.rank === 2
-                                                                      ? "text-slate-400"
-                                                                      : "text-amber-600"
-                                                            }`}
-                                                        />
-                                                    ) : (
-                                                        entry.rank
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                                        {/* Class Dojo Style Grid */}
+                                        {leaderboard.map((entry) => {
+                                            // Handle both old schema (total_minutes) and new schema (total_points) gracefully
+                                            const points = entry.total_points ?? entry.total_minutes ?? 0;
+                                            const isAnimating = animatingUserId === entry.user_id;
+
+                                            return (
+                                                <div
+                                                    key={entry.user_id}
+                                                    onClick={() => selectedClass.my_role === 'teacher' ? setAwardingStudent(entry) : null}
+                                                    className={`
+                                                        relative flex flex-col items-center p-4 rounded-2xl transition-all duration-300
+                                                        ${selectedClass.my_role === 'teacher' ? 'cursor-pointer hover:bg-muted/50 hover:scale-105 active:scale-95' : ''}
+                                                        ${entry.user_id === user?.id ? 'ring-2 ring-primary/50 bg-primary/5' : 'bg-card border shadow-sm'}
+                                                    `}
+                                                >
+                                                    {/* Floating +1 / -1 Animation indicator */}
+                                                    {isAnimating && lastPointChange && (
+                                                        <div className={`absolute -top-4 font-black text-2xl animate-bounce z-10 ${lastPointChange.amount > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                            {lastPointChange.amount > 0 ? '+' : ''}{lastPointChange.amount}
+                                                        </div>
                                                     )}
-                                                </div>
-                                                <Avatar>
-                                                    <AvatarImage src={entry.avatar_url || undefined} />
-                                                    <AvatarFallback>{entry.name[0]}</AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex-1">
-                                                    <span className="font-medium">
-                                                        {entry.name}
+
+                                                    {/* Points Bubble */}
+                                                    <div className={`
+                                                        absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center
+                                                        font-bold text-white text-sm shadow-md transition-transform
+                                                        ${points > 0 ? 'bg-green-500' : points < 0 ? 'bg-red-500' : 'bg-slate-400'}
+                                                        ${isAnimating ? 'scale-125' : 'scale-100'}
+                                                    `}>
+                                                        {points}
+                                                    </div>
+
+                                                    {/* Avatar */}
+                                                    <div className="w-24 h-24 mb-3 drop-shadow-md">
+                                                        <img
+                                                            src={entry.avatar_url || getDicebearAvatar(entry.user_id)}
+                                                            alt={entry.name}
+                                                            className="w-full h-full object-contain rounded-full bg-slate-100/50"
+                                                        />
+                                                    </div>
+
+                                                    {/* Student Info */}
+                                                    <div className="text-center w-full">
+                                                        <span className="font-semibold text-sm truncate block px-1">
+                                                            {entry.name}
+                                                        </span>
                                                         {entry.user_id === user?.id && (
-                                                            <Badge variant="secondary" className="ml-2 text-[10px]">
+                                                            <Badge variant="outline" className="mt-1 text-[10px] px-1.5 py-0 h-4">
                                                                 YOU
                                                             </Badge>
                                                         )}
-                                                    </span>
+                                                    </div>
                                                 </div>
-                                                <div className="font-semibold tabular-nums">
-                                                    {formatMinutes(Number(entry.total_minutes))}
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </CardContent>
@@ -511,6 +583,7 @@ export default function CompetitionClasses() {
                     </div>
                 ) : (
                     <>
+                        {/* Class List Mode */}
                         <div className="flex flex-wrap gap-3">
                             <Button onClick={() => setShowCreateDialog(true)}>
                                 <Plus className="w-4 h-4 mr-2" />
@@ -527,46 +600,50 @@ export default function CompetitionClasses() {
                                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                             </div>
                         ) : classes.length === 0 ? (
-                            <Card className="p-8 text-center">
+                            <Card className="p-8 text-center max-w-xl mx-auto mt-12 bg-muted/30">
                                 <div className="flex flex-col items-center gap-4">
-                                    <div className="p-4 rounded-full bg-orange-500/10">
-                                        <Trophy className="w-12 h-12 text-orange-500" />
+                                    <div className="p-4 rounded-2xl bg-orange-500/10 mb-2">
+                                        <Trophy className="w-16 h-16 text-orange-500" />
                                     </div>
-                                    <h3 className="text-xl font-semibold">No classes yet</h3>
-                                    <p className="text-muted-foreground max-w-md">
-                                        Create a class and share the join code with your students, or join a class using a code from your teacher.
+                                    <h3 className="text-2xl font-bold">Welcome to Classes!</h3>
+                                    <p className="text-muted-foreground">
+                                        Teachers can create classes to award points to student monsters for hard work.
+                                        Students can join with a code to start earning points!
                                     </p>
-                                    <div className="flex gap-3 mt-4">
-                                        <Button onClick={() => setShowCreateDialog(true)}>
-                                            <Plus className="w-4 h-4 mr-2" />
+                                    <div className="flex gap-4 mt-6">
+                                        <Button size="lg" onClick={() => setShowCreateDialog(true)}>
+                                            <Plus className="w-5 h-5 mr-2" />
                                             Create class
                                         </Button>
-                                        <Button variant="outline" onClick={() => setShowJoinDialog(true)}>
+                                        <Button size="lg" variant="secondary" onClick={() => setShowJoinDialog(true)}>
                                             Join with code
                                         </Button>
                                     </div>
                                 </div>
                             </Card>
                         ) : (
-                            <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-8">
                                 {classes.map((c) => (
                                     <Card
                                         key={c.id}
-                                        className="cursor-pointer transition-colors hover:border-orange-500/50 hover:bg-muted/30"
+                                        className="cursor-pointer group hover:border-orange-500/50 hover:shadow-lg transition-all"
                                         onClick={() => setSelectedClass(c)}
                                     >
-                                        <CardHeader className="pb-2">
-                                            <CardTitle className="text-lg flex items-center justify-between">
-                                                {c.name}
+                                        <CardHeader>
+                                            <div className="flex items-start justify-between mb-2">
+                                                <div className="p-3 rounded-xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 transition-colors group-hover:bg-orange-500 group-hover:text-white">
+                                                    <Users className="w-6 h-6" />
+                                                </div>
                                                 {c.my_role === "teacher" && (
-                                                    <Badge variant="secondary" className="text-xs">
+                                                    <Badge className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-none pointer-events-none">
                                                         Teacher
                                                     </Badge>
                                                 )}
-                                            </CardTitle>
-                                            <CardDescription className="flex items-center gap-2">
-                                                <Users className="w-4 h-4" />
-                                                {c.member_count} member{c.member_count !== 1 ? "s" : ""} · Code: {c.join_code}
+                                            </div>
+                                            <CardTitle className="text-xl truncate">{c.name}</CardTitle>
+                                            <CardDescription className="flex flex-col gap-1 mt-2">
+                                                <span className="font-medium">{c.member_count} member{c.member_count !== 1 ? "s" : ""}</span>
+                                                <span className="text-xs bg-muted px-2 py-1 rounded-md w-fit font-mono">Code: {c.join_code}</span>
                                             </CardDescription>
                                         </CardHeader>
                                     </Card>
@@ -577,8 +654,65 @@ export default function CompetitionClasses() {
                 )}
             </div>
 
+            {/* Award Points Dialog (Teacher Only) */}
+            <Dialog open={showAwardDialog || !!awardingStudent} onOpenChange={(open) => {
+                if (!open) setAwardingStudent(null);
+                setShowAwardDialog(open);
+            }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-3">
+                            <Avatar className="w-10 h-10 border">
+                                <AvatarImage src={awardingStudent?.avatar_url || getDicebearAvatar(awardingStudent?.user_id || "")} />
+                                <AvatarFallback>{awardingStudent?.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            Award Points to {awardingStudent?.name}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="py-4 space-y-4">
+                        <Label>Positive feedback</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {positiveBehaviors.map(b => (
+                                <Button
+                                    key={b.name}
+                                    variant="outline"
+                                    className="h-auto py-3 px-4 flex flex-col gap-2 items-center hover:bg-green-50 hover:border-green-200 dark:hover:bg-green-900/20 dark:hover:border-green-900 transition-colors"
+                                    onClick={() => handleAwardPoints(b.points, b.name)}
+                                    disabled={awardingPoints}
+                                >
+                                    <div className="bg-muted rounded-full p-2">{b.icon}</div>
+                                    <div className="text-sm font-semibold">{b.name}</div>
+                                    <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 pointer-events-none">+{b.points}</Badge>
+                                </Button>
+                            ))}
+                        </div>
+
+                        <div className="mt-6 mb-2">
+                            <Label>Needs work</Label>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            {negativeBehaviors.map(b => (
+                                <Button
+                                    key={b.name}
+                                    variant="outline"
+                                    className="h-auto py-3 px-4 flex flex-col gap-2 items-center hover:bg-red-50 hover:border-red-200 dark:hover:bg-red-900/20 dark:hover:border-red-900 transition-colors"
+                                    onClick={() => handleAwardPoints(b.points, b.name)}
+                                    disabled={awardingPoints}
+                                >
+                                    <div className="bg-muted rounded-full p-2">{b.icon}</div>
+                                    <div className="text-sm font-semibold">{b.name}</div>
+                                    <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 pointer-events-none">{b.points}</Badge>
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             {/* Create class dialog */}
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                {/* Same as before */}
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Create a class</DialogTitle>
@@ -620,6 +754,7 @@ export default function CompetitionClasses() {
 
             {/* Join class dialog */}
             <Dialog open={showJoinDialog} onOpenChange={setShowJoinDialog}>
+                {/* Same as before */}
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Join a class</DialogTitle>
@@ -660,49 +795,6 @@ export default function CompetitionClasses() {
                 </DialogContent>
             </Dialog>
 
-            {/* Log revision dialog */}
-            <Dialog open={showLogDialog} onOpenChange={setShowLogDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Log revision time</DialogTitle>
-                        <DialogDescription>
-                            How many minutes did you revise? This will count toward the class leaderboard.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="log-minutes">Minutes</Label>
-                            <Input
-                                id="log-minutes"
-                                type="number"
-                                min={1}
-                                max={1440}
-                                value={logMinutes}
-                                onChange={(e) => setLogMinutes(e.target.value)}
-                                placeholder="30"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Between 1 and 1440 (24 hours). Today's date will be used.
-                            </p>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowLogDialog(false)}>
-                            Cancel
-                        </Button>
-                        <Button onClick={handleLogRevision} disabled={logging}>
-                            {logging ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Logging…
-                                </>
-                            ) : (
-                                "Log revision"
-                            )}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </AppLayout>
     );
 }
