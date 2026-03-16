@@ -65,12 +65,12 @@ export default function Premium() {
       description: "1-to-1 AI tutoring, step-by-step homework solutions, and unlimited practice questions. Free users get 10 prompts/day.",
       key: "aiTutor"
     },
-    // 2. Unlimited Quizzes / Instant Feedback
+    // 2. Unlimited Quizzes
     {
       icon: Zap,
-      title: "Instant Feedback",
-      description: "Receive detailed explanations and mark scheme breakdowns for every answer",
-      key: "instantFeedback"
+      title: "Unlimited Quizzes",
+      description: "AI-generated quiz questions on any GCSE topic — answer and get instant right/wrong feedback. Free users: 10/day.",
+      key: "unlimitedQuizzes"
     },
     // 3. Tutoring
     {

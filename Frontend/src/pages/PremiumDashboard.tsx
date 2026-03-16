@@ -36,11 +36,11 @@ import {
     Lock,
     Network,
     Rocket,
+    School,
     Shield,
     Sparkles,
     Timer,
     Trophy,
-    School,
     Users,
     Zap
 } from "lucide-react";
@@ -81,16 +81,17 @@ export default function PremiumDashboard() {
         },
         // 2. Unlimited Quizzes
         {
-            title: t('premium.features.aiExaminer.title'),
-            description: t('premium.features.aiExaminer.description'),
-            icon: GraduationCap,
-            path: "/premium/ai-examiner",
-            color: "text-blue-500",
-            bg: "bg-blue-500/10",
-            hoverBg: "bg-blue-500",
+            title: "Unlimited Quizzes",
+            description: "AI-generated quiz questions — test yourself on any GCSE topic with instant feedback.",
+            icon: Zap,
+            path: "/premium/unlimited-quizzes",
+            color: "text-violet-500",
+            bg: "bg-violet-500/10",
+            hoverBg: "bg-violet-500",
         },
         // 3. Tutoring (Virtual Sessions)
         {
+            title: t('premium.features.virtualSessions.title'),
             description: t('premium.features.virtualSessions.description'),
             icon: Users,
             path: "/premium/virtual-sessions",
@@ -208,6 +209,15 @@ export default function PremiumDashboard() {
             bg: "bg-orange-500/10",
             hoverBg: "bg-orange-500",
         },
+        {
+            title: t('premium.features.aiExaminer.title'),
+            description: t('premium.features.aiExaminer.description'),
+            icon: GraduationCap,
+            path: "/premium/ai-examiner",
+            color: "text-blue-500",
+            bg: "bg-blue-500/10",
+            hoverBg: "bg-blue-500",
+        },
     ];
 
     // Feature Benefits list - all uniform, non-clickable display cards
@@ -220,9 +230,9 @@ export default function PremiumDashboard() {
         },
         // 2. Unlimited Quizzes
         {
-            icon: Brain,
-            title: t('premium.features.aiQuestions.title'),
-            description: t('premium.dashboard.unlimitedAIDescription'),
+            icon: Zap,
+            title: "Unlimited Quizzes",
+            description: "AI-generated quiz questions with instant right/wrong feedback on any GCSE topic.",
         },
         // 3. Tutoring
         {

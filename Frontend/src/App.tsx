@@ -47,6 +47,7 @@ const Grade9Flashcards = lazy(() => import("./pages/premium/Grade9Flashcards"));
 const CramMode = lazy(() => import("./pages/premium/CramMode"));
 const CompetitionClasses = lazy(() => import("./pages/premium/CompetitionClasses"));
 const BeyondTheoryLessons = lazy(() => import("./pages/premium/BeyondTheoryLessons"));
+const UnlimitedQuizzes = lazy(() => import("./pages/premium/UnlimitedQuizzes"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const PremiumDashboard = lazy(() => import("./pages/PremiumDashboard"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -317,6 +318,14 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <BeyondTheoryLessons />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/premium/unlimited-quizzes"
+                      element={
+                        <ProtectedRoute>
+                          <UnlimitedQuizzes />
                         </ProtectedRoute>
                       }
                     />
