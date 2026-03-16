@@ -410,6 +410,10 @@
             "prioritySupport": {
                 "title": "Priority Support",
                 "description": "Get help faster with dedicated premium customer support"
+            },
+            "beyondTheory": {
+                "title": "Beyond Theory Lessons",
+                "description": "Go beyond textbooks with real-world applications, exam technique masterclasses, and interactive case studies."
             }
         },
         "planFeatures": {

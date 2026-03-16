@@ -19,6 +19,7 @@ import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
+  BookOpen,
   Brain,
   Check,
   CheckCircle,
@@ -74,6 +75,12 @@ export default function Premium() {
       title: "Instant Feedback",
       description: "Receive detailed explanations and mark scheme breakdowns for every answer",
       key: "instantFeedback"
+    },
+    {
+      icon: BookOpen,
+      title: t("premium.features.beyondTheory.title"),
+      description: t("premium.features.beyondTheory.description"),
+      key: "beyondTheory"
     },
     {
       icon: Clock,

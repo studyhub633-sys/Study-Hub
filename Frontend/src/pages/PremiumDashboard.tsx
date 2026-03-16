@@ -21,6 +21,7 @@ import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
     BarChart3,
+    BookOpen,
     Bot,
     Brain,
     Calculator,
@@ -94,6 +95,15 @@ export default function PremiumDashboard() {
             color: "text-green-500",
             bg: "bg-green-500/10",
             hoverBg: "bg-green-500",
+        },
+        {
+            title: t('premium.features.beyondTheory.title'),
+            description: t('premium.features.beyondTheory.description'),
+            icon: BookOpen,
+            path: "/premium/beyond-theory-lessons",
+            color: "text-teal-500",
+            bg: "bg-teal-500/10",
+            hoverBg: "bg-teal-500",
         },
         {
             title: t('premium.features.focusMode.title'),
