@@ -89,7 +89,17 @@ export default function PremiumDashboard() {
             bg: "bg-violet-500/10",
             hoverBg: "bg-violet-500",
         },
-        // 3. Tutoring (Virtual Sessions)
+        // 3. AI Examiner (promoted - right after quizzes)
+        {
+            title: t('premium.features.aiExaminer.title'),
+            description: t('premium.features.aiExaminer.description'),
+            icon: GraduationCap,
+            path: "/premium/ai-examiner",
+            color: "text-rose-500",
+            bg: "bg-rose-500/10",
+            hoverBg: "bg-rose-500",
+        },
+        // 4. Tutoring (Virtual Sessions)
         {
             title: t('premium.features.virtualSessions.title'),
             description: t('premium.features.virtualSessions.description'),
@@ -209,15 +219,6 @@ export default function PremiumDashboard() {
             bg: "bg-orange-500/10",
             hoverBg: "bg-orange-500",
         },
-        {
-            title: t('premium.features.aiExaminer.title'),
-            description: t('premium.features.aiExaminer.description'),
-            icon: GraduationCap,
-            path: "/premium/ai-examiner",
-            color: "text-blue-500",
-            bg: "bg-blue-500/10",
-            hoverBg: "bg-blue-500",
-        },
     ];
 
     // Feature Benefits list - all uniform, non-clickable display cards
@@ -234,13 +235,19 @@ export default function PremiumDashboard() {
             title: "Unlimited Quizzes",
             description: "AI-generated quiz questions with instant right/wrong feedback on any GCSE topic.",
         },
-        // 3. Tutoring
+        // 3. AI Examiner (promoted)
+        {
+            icon: GraduationCap,
+            title: t('premium.features.aiExaminer.title'),
+            description: t('premium.features.aiExaminer.description'),
+        },
+        // 4. Tutoring
         {
             icon: Users,
             title: t('premium.features.virtualSessions.title'),
             description: t('premium.features.virtualSessions.description'),
         },
-        // 4. Grade 9 Notes and Flashcards
+        // 5. Grade 9 Notes and Flashcards
         {
             icon: Brain,
             title: t('premium.features.grade9Notes.title'),
@@ -272,11 +279,7 @@ export default function PremiumDashboard() {
             title: t('premium.features.mindMap.title'),
             description: t('premium.features.mindMap.description'),
         },
-        {
-            icon: GraduationCap,
-            title: t('premium.features.aiExaminer.title'),
-            description: t('premium.features.aiExaminer.description'),
-        },
+
         {
             icon: BarChart3,
             title: t('premium.features.performanceHeatmap.title'),
