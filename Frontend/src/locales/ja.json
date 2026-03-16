@@ -505,6 +505,13 @@
             "upgradeToPremium": "プレミアムにアップグレード",
             "active": "有効",
             "upgradeHint": "AI機能、高度な分析、広告なしの学習をプレミアムで解除。"
+        },
+        "legal": {
+            "title": "法的情報",
+            "termsTitle": "利用規約",
+            "termsDescription": "ウェブサイトの利用規約を確認する",
+            "privacyTitle": "プライバシーポリシー",
+            "privacyDescription": "データの取り扱いと保護について確認する"
         }
     }
 }

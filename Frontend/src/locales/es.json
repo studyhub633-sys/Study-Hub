@@ -310,6 +310,13 @@
             "upgradeToPremium": "Actualizar a Premium",
             "active": "Activo",
             "upgradeHint": "Desbloquea funciones de IA, análisis avanzados y estudio sin anuncios con Premium."
+        },
+        "legal": {
+            "title": "Legal",
+            "termsTitle": "Términos y Condiciones",
+            "termsDescription": "Ver nuestros términos y condiciones de uso",
+            "privacyTitle": "Política de Privacidad",
+            "privacyDescription": "Ver cómo manejamos y protegemos tus datos"
         }
     },
     "auth": {

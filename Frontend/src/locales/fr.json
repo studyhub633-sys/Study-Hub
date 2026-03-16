@@ -313,6 +313,13 @@
             "upgradeToPremium": "Passer à Premium",
             "active": "Actif",
             "upgradeHint": "Débloquez les fonctionnalités IA, les analyses avancées et l'étude sans publicité avec Premium."
+        },
+        "legal": {
+            "title": "Mentions légales",
+            "termsTitle": "Conditions générales",
+            "termsDescription": "Consulter nos conditions générales d'utilisation",
+            "privacyTitle": "Politique de confidentialité",
+            "privacyDescription": "Voir comment nous traitons et protégeons vos données"
         }
     }
 }

@@ -20,6 +20,8 @@ import {
   Camera,
   CreditCard,
   Crown,
+  ExternalLink,
+  FileText,
   GraduationCap,
   Loader2,
   Mail,
@@ -30,12 +32,14 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 export default function Settings() {
   const { supabase, user } = useAuth();
   const { theme, toggleTheme, setTheme } = useTheme();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("profile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,6 +50,7 @@ export default function Settings() {
     { icon: Palette, label: t("settings.appearance.title"), id: "appearance" },
     { icon: Shield, label: t("settings.privacy.title"), id: "privacy" },
     { icon: CreditCard, label: t("settings.subscription.title"), id: "subscription" },
+    { icon: FileText, label: t("settings.legal.title"), id: "legal" },
   ];
 
   // Profile form state
@@ -659,6 +664,47 @@ export default function Settings() {
                         {t("settings.subscription.upgradeHint")}
                       </p>
                     )}
+                  </div>
+                )}
+
+                {/* Legal Section */}
+                {activeSection === "legal" && (
+                  <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
+                    <h2 className="text-lg font-semibold text-foreground mb-6">{t("settings.legal.title")}</h2>
+
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => navigate('/terms')}
+                        className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border hover:bg-muted transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                            <FileText className="h-5 w-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium text-foreground">{t("settings.legal.termsTitle")}</p>
+                            <p className="text-sm text-muted-foreground">{t("settings.legal.termsDescription")}</p>
+                          </div>
+                        </div>
+                        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      </button>
+
+                      <button
+                        onClick={() => navigate('/privacy')}
+                        className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border hover:bg-muted transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                            <Shield className="h-5 w-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium text-foreground">{t("settings.legal.privacyTitle")}</p>
+                            <p className="text-sm text-muted-foreground">{t("settings.legal.privacyDescription")}</p>
+                          </div>
+                        </div>
+                        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      </button>
+                    </div>
                   </div>
                 )}
               </>

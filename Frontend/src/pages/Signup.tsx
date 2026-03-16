@@ -116,19 +116,6 @@ export default function Signup() {
               )}
               {welcomeStep === 2 && (
                 <>
-                  <h3 className="text-xl font-bold tracking-tight mb-2">Our Community Pledges</h3>
-                  <div className="text-left text-sm text-muted-foreground space-y-3 bg-muted/50 p-4 rounded-lg border border-border/50">
-                    <p><strong>📖 Respect & Integrity:</strong> Use our resources to learn and grow, but uphold academic honesty.</p>
-                    <p><strong>🤝 Community:</strong> Treat fellow students with respect in all interactions.</p>
-                    <p><strong>🔒 Privacy:</strong> We protect your data as outlined in our <Link to="/privacy" className="text-primary hover:underline" target="_blank">Privacy Policy</Link> and <Link to="/terms" className="text-primary hover:underline" target="_blank">Terms</Link>.</p>
-                  </div>
-                  <Button className="w-full mt-6" onClick={() => setWelcomeStep(3)}>
-                    I Understand
-                  </Button>
-                </>
-              )}
-              {welcomeStep === 3 && (
-                <>
                   <div className="py-4">
                     <h3 className="text-2xl font-bold tracking-tight text-primary mb-2">Enjoy your stay! 🎉</h3>
                     <p className="text-muted-foreground">

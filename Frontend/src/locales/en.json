@@ -635,6 +635,13 @@
             "upgradeToPremium": "Upgrade to Premium",
             "active": "Active",
             "upgradeHint": "Unlock AI-powered features, advanced analytics, and ad-free studying with Premium."
+        },
+        "legal": {
+            "title": "Legal",
+            "termsTitle": "Terms & Conditions",
+            "termsDescription": "View our website terms and conditions of use",
+            "privacyTitle": "Privacy Policy",
+            "privacyDescription": "View how we handle and protect your data"
         }
     }
 }

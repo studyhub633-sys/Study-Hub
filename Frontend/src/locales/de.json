@@ -313,6 +313,13 @@
             "upgradeToPremium": "Auf Premium upgraden",
             "active": "Aktiv",
             "upgradeHint": "Schalten Sie KI-Funktionen, erweiterte Analysen und werbefreies Lernen mit Premium frei."
+        },
+        "legal": {
+            "title": "Rechtliches",
+            "termsTitle": "Nutzungsbedingungen",
+            "termsDescription": "Unsere Nutzungsbedingungen einsehen",
+            "privacyTitle": "Datenschutzrichtlinie",
+            "privacyDescription": "Erfahren Sie, wie wir Ihre Daten verarbeiten und schützen"
         }
     }
 }
