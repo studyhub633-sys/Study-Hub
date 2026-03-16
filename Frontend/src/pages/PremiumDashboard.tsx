@@ -69,6 +69,7 @@ export default function PremiumDashboard() {
 
     // Dashboard-specific feature list (Tools)
     const dashboardFeatures = [
+        // 1. AI Tutor (most prominent)
         {
             title: t('premium.features.aiTutor.title'),
             description: t('premium.features.aiTutor.description'),
@@ -78,6 +79,45 @@ export default function PremiumDashboard() {
             bg: "bg-amber-500/10",
             hoverBg: "bg-amber-500",
         },
+        // 2. Unlimited Quizzes
+        {
+            title: t('premium.features.aiExaminer.title'),
+            description: t('premium.features.aiExaminer.description'),
+            icon: GraduationCap,
+            path: "/premium/ai-examiner",
+            color: "text-blue-500",
+            bg: "bg-blue-500/10",
+            hoverBg: "bg-blue-500",
+        },
+        // 3. Tutoring (Virtual Sessions)
+        {
+            description: t('premium.features.virtualSessions.description'),
+            icon: Users,
+            path: "/premium/virtual-sessions",
+            color: "text-indigo-500",
+            bg: "bg-indigo-500/10",
+            hoverBg: "bg-indigo-500",
+        },
+        // 4. Grade 9 Notes and Flashcards
+        {
+            title: t('premium.features.grade9Notes.title'),
+            description: t('premium.features.grade9Notes.description'),
+            icon: FileText,
+            path: "/premium/grade-9-notes",
+            color: "text-emerald-500",
+            bg: "bg-emerald-500/10",
+            hoverBg: "bg-emerald-500",
+        },
+        {
+            title: "Grade 9 Flashcards",
+            description: "Premium flashcards for rapid revision and retention",
+            icon: Layers,
+            path: "/premium/grade-9-flashcards",
+            color: "text-pink-500",
+            bg: "bg-pink-500/10",
+            hoverBg: "bg-pink-500",
+        },
+        // Then the rest
         {
             title: t('premium.features.noteCondenser.title'),
             description: t('premium.features.noteCondenser.description'),
@@ -133,14 +173,6 @@ export default function PremiumDashboard() {
             hoverBg: "bg-amber-500",
         },
         {
-            description: t('premium.features.virtualSessions.description'),
-            icon: Users,
-            path: "/premium/virtual-sessions",
-            color: "text-indigo-500",
-            bg: "bg-indigo-500/10",
-            hoverBg: "bg-indigo-500",
-        },
-        {
             title: t('premium.features.homeworkTracker.title'),
             description: t('premium.features.homeworkTracker.description'),
             icon: Calendar,
@@ -168,15 +200,6 @@ export default function PremiumDashboard() {
             hoverBg: "bg-purple-500",
         },
         {
-            title: t('premium.features.aiExaminer.title'),
-            description: t('premium.features.aiExaminer.description'),
-            icon: GraduationCap,
-            path: "/premium/ai-examiner",
-            color: "text-blue-500",
-            bg: "bg-blue-500/10",
-            hoverBg: "bg-blue-500",
-        },
-        {
             title: t('premium.features.performanceHeatmap.title'),
             description: t('premium.features.performanceHeatmap.description'),
             icon: BarChart3,
@@ -185,39 +208,35 @@ export default function PremiumDashboard() {
             bg: "bg-orange-500/10",
             hoverBg: "bg-orange-500",
         },
-        {
-            title: t('premium.features.grade9Notes.title'),
-            description: t('premium.features.grade9Notes.description'),
-            icon: FileText,
-            path: "/premium/grade-9-notes",
-            color: "text-emerald-500",
-            bg: "bg-emerald-500/10",
-            hoverBg: "bg-emerald-500",
-        },
-        {
-            title: "Grade 9 Flashcards",
-            description: "Premium flashcards for rapid revision and retention",
-            icon: Layers,
-            path: "/premium/grade-9-flashcards",
-            color: "text-pink-500",
-            bg: "bg-pink-500/10",
-            hoverBg: "bg-pink-500",
-        },
-
     ];
 
     // Feature Benefits list - all uniform, non-clickable display cards
     const benefitFeatures = [
-        {
-            icon: Brain,
-            title: t('premium.features.aiQuestions.title'),
-            description: t('premium.dashboard.unlimitedAIDescription'),
-        },
+        // 1. AI Tutor (most prominent)
         {
             icon: Bot,
             title: t('premium.features.aiTutor.title'),
             description: t('premium.features.aiTutor.description'),
         },
+        // 2. Unlimited Quizzes
+        {
+            icon: Brain,
+            title: t('premium.features.aiQuestions.title'),
+            description: t('premium.dashboard.unlimitedAIDescription'),
+        },
+        // 3. Tutoring
+        {
+            icon: Users,
+            title: t('premium.features.virtualSessions.title'),
+            description: t('premium.features.virtualSessions.description'),
+        },
+        // 4. Grade 9 Notes and Flashcards
+        {
+            icon: Brain,
+            title: t('premium.features.grade9Notes.title'),
+            description: t('premium.features.grade9Notes.description'),
+        },
+        // Then the rest
         {
             icon: Timer,
             title: t('premium.features.performanceHeatmap.title'),
@@ -227,16 +246,6 @@ export default function PremiumDashboard() {
             icon: Shield,
             title: t('premium.features.focusMode.title'),
             description: t('premium.features.focusMode.description'),
-        },
-        {
-            icon: Users,
-            title: t('premium.features.virtualSessions.title'),
-            description: t('premium.features.virtualSessions.description'),
-        },
-        {
-            icon: Brain,
-            title: t('premium.features.grade9Notes.title'),
-            description: t('premium.features.grade9Notes.description'),
         },
         {
             icon: Timer,

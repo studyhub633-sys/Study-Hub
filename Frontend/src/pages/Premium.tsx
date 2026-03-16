@@ -58,24 +58,35 @@ export default function Premium() {
   const [checkingContent, setCheckingContent] = useState(true);
 
   const features = [
+    // 1. AI Tutor (most prominent)
     {
       icon: Brain,
       title: "AI Tutor & Homework Solver",
       description: "1-to-1 AI tutoring, step-by-step homework solutions, and unlimited practice questions. Free users get 10 prompts/day.",
       key: "aiTutor"
     },
-    {
-      icon: Sparkles,
-      title: t("premium.features.studySuggestions.title"),
-      description: t("premium.features.studySuggestions.description"),
-      key: "studySuggestions"
-    },
+    // 2. Unlimited Quizzes / Instant Feedback
     {
       icon: Zap,
       title: "Instant Feedback",
       description: "Receive detailed explanations and mark scheme breakdowns for every answer",
       key: "instantFeedback"
     },
+    // 3. Tutoring
+    {
+      icon: Sparkles,
+      title: t("premium.features.studySuggestions.title"),
+      description: t("premium.features.studySuggestions.description"),
+      key: "studySuggestions"
+    },
+    // 4. Grade 9 Notes and Flashcards
+    {
+      icon: Brain,
+      title: "Grade 9 Premium Notes",
+      description: "Access exclusive Grade 9 notes and study materials",
+      key: "grade9Notes"
+    },
+    // Then the rest
     {
       icon: BookOpen,
       title: t("premium.features.beyondTheory.title"),
@@ -99,12 +110,6 @@ export default function Premium() {
       title: "Priority Support",
       description: "Get help faster with dedicated premium customer support",
       key: "prioritySupport"
-    },
-    {
-      icon: Brain,
-      title: "Grade 9 Premium Notes",
-      description: "Access exclusive Grade 9 notes and study materials",
-      key: "grade9Notes"
     },
     {
       icon: Clock,
