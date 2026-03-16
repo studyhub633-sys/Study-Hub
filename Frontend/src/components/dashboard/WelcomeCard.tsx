@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { hasPremium } from "@/lib/premium";
-import { Brain, Flame, Sparkles } from "lucide-react";
+import { Brain, Flame, Sparkles, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,7 @@ export function WelcomeCard() {
     flashcardsCount: 0,
     papersCount: 0,
     streak: 0,
+    xp: 0,
   });
   const [loading, setLoading] = useState(true);
   const [aiUsage, setAiUsage] = useState<{ count: number; limit: number; isPremium: boolean } | null>(null);
@@ -38,7 +39,7 @@ export function WelcomeCard() {
           setProfile(profileData);
         }
 
-        // Fetch counts and activity for streak from ALL study sources
+        // Fetch counts and activity for streak + XP from ALL study sources
         const [
           notesResult,
           flashcardsResult,
@@ -56,6 +57,17 @@ export function WelcomeCard() {
           examSubmissionsDates,
           studySessionsDates,
           extracurricularsDates,
+          // XP: additional counts needed
+          knowledgeOrganizersCount,
+          aiUsageCount,
+          aiChatSessionsCount,
+          completedHomeworkCount,
+          completedTasksCount,
+          mindMapsCount,
+          examSubmissionsCount,
+          studySessionsCount,
+          extracurricularsCount,
+          flashcardsWithReviews,
         ] = await Promise.all([
           // Counts for display
           supabase.from("notes").select("*", { count: "exact", head: true }).eq("user_id", user.id),
@@ -74,6 +86,17 @@ export function WelcomeCard() {
           supabase.from("exam_submissions").select("created_at, submission_date").eq("user_id", user.id),
           supabase.from("study_sessions").select("date, created_at").eq("user_id", user.id),
           supabase.from("extracurriculars").select("created_at, updated_at").eq("user_id", user.id),
+          // XP calculation counts
+          supabase.from("knowledge_organizers").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+          supabase.from("ai_usage_tracking").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+          supabase.from("ai_chat_sessions").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+          supabase.from("homework").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("completed", true),
+          supabase.from("tasks").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("completed", true),
+          supabase.from("mind_maps").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+          supabase.from("exam_submissions").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+          supabase.from("study_sessions").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+          supabase.from("extracurriculars").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+          supabase.from("flashcards").select("review_count").eq("user_id", user.id),
         ]);
 
         // Convert date to YYYY-MM-DD format
@@ -142,11 +165,32 @@ export function WelcomeCard() {
           return count;
         })();
 
+        // Calculate XP using same weights as leaderboard SQL function
+        const totalReviewCount = (flashcardsWithReviews.data || []).reduce(
+          (sum: number, fc: any) => sum + (fc.review_count || 0), 0
+        );
+
+        const xp =
+          (notesResult.count || 0) * 20 +
+          (flashcardsResult.count || 0) * 10 +
+          (papersResult.count || 0) * 50 +
+          (knowledgeOrganizersCount.count || 0) * 30 +
+          (aiUsageCount.count || 0) * 5 +
+          (aiChatSessionsCount.count || 0) * 10 +
+          (completedHomeworkCount.count || 0) * 25 +
+          (completedTasksCount.count || 0) * 15 +
+          (mindMapsCount.count || 0) * 25 +
+          (examSubmissionsCount.count || 0) * 100 +
+          (studySessionsCount.count || 0) * 20 +
+          (extracurricularsCount.count || 0) * 15 +
+          totalReviewCount * 2;
+
         setStats({
           notesCount: notesResult.count || 0,
           flashcardsCount: flashcardsResult.count || 0,
           papersCount: papersResult.count || 0,
           streak,
+          xp,
         });
 
         // Fetch AI usage for display
@@ -220,28 +264,58 @@ export function WelcomeCard() {
             )}
           </div>
 
-          {/* Study Streak - positioned on the right */}
-          <div
-            className="group relative overflow-hidden bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/10 rounded-2xl p-4 transition-all duration-300 animate-scale-in self-start shadow-xl"
-            role="button"
-            onClick={() => navigate('/premium/leaderboard')}
-          >
-            <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full blur-xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/10 transition-colors" />
+          {/* XP & Streak - positioned on the right */}
+          <div className="flex flex-col sm:flex-row gap-3 self-start">
+            {/* XP Badge */}
+            <div
+              className="group relative overflow-hidden bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/10 rounded-2xl p-4 transition-all duration-300 animate-scale-in shadow-xl cursor-pointer"
+              role="button"
+              onClick={() => navigate('/premium/leaderboard')}
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full blur-xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/10 transition-colors" />
 
-            <div className="relative z-10 flex items-center gap-4">
-              <div className={`p-3 rounded-xl transition-all duration-300 ${stats.streak > 0 ? 'bg-orange-500/20 text-orange-400 group-hover:bg-orange-500/30 ring-1 ring-orange-500/30' : 'bg-white/10 text-white/50'}`}>
-                <Flame className={`w-6 h-6 ${stats.streak > 0 ? 'fill-orange-400 animate-pulse-subtle' : ''}`} />
+              <div className="relative z-10 flex items-center gap-4">
+                <div className={`p-3 rounded-xl transition-all duration-300 ${stats.xp > 0 ? 'bg-violet-500/20 text-violet-400 group-hover:bg-violet-500/30 ring-1 ring-violet-500/30' : 'bg-white/10 text-white/50'}`}>
+                  <Star className={`w-6 h-6 ${stats.xp > 0 ? 'fill-violet-400 animate-pulse-subtle' : ''}`} />
+                </div>
+
+                <div>
+                  <p className="text-primary-foreground/70 text-xs font-medium uppercase tracking-wider mb-0.5">{t("dashboard.welcome.totalXP")}</p>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-bold text-white tracking-tight">
+                      {stats.xp.toLocaleString()}
+                    </span>
+                    <span className="text-sm text-primary-foreground/80 font-medium">
+                      XP
+                    </span>
+                  </div>
+                </div>
               </div>
+            </div>
 
-              <div>
-                <p className="text-primary-foreground/70 text-xs font-medium uppercase tracking-wider mb-0.5">{t("dashboard.welcome.studyStreak")}</p>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-bold text-white tracking-tight">
-                    {stats.streak}
-                  </span>
-                  <span className="text-sm text-primary-foreground/80 font-medium">
-                    {t("dashboard.welcome.days", { count: stats.streak }).replace(/\d+\s/, '')}
-                  </span>
+            {/* Study Streak */}
+            <div
+              className="group relative overflow-hidden bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/10 rounded-2xl p-4 transition-all duration-300 animate-scale-in shadow-xl cursor-pointer"
+              role="button"
+              onClick={() => navigate('/premium/leaderboard')}
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full blur-xl -translate-y-1/2 translate-x-1/2 group-hover:bg-white/10 transition-colors" />
+
+              <div className="relative z-10 flex items-center gap-4">
+                <div className={`p-3 rounded-xl transition-all duration-300 ${stats.streak > 0 ? 'bg-orange-500/20 text-orange-400 group-hover:bg-orange-500/30 ring-1 ring-orange-500/30' : 'bg-white/10 text-white/50'}`}>
+                  <Flame className={`w-6 h-6 ${stats.streak > 0 ? 'fill-orange-400 animate-pulse-subtle' : ''}`} />
+                </div>
+
+                <div>
+                  <p className="text-primary-foreground/70 text-xs font-medium uppercase tracking-wider mb-0.5">{t("dashboard.welcome.studyStreak")}</p>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-bold text-white tracking-tight">
+                      {stats.streak}
+                    </span>
+                    <span className="text-sm text-primary-foreground/80 font-medium">
+                      {t("dashboard.welcome.days", { count: stats.streak }).replace(/\d+\s/, '')}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
