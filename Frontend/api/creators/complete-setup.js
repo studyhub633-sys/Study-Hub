@@ -1,7 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { applyCors, setNoStore } from "../_utils/http.js";
 
-// Initialize Supabase admin client for secure account creation
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -22,73 +21,6 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Server misconfiguration: Missing Supabase Admin credentials" });
     }
 
-    // Vercel populates req.query.path for [...path].js routes
-    // Fallback to manual parsing for local dev
-    let segments = req.query.path;
-    if (!segments) {
-        const url = new URL(req.url, `http://${req.headers.host}`);
-        segments = url.pathname.replace(/^\/api\/creators\//, '').split('/').filter(Boolean);
-    }
-
-    // GET /api/creators/verify-token?token=...
-    if (segments[0] === "verify-token") {
-        return handleVerifyToken(req, res, new URL(req.url, `http://${req.headers.host}`));
-    }
-
-    // POST /api/creators/complete-setup
-    if (segments[0] === "complete-setup") {
-        return handleCompleteSetup(req, res);
-    }
-
-    return res.status(404).json({ 
-        error: "Creators API route not found",
-        debug: {
-            method: req.method,
-            url: req.url,
-            segments,
-            query: req.query
-        }
-    });
-}
-
-async function handleVerifyToken(req, res, url) {
-    if (req.method !== 'GET') return res.status(405).json({ error: "Method not allowed" });
-    
-    const token = url.searchParams.get('token');
-    if (!token) return res.status(400).json({ error: "Token is required" });
-
-    try {
-        const { data: invite, error } = await supabaseAdmin
-            .from('creator_invites')
-            .select('*')
-            .eq('token', token)
-            .single();
-
-        if (error || !invite) {
-            return res.status(400).json({ error: "Invalid or expired invite token" });
-        }
-
-        if (invite.used) {
-            return res.status(400).json({ error: "This invite link has already been used" });
-        }
-
-        if (new Date(invite.expires_at) < new Date()) {
-            return res.status(400).json({ error: "This invite link has expired" });
-        }
-
-        return res.status(200).json({ 
-            valid: true, 
-            email: invite.email,
-            commission_rate: invite.commission_rate
-        });
-
-    } catch (error) {
-        console.error("Verify Token Error:", error);
-        return res.status(500).json({ error: "Failed to verify token" });
-    }
-}
-
-async function handleCompleteSetup(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: "Method not allowed" });
 
     const { token, password, creator_code, full_name } = req.body;
@@ -124,17 +56,16 @@ async function handleCompleteSetup(req, res) {
 
         // 3. Find or Create the User in Auth
         let userId;
-        const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-        const existingUser = existingUsers?.users?.find(u => u.email === invite.email);
+        const { data: usersResponse, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        if (listError) return res.status(500).json({ error: `Auth list error: ${listError.message}` });
+        
+        const existingUser = usersResponse?.users?.find(u => u.email === invite.email);
 
         if (existingUser) {
             userId = existingUser.id;
-            // Optionally update their password if they want to ensure they can log in 
-            // but we'll leave it as is, maybe they just forgot they had an account.
-            // For safety, let's update the password so they definitely know it.
-            await supabaseAdmin.auth.admin.updateUserById(userId, { password });
+            const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(userId, { password });
+            if (updateAuthError) return res.status(500).json({ error: `Auth update error: ${updateAuthError.message}` });
         } else {
-            // Create user securely via Admin API, skipping email confirmation for immediate access
             const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
                 email: invite.email,
                 password: password,
@@ -164,8 +95,7 @@ async function handleCompleteSetup(req, res) {
             });
 
         if (creatorError) {
-            // If they are already a creator, this will fail constraints. That's fine, we catch it.
-            if (creatorError.code === '23505') { // unique violation
+            if (creatorError.code === '23505') {
                 return res.status(400).json({ error: "This user is already a registered creator." });
             }
             console.error("Creator Table Insert Error:", creatorError);

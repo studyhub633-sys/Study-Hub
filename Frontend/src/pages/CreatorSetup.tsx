@@ -84,7 +84,9 @@ export default function CreatorSetup() {
       const data = await res.json();
       
       if (!res.ok) {
-        toast.error(data.error || "Failed to setup creator account.");
+        const errorMessage = data.details ? `${data.error} (${data.details})` : (data.error || "Failed to setup creator account.");
+        toast.error(errorMessage);
+        console.error("Setup Error Details:", data);
         return;
       }
 
