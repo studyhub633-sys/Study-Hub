@@ -31,7 +31,8 @@ import {
   UserCheck,
   Users,
   UserX,
-  Copy
+  Copy,
+  Mail
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -675,6 +676,14 @@ export default function Admin() {
                         toast.success("Copied to clipboard");
                       }}>
                         <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button variant="default" className="flex-1" onClick={() => {
+                        const subject = encodeURIComponent("You're invited to join Revisely as a Creator!");
+                        const body = encodeURIComponent(`Hello!\n\nYou've been invited to join Revisely as an official Creator. Use the secure link below to set up your account and claim your Creator Code:\n\n${inviteLink}\n\nThis link expires in 48 hours.\n\nBest,\nThe Revisely Team`);
+                        window.open(`mailto:${inviteEmail}?subject=${subject}&body=${body}`);
+                      }}>
+                        <Mail className="h-4 w-4 mr-2" />
+                        Send Email
                       </Button>
                     </div>
                   </div>
