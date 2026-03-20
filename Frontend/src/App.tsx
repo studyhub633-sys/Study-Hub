@@ -48,6 +48,8 @@ const CramMode = lazy(() => import("./pages/premium/CramMode"));
 const CompetitionClasses = lazy(() => import("./pages/premium/CompetitionClasses"));
 const BeyondTheoryLessons = lazy(() => import("./pages/premium/BeyondTheoryLessons"));
 const UnlimitedQuizzes = lazy(() => import("./pages/premium/UnlimitedQuizzes"));
+const Friends = lazy(() => import("./pages/Friends"));
+const Challenges = lazy(() => import("./pages/Challenges"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const PremiumDashboard = lazy(() => import("./pages/PremiumDashboard"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -230,6 +232,30 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <Leaderboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/leaderboard"
+                      element={
+                        <ProtectedRoute>
+                          <Leaderboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/friends"
+                      element={
+                        <ProtectedRoute>
+                          <Friends />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/challenges"
+                      element={
+                        <ProtectedRoute>
+                          <Challenges />
                         </ProtectedRoute>
                       }
                     />

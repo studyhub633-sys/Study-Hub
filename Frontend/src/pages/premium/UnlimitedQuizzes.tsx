@@ -1,3 +1,4 @@
+import { XpRewardPopup } from "@/components/XpRewardPopup";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { LimitReachedDialog } from "@/components/premium/LimitReachedDialog";
 import { Button } from "@/components/ui/button";
@@ -16,11 +17,13 @@ import { useToast } from "@/hooks/use-toast";
 import { chatWithAI, evaluateAnswer } from "@/lib/ai-client";
 import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
+import { awardXP, XP_REWARDS } from "@/lib/xp";
 import {
     ArrowRight,
     Brain,
     CheckCircle2,
     Crown,
+    Eye,
     HelpCircle,
     Loader2,
     RotateCcw,
@@ -96,6 +99,17 @@ export default function UnlimitedQuizzes() {
     const [previousQuestions, setPreviousQuestions] = useState<string[]>([]);
     const [limitReached, setLimitReached] = useState(false);
 
+    // New: Try Again & Show Answer state
+    const [showingAnswer, setShowingAnswer] = useState(false);
+    const [retryMode, setRetryMode] = useState(false);
+
+    // XP Popup state
+    const [xpPopup, setXpPopup] = useState<{ show: boolean; amount: number; reason: string }>({
+        show: false,
+        amount: 0,
+        reason: "",
+    });
+
     // Check premium
     useEffect(() => {
         const check = async () => {
@@ -114,6 +128,10 @@ export default function UnlimitedQuizzes() {
         check();
     }, [user, supabase]);
 
+    const showXpReward = (amount: number, reason: string) => {
+        setXpPopup({ show: true, amount, reason });
+    };
+
     const generateQuizQuestion = async () => {
         if (!subject) {
             toast({ title: "Select a subject", description: "Please choose a subject first.", variant: "destructive" });
@@ -124,6 +142,8 @@ export default function UnlimitedQuizzes() {
         setEvalResult(null);
         setStudentAnswer("");
         setCurrentQuiz(null);
+        setShowingAnswer(false);
+        setRetryMode(false);
 
         try {
             const topicContext = topic ? ` specifically about "${topic}"` : "";
@@ -160,7 +180,6 @@ Rules:
             // Parse the JSON response
             let parsed: { question: string; answer: string };
             try {
-                // Try to extract JSON from the response
                 const jsonMatch = reply.match(/\{[\s\S]*\}/);
                 if (jsonMatch) {
                     parsed = JSON.parse(jsonMatch[0]);
@@ -168,7 +187,6 @@ Rules:
                     throw new Error("No JSON found");
                 }
             } catch {
-                // Fallback: try treating the whole thing as JSON
                 try {
                     parsed = JSON.parse(reply);
                 } catch {
@@ -234,8 +252,18 @@ Rules:
             };
 
             setEvalResult(evalData);
-            if (evalData.isCorrect) {
-                setCorrectCount(prev => prev + 1);
+            setRetryMode(false);
+
+            // Award XP
+            if (user) {
+                if (evalData.isCorrect) {
+                    setCorrectCount(prev => prev + 1);
+                    await awardXP(supabase, user.id, XP_REWARDS.QUIZ_CORRECT, "quiz_correct");
+                    showXpReward(XP_REWARDS.QUIZ_CORRECT, "Correct Answer!");
+                } else {
+                    await awardXP(supabase, user.id, XP_REWARDS.QUIZ_ATTEMPT, "quiz_attempt");
+                    showXpReward(XP_REWARDS.QUIZ_ATTEMPT, "Good Attempt!");
+                }
             }
 
         } catch (error: any) {
@@ -249,6 +277,17 @@ Rules:
         }
     };
 
+    const handleTryAgain = () => {
+        setEvalResult(null);
+        setStudentAnswer("");
+        setRetryMode(true);
+        setShowingAnswer(false);
+    };
+
+    const handleShowAnswer = () => {
+        setShowingAnswer(true);
+    };
+
     const resetQuiz = () => {
         setCurrentQuiz(null);
         setStudentAnswer("");
@@ -256,6 +295,8 @@ Rules:
         setQuestionCount(0);
         setCorrectCount(0);
         setPreviousQuestions([]);
+        setShowingAnswer(false);
+        setRetryMode(false);
     };
 
     // Loading state
@@ -269,12 +310,17 @@ Rules:
         );
     }
 
-    // Not premium gate - free users still get access but limited
-    // The backend usage tracking handles the 10/day free limit
+    const FREE_DAILY_LIMIT = 5;
 
     return (
         <AppLayout>
             <LimitReachedDialog open={limitReached} onOpenChange={setLimitReached} />
+            <XpRewardPopup
+                amount={xpPopup.amount}
+                reason={xpPopup.reason}
+                show={xpPopup.show}
+                onDone={() => setXpPopup(p => ({ ...p, show: false }))}
+            />
 
             <div className="max-w-3xl mx-auto space-y-6 animate-fade-in pb-12">
 
@@ -285,13 +331,15 @@ Rules:
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold flex items-center gap-2">
-                            Unlimited Quizzes
+                            {isPremium ? "Unlimited Quizzes" : "Five-a-Day"}
                             {isPremium && (
                                 <Crown className="w-6 h-6 text-amber-500" />
                             )}
                         </h1>
                         <p className="text-muted-foreground">
-                            AI-generated questions — test yourself on any GCSE topic
+                            {isPremium
+                                ? "AI-generated questions — test yourself on any GCSE topic"
+                                : `${FREE_DAILY_LIMIT} free questions per day — upgrade for unlimited`}
                         </p>
                     </div>
                 </div>
@@ -389,7 +437,7 @@ Rules:
                             </Button>
                             {!isPremium && (
                                 <p className="text-xs text-center text-muted-foreground">
-                                    Free users: 10 questions/day · <button onClick={() => navigate("/premium-dashboard")} className="text-violet-500 hover:underline font-medium">Upgrade for unlimited</button>
+                                    Free users: {FREE_DAILY_LIMIT} questions/day · <button onClick={() => navigate("/premium-dashboard")} className="text-violet-500 hover:underline font-medium">Upgrade for unlimited</button>
                                 </p>
                             )}
                         </CardContent>
@@ -434,8 +482,16 @@ Rules:
                                             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
                                                 {currentQuiz.subject} · {currentQuiz.difficulty}
                                             </p>
-                                            <p className="text-xs text-muted-foreground">Question #{questionCount}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Question #{questionCount}
+                                                {retryMode && <span className="text-amber-500 ml-1">(Retry)</span>}
+                                            </p>
                                         </div>
+                                    </div>
+                                    {/* XP Badge */}
+                                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-medium">
+                                        <Zap className="w-3 h-3" />
+                                        +{XP_REWARDS.QUIZ_CORRECT} XP
                                     </div>
                                 </div>
                             </CardHeader>
@@ -447,8 +503,35 @@ Rules:
                                     </p>
                                 </div>
 
+                                {/* Show Answer (before submitting) */}
+                                {showingAnswer && !evalResult && (
+                                    <div className="space-y-1 animate-fade-in">
+                                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Model answer (revealed)</p>
+                                        <p className="text-sm p-3 rounded-lg bg-violet-500/5 border border-violet-500/20 text-violet-900 dark:text-violet-100 font-medium">{currentQuiz.modelAnswer}</p>
+                                        <p className="text-xs text-muted-foreground italic mt-1">This question has been marked as viewed. Try the next one!</p>
+                                        <Button
+                                            className="w-full mt-3 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-md"
+                                            size="lg"
+                                            onClick={generateQuizQuestion}
+                                            disabled={generating}
+                                        >
+                                            {generating ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                    Generating...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ArrowRight className="w-4 h-4 mr-2" />
+                                                    Next Question
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
+
                                 {/* Answer Input */}
-                                {!evalResult && (
+                                {!evalResult && !showingAnswer && (
                                     <div className="space-y-3">
                                         <Label className="text-base font-medium">Your Answer</Label>
                                         <textarea
@@ -482,6 +565,15 @@ Rules:
                                             </Button>
                                             <Button
                                                 variant="outline"
+                                                onClick={handleShowAnswer}
+                                                title="Reveal the answer"
+                                                className="gap-1"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                                Show Answer
+                                            </Button>
+                                            <Button
+                                                variant="outline"
                                                 onClick={generateQuizQuestion}
                                                 disabled={generating}
                                                 title="Skip this question"
@@ -510,7 +602,7 @@ Rules:
                                             ) : (
                                                 <XCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
                                             )}
-                                            <div>
+                                            <div className="flex-1">
                                                 <p className={cn(
                                                     "font-semibold text-lg",
                                                     evalResult.isCorrect ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
@@ -520,6 +612,16 @@ Rules:
                                                 <p className="text-sm text-muted-foreground mt-0.5">
                                                     {evalResult.feedback}
                                                 </p>
+                                            </div>
+                                            {/* XP earned indicator */}
+                                            <div className={cn(
+                                                "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold",
+                                                evalResult.isCorrect
+                                                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                                                    : "bg-muted text-muted-foreground"
+                                            )}>
+                                                <Zap className="w-3 h-3" />
+                                                +{evalResult.isCorrect ? XP_REWARDS.QUIZ_CORRECT : XP_REWARDS.QUIZ_ATTEMPT} XP
                                             </div>
                                         </div>
 
@@ -535,25 +637,40 @@ Rules:
                                             <p className="text-sm p-3 rounded-lg bg-violet-500/5 border border-violet-500/20 text-violet-900 dark:text-violet-100 font-medium">{currentQuiz.modelAnswer}</p>
                                         </div>
 
-                                        {/* Next Question */}
-                                        <Button
-                                            className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-md"
-                                            size="lg"
-                                            onClick={generateQuizQuestion}
-                                            disabled={generating}
-                                        >
-                                            {generating ? (
-                                                <>
-                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                    Generating...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <ArrowRight className="w-4 h-4 mr-2" />
-                                                    Next Question
-                                                </>
+                                        {/* Action Buttons */}
+                                        <div className="flex gap-3">
+                                            {/* Try Again (only if wrong) */}
+                                            {!evalResult.isCorrect && (
+                                                <Button
+                                                    variant="outline"
+                                                    className="flex-1 gap-2 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                                                    onClick={handleTryAgain}
+                                                >
+                                                    <RotateCcw className="w-4 h-4" />
+                                                    Try Again
+                                                </Button>
                                             )}
-                                        </Button>
+
+                                            {/* Next Question */}
+                                            <Button
+                                                className="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-md"
+                                                size="lg"
+                                                onClick={generateQuizQuestion}
+                                                disabled={generating}
+                                            >
+                                                {generating ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                        Generating...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ArrowRight className="w-4 h-4 mr-2" />
+                                                        Next Question
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
                                     </div>
                                 )}
                             </CardContent>

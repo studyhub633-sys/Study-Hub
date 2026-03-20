@@ -21,6 +21,9 @@ import {
   Settings,
   Shield,
   Sun,
+  Swords,
+  Trophy,
+  Users,
   Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -54,6 +57,9 @@ export function Sidebar() {
     { icon: Bot, label: t("nav.aiTutor"), path: "/ai-tutor" },
     { icon: Library, label: t("nav.library"), path: "/library" },
     { icon: Award, label: t("nav.extracurricular"), path: "/extracurricular" },
+    { icon: Users, label: "Friends", path: "/friends" },
+    { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
+    { icon: Swords, label: "Challenges", path: "/challenges" },
     { icon: Zap, label: "Cram Mode", path: "/cram-mode", badge: "Coming Soon" },
     ...(isUserAdmin ? [{ icon: Shield, label: "Admin", path: "/admin" }] : []),
   ];

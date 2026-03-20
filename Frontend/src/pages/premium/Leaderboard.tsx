@@ -1,12 +1,11 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { hasPremium } from "@/lib/premium";
-import { Loader2, Medal, Trophy } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Clock, Loader2, Medal, Trophy, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface LeaderboardUser {
@@ -14,79 +13,90 @@ interface LeaderboardUser {
     name: string;
     xp: number;
     streak: number;
+    study_hours: number;
     avatar: string | null;
     isUser?: boolean;
     user_id: string;
 }
+
+type LeaderboardTab = "xp" | "hours";
 
 export default function Leaderboard() {
     const { supabase, user } = useAuth();
     const { toast } = useToast();
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState<LeaderboardUser[]>([]);
-    const [isPremium, setIsPremium] = useState(false);
-    const [checkingPremium, setCheckingPremium] = useState(true);
-
-    useEffect(() => {
-        const checkPremiumStatus = async () => {
-            if (!user || !supabase) {
-                setCheckingPremium(false);
-                return;
-            }
-            try {
-                const premium = await hasPremium(supabase);
-                setIsPremium(premium);
-            } catch (error) {
-                console.error("Error checking premium status:", error);
-            } finally {
-                setCheckingPremium(false);
-            }
-        };
-        checkPremiumStatus();
-    }, [user]);
+    const [activeTab, setActiveTab] = useState<LeaderboardTab>("xp");
 
     useEffect(() => {
         fetchLeaderboard();
-    }, [user]);
+    }, [user, activeTab]);
 
     const fetchLeaderboard = async () => {
         try {
             setLoading(true);
 
-            // Fetch from secure RPC function - this calculates XP and streak from real data
-            const { data: leaderboardData, error } = await supabase
-                .rpc('get_leaderboard', { limit_count: 50 });
+            // Try RPC first, fall back to direct query
+            let leaderboardData: any[] | null = null;
 
-            if (error) {
-                console.error("Leaderboard RPC error:", error);
-                // If the RPC function doesn't exist yet, show helpful message
-                if (error.message.includes("function") || error.code === "42883") {
-                    toast({
-                        title: "Setup Required",
-                        description: "Please run the leaderboard_function.sql migration in Supabase to enable the leaderboard.",
-                        variant: "destructive",
-                    });
+            try {
+                const { data, error } = await supabase
+                    .rpc('get_leaderboard', { limit_count: 50 });
+
+                if (!error && data) {
+                    leaderboardData = data;
                 }
-                setUsers([]);
-                return;
+            } catch {
+                // RPC not available, fall back
+            }
+
+            // Fallback: direct query from profiles
+            if (!leaderboardData) {
+                const orderColumn = activeTab === "xp" ? "xp" : "study_hours";
+                const { data, error } = await supabase
+                    .from("profiles")
+                    .select("id, full_name, email, avatar_url, xp, study_hours")
+                    .order(orderColumn, { ascending: false, nullsFirst: false })
+                    .limit(50);
+
+                if (error) {
+                    console.error("Leaderboard query error:", error);
+                    setUsers([]);
+                    return;
+                }
+
+                leaderboardData = (data || []).map((u: any, i: number) => ({
+                    rank: i + 1,
+                    name: u.full_name || u.email?.split("@")[0] || "User",
+                    xp: u.xp || 0,
+                    streak: 0,
+                    study_hours: u.study_hours || 0,
+                    avatar_url: u.avatar_url,
+                    user_id: u.id,
+                }));
             }
 
             if (leaderboardData && leaderboardData.length > 0) {
-                const formattedUsers: LeaderboardUser[] = leaderboardData.map((u: any) => ({
-                    rank: u.rank,
-                    name: u.name,
-                    xp: u.xp,
-                    streak: u.streak,
-                    avatar: u.avatar_url,
-                    user_id: u.user_id,
-                    isUser: u.user_id === user?.id
+                // Sort by active tab
+                const sorted = [...leaderboardData].sort((a, b) => {
+                    if (activeTab === "xp") return (b.xp || 0) - (a.xp || 0);
+                    return (b.study_hours || 0) - (a.study_hours || 0);
+                });
+
+                const formattedUsers: LeaderboardUser[] = sorted.map((u: any, i: number) => ({
+                    rank: i + 1,
+                    name: u.name || u.full_name || "User",
+                    xp: u.xp || 0,
+                    streak: u.streak || 0,
+                    study_hours: u.study_hours || 0,
+                    avatar: u.avatar_url || u.avatar || null,
+                    user_id: u.user_id || u.id,
+                    isUser: (u.user_id || u.id) === user?.id,
                 }));
                 setUsers(formattedUsers);
             } else {
-                // No users in leaderboard yet - empty state
                 setUsers([]);
             }
-
         } catch (error: any) {
             console.error("Error fetching leaderboard:", error);
             toast({
@@ -100,63 +110,47 @@ export default function Leaderboard() {
         }
     };
 
-    const formatXP = (xp: number) => {
-        return xp.toLocaleString();
+    const formatValue = (user: LeaderboardUser) => {
+        if (activeTab === "xp") return `${user.xp.toLocaleString()} XP`;
+        return `${user.study_hours.toLocaleString()}h`;
     };
 
-    if (checkingPremium) {
-        return (
-            <AppLayout>
-                <div className="flex items-center justify-center min-h-[60vh]">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-            </AppLayout>
-        );
-    }
-
-    if (!isPremium) {
-        return (
-            <AppLayout>
-                <div className="max-w-4xl mx-auto py-12">
-                    <Card className="border-amber-500/20 bg-amber-500/5">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Trophy className="w-6 h-6 text-amber-500" />
-                                Premium Feature
-                            </CardTitle>
-                            <CardDescription>
-                                Study Leaderboard is a premium feature
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground mb-4">
-                                Upgrade to premium to see your weekly rankings and compete with peers.
-                            </p>
-                            <Button
-                                onClick={() => window.location.href = '/premium-dashboard'}
-                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                            >
-                                View Premium Plans
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </div>
-            </AppLayout>
-        );
-    }
+    const tabs: { id: LeaderboardTab; label: string; icon: typeof Zap }[] = [
+        { id: "xp", label: "XP Rankings", icon: Zap },
+        { id: "hours", label: "Study Hours", icon: Clock },
+    ];
 
     return (
         <AppLayout>
             <div className="max-w-4xl mx-auto space-y-6 animate-fade-in pb-12">
-                {/* Add margin-bottom to the podium section */}
+                {/* Header */}
                 <div className="flex items-center gap-4">
                     <div className="p-3 rounded-xl bg-orange-500/10 text-orange-500">
                         <Trophy className="w-8 h-8" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold">Study Leaderboard</h1>
-                        <p className="text-muted-foreground">Review your weekly rankings and compete with peers.</p>
+                        <h1 className="text-3xl font-bold">Leaderboard</h1>
+                        <p className="text-muted-foreground">See how you rank against other students</p>
                     </div>
+                </div>
+
+                {/* Tab Switcher */}
+                <div className="flex gap-2 p-1 rounded-xl bg-muted/50 border border-border/50 w-fit">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                                activeTab === tab.id
+                                    ? "bg-background text-foreground shadow-sm border border-border/50"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            <tab.icon className="w-4 h-4" />
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
 
                 {loading ? (
@@ -164,7 +158,6 @@ export default function Leaderboard() {
                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                 ) : users.length === 0 ? (
-                    /* Empty State */
                     <Card className="p-8 text-center">
                         <div className="flex flex-col items-center gap-4">
                             <div className="p-4 rounded-full bg-orange-500/10">
@@ -173,18 +166,15 @@ export default function Leaderboard() {
                             <h3 className="text-xl font-semibold">No Rankings Yet</h3>
                             <p className="text-muted-foreground max-w-md">
                                 The leaderboard will populate as students start studying.
-                                Create notes, flashcards, or use the AI Tutor to earn XP and appear on the leaderboard!
+                                {activeTab === "xp"
+                                    ? " Answer quiz questions to earn XP!"
+                                    : " Use Focus Mode to track study hours!"}
                             </p>
-                            <div className="flex gap-3 mt-4">
-                                <a href="/" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                                    Start Studying
-                                </a>
-                            </div>
                         </div>
                     </Card>
                 ) : (
                     <>
-                        {/* Top 3 Podium (Visual) */}
+                        {/* Top 3 Podium */}
                         {users.length >= 3 && (
                             <div className="flex items-end justify-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 h-64 sm:h-64 md:h-64 mt-8 sm:mt-12 mb-8 sm:mb-10 md:mb-12 px-4 sm:px-6 md:px-8">
                                 {/* 2nd Place */}
@@ -193,18 +183,23 @@ export default function Leaderboard() {
                                         <AvatarImage src={users[1]?.avatar || undefined} />
                                         <AvatarFallback>{users[1]?.name[0] || "2"}</AvatarFallback>
                                     </Avatar>
-                                    <div className="w-full h-20 sm:h-22 md:h-24 bg-slate-200 dark:bg-slate-800 rounded-t-xl flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold text-slate-400">2</div>
+                                    <div className="w-full h-20 sm:h-22 md:h-24 bg-slate-200 dark:bg-slate-800 rounded-t-xl flex flex-col items-center justify-center">
+                                        <span className="text-lg sm:text-xl md:text-2xl font-bold text-slate-400">2</span>
+                                        <span className="text-[10px] text-muted-foreground font-medium">{formatValue(users[1])}</span>
+                                    </div>
                                     <span className="font-semibold text-[10px] sm:text-xs md:text-sm mt-1 sm:mt-2 truncate max-w-full text-center px-1">{users[1]?.name || "User"}</span>
                                 </div>
 
                                 {/* 1st Place */}
                                 <div className="flex flex-col items-center w-[32%] sm:w-[34%] md:flex-1 min-w-[90px] sm:min-w-[110px] md:max-w-[160px] lg:max-w-none z-10 relative">
-
                                     <Avatar className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 border-2 sm:border-4 border-yellow-400 mb-1 sm:mb-2 ring-2 sm:ring-4 ring-yellow-400/20">
                                         <AvatarImage src={users[0]?.avatar || undefined} />
                                         <AvatarFallback>{users[0]?.name[0] || "1"}</AvatarFallback>
                                     </Avatar>
-                                    <div className="w-full h-28 sm:h-30 md:h-32 bg-yellow-400/20 border border-yellow-400 rounded-t-xl flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-600">1</div>
+                                    <div className="w-full h-28 sm:h-30 md:h-32 bg-yellow-400/20 border border-yellow-400 rounded-t-xl flex flex-col items-center justify-center">
+                                        <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-600">1</span>
+                                        <span className="text-xs text-yellow-700 dark:text-yellow-300 font-medium">{formatValue(users[0])}</span>
+                                    </div>
                                     <span className="font-semibold text-[10px] sm:text-xs md:text-sm mt-1 sm:mt-2 truncate max-w-full text-center px-1">{users[0]?.name || "User"}</span>
                                 </div>
 
@@ -214,7 +209,10 @@ export default function Leaderboard() {
                                         <AvatarImage src={users[2]?.avatar || undefined} />
                                         <AvatarFallback>{users[2]?.name[0] || "3"}</AvatarFallback>
                                     </Avatar>
-                                    <div className="w-full h-16 sm:h-18 md:h-20 bg-amber-700/20 rounded-t-xl flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold text-amber-700">3</div>
+                                    <div className="w-full h-16 sm:h-18 md:h-20 bg-amber-700/20 rounded-t-xl flex flex-col items-center justify-center">
+                                        <span className="text-lg sm:text-xl md:text-2xl font-bold text-amber-700">3</span>
+                                        <span className="text-[10px] text-muted-foreground font-medium">{formatValue(users[2])}</span>
+                                    </div>
                                     <span className="font-semibold text-[10px] sm:text-xs md:text-sm mt-1 sm:mt-2 truncate max-w-full text-center px-1">{users[2]?.name || "User"}</span>
                                 </div>
                             </div>
@@ -223,33 +221,48 @@ export default function Leaderboard() {
                         {/* List */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Global Rankings</CardTitle>
+                                <CardTitle className="flex items-center gap-2">
+                                    {activeTab === "xp" ? "XP Rankings" : "Study Hours Rankings"}
+                                </CardTitle>
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="divide-y">
-                                    {users.map((user) => (
+                                    {users.map((u) => (
                                         <div
-                                            key={user.user_id}
-                                            className={`flex items-center p-4 gap-4 ${user.isUser ? 'bg-primary/5' : 'hover:bg-muted/50'}`}
+                                            key={u.user_id}
+                                            className={`flex items-center p-4 gap-4 ${u.isUser ? 'bg-primary/5' : 'hover:bg-muted/50'}`}
                                         >
                                             <div className="w-8 text-center font-bold text-muted-foreground">
-                                                {user.rank <= 3 ? <Medal className={`w-5 h-5 mx-auto ${user.rank === 1 ? "text-yellow-500" : user.rank === 2 ? "text-slate-400" : "text-amber-600"}`} /> : user.rank}
+                                                {u.rank <= 3 ? <Medal className={`w-5 h-5 mx-auto ${u.rank === 1 ? "text-yellow-500" : u.rank === 2 ? "text-slate-400" : "text-amber-600"}`} /> : u.rank}
                                             </div>
                                             <Avatar>
-                                                <AvatarImage src={user.avatar || undefined} />
-                                                <AvatarFallback>{user.name[0]}</AvatarFallback>
+                                                <AvatarImage src={u.avatar || undefined} />
+                                                <AvatarFallback>{u.name[0]}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1">
                                                 <h4 className="font-semibold flex items-center gap-2">
-                                                    {user.name}
-                                                    {user.isUser && <Badge variant="secondary" className="text-[10px]">YOU</Badge>}
+                                                    {u.name}
+                                                    {u.isUser && <Badge variant="secondary" className="text-[10px]">YOU</Badge>}
                                                 </h4>
                                             </div>
                                             <div className="text-right">
-                                                <div className="font-bold">{formatXP(user.xp)} XP</div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    {user.streak} day streak
+                                                <div className="font-bold flex items-center gap-1 justify-end">
+                                                    {activeTab === "xp" ? (
+                                                        <><Zap className="w-4 h-4 text-amber-500" /> {u.xp.toLocaleString()} XP</>
+                                                    ) : (
+                                                        <><Clock className="w-4 h-4 text-blue-500" /> {u.study_hours.toLocaleString()}h</>
+                                                    )}
                                                 </div>
+                                                {activeTab === "xp" && (
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {u.streak} day streak
+                                                    </div>
+                                                )}
+                                                {activeTab === "hours" && (
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {u.xp.toLocaleString()} XP
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
