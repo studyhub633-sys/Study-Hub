@@ -31,12 +31,6 @@ export default async function handler(req, res) {
 
     const url = new URL(req.url, `http://${req.headers.host}`);
     const segments = url.pathname.replace(/^\/api\/admin\//, '').split('/').filter(Boolean);
-    // segments examples:
-    //   /api/admin/users        → ["users"]
-    //   /api/admin/stats        → ["stats"]
-    //   /api/admin/users/abc123 → ["users", "abc123"]
-    //   /api/admin/users/abc123/premium → ["users", "abc123", "premium"]
-    //   /api/admin/users/abc123/admin   → ["users", "abc123", "admin"]
 
     if (segments[0] === "stats") {
         return handleStats(req, res);
