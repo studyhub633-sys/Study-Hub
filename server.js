@@ -75,6 +75,7 @@ const wrapHandler = (handler) => async (req, res, next) => {
 const apiDir = path.join(__dirname, 'Frontend', 'api', 'ai');
 const paymentsDir = path.join(__dirname, 'Frontend', 'api', 'payments');
 const authDir = path.join(__dirname, 'Frontend', 'api', 'auth');
+const adminDir = path.join(__dirname, 'Frontend', 'api', 'admin');
 
 async function loadRoutes() {
     // Map of endpoint paths to { directory, filename }
@@ -100,6 +101,13 @@ async function loadRoutes() {
 
         // Auth routes
         '/api/auth/grant-beta-premium': { dir: authDir, file: 'grant-beta-premium.js' },
+
+        // Admin routes
+        '/api/admin/users': { dir: adminDir, file: '[action].js' },
+        '/api/admin/stats': { dir: adminDir, file: '[action].js' },
+        '/api/admin/users/:id': { dir: adminDir, file: '[action].js' },
+        '/api/admin/users/:id/premium': { dir: adminDir, file: '[action].js' },
+        '/api/admin/users/:id/admin': { dir: adminDir, file: '[action].js' },
     };
 
     try {
