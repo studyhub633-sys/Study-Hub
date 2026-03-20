@@ -109,6 +109,7 @@ async function loadRoutes() {
         '/api/admin/users/:id': { dir: adminDir, file: '[...path].js' },
         '/api/admin/users/:id/premium': { dir: adminDir, file: '[...path].js' },
         '/api/admin/users/:id/admin': { dir: adminDir, file: '[...path].js' },
+        '/api/admin/creators/invite': { dir: adminDir, file: '[...path].js' },
 
         // Creator Invite routes
         '/api/creators/verify-token': { dir: creatorsDir, file: '[...path].js' },
