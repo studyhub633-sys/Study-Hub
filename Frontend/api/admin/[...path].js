@@ -29,8 +29,13 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: error.message });
     }
 
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const segments = url.pathname.replace(/^\/api\/admin\//, '').split('/').filter(Boolean);
+    // Vercel populates req.query.path for [...path].js routes
+    // Fallback to manual parsing for local dev
+    let segments = req.query.path;
+    if (!segments) {
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        segments = url.pathname.replace(/^\/api\/admin\//, '').split('/').filter(Boolean);
+    }
 
     if (segments[0] === "stats") {
         return handleStats(req, res);
@@ -38,7 +43,7 @@ export default async function handler(req, res) {
 
     if (segments[0] === "users") {
         if (segments.length === 1) {
-            return handleUsersList(req, res, url);
+            return handleUsersList(req, res, new URL(req.url, `http://${req.headers.host}`));
         }
         const userId = segments[1];
         if (segments.length === 2) {
@@ -57,7 +62,15 @@ export default async function handler(req, res) {
         if (req.method === 'POST') return handleInviteCreator(req, res);
     }
 
-    return res.status(404).json({ error: "Admin route not found" });
+    return res.status(404).json({ 
+        error: "Admin route not found",
+        debug: {
+            method: req.method,
+            url: req.url,
+            segments,
+            query: req.query
+        }
+    });
 }
 
 // ─── List Users ─────────────────────────────────────────────────

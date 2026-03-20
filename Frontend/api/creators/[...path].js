@@ -22,12 +22,17 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "Server misconfiguration: Missing Supabase Admin credentials" });
     }
 
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const segments = url.pathname.replace(/^\/api\/creators\//, '').split('/').filter(Boolean);
+    // Vercel populates req.query.path for [...path].js routes
+    // Fallback to manual parsing for local dev
+    let segments = req.query.path;
+    if (!segments) {
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        segments = url.pathname.replace(/^\/api\/creators\//, '').split('/').filter(Boolean);
+    }
 
     // GET /api/creators/verify-token?token=...
     if (segments[0] === "verify-token") {
-        return handleVerifyToken(req, res, url);
+        return handleVerifyToken(req, res, new URL(req.url, `http://${req.headers.host}`));
     }
 
     // POST /api/creators/complete-setup
@@ -35,7 +40,15 @@ export default async function handler(req, res) {
         return handleCompleteSetup(req, res);
     }
 
-    return res.status(404).json({ error: "Creators API route not found" });
+    return res.status(404).json({ 
+        error: "Creators API route not found",
+        debug: {
+            method: req.method,
+            url: req.url,
+            segments,
+            query: req.query
+        }
+    });
 }
 
 async function handleVerifyToken(req, res, url) {
