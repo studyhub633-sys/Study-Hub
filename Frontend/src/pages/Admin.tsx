@@ -78,6 +78,7 @@ export default function Admin() {
   const [inviteRate, setInviteRate] = useState("0.2");
   const [inviteLink, setInviteLink] = useState("");
   const [isInviting, setIsInviting] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -342,6 +343,37 @@ export default function Admin() {
       toast.error("An error occurred during call");
     } finally {
       setIsInviting(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!inviteEmail || !inviteLink) return;
+
+    setIsSendingEmail(true);
+    try {
+      const { data: { session } } = await supabase!.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch(`${API_BASE_URL}/api/admin/send-invite-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ email: inviteEmail, inviteLink }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success("Invitation email sent directly to creator!");
+      } else {
+        toast.error(data.error || "Failed to send email");
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast.error("An error occurred while sending the email");
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
@@ -677,13 +709,18 @@ export default function Admin() {
                       }}>
                         <Copy className="h-4 w-4" />
                       </Button>
-                      <Button variant="default" className="flex-1" onClick={() => {
-                        const subject = encodeURIComponent("You're invited to join Revisely as a Creator!");
-                        const body = encodeURIComponent(`Hello!\n\nYou've been invited to join Revisely as an official Creator. Use the secure link below to set up your account and claim your Creator Code:\n\n${inviteLink}\n\nThis link expires in 48 hours.\n\nBest,\nThe Revisely Team`);
-                        window.open(`mailto:${inviteEmail}?subject=${subject}&body=${body}`);
-                      }}>
-                        <Mail className="h-4 w-4 mr-2" />
-                        Send Email
+                      <Button 
+                        variant="default" 
+                        className="flex-1" 
+                        onClick={handleSendEmail}
+                        disabled={isSendingEmail}
+                      >
+                        {isSendingEmail ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Mail className="h-4 w-4 mr-2" />
+                        )}
+                        Send Invitation Email
                       </Button>
                     </div>
                   </div>

@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, 'Frontend', '.env') });
 
 const app = express();
-const PORT = 3004;
+const PORT = process.env.PORT || 3001;
 
 // Basic logging
 const log = (msg) => {
@@ -106,6 +106,8 @@ async function loadRoutes() {
         // Admin routes
         '/api/admin/users': { dir: adminDir, file: '[...path].js' },
         '/api/admin/stats': { dir: adminDir, file: '[...path].js' },
+        '/api/admin/invite-creator': { dir: adminDir, file: 'invite-creator.js' },
+        '/api/admin/send-invite-email': { dir: adminDir, file: 'send-invite-email.js' },
         '/api/admin/users/:id': { dir: adminDir, file: '[...path].js' },
         '/api/admin/users/:id/premium': { dir: adminDir, file: '[...path].js' },
         '/api/admin/users/:id/admin': { dir: adminDir, file: '[...path].js' },
