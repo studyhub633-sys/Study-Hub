@@ -307,7 +307,8 @@ export default function Admin() {
       const { data: { session } } = await supabase!.auth.getSession();
       if (!session) return;
 
-      const response = await fetch(`${API_BASE_URL}/api/admin/creators/invite`, {
+      console.log(`[DATA DEBUG] Attempting POST to: ${API_BASE_URL}/api/admin/invite-creator`);
+      const response = await fetch(`${API_BASE_URL}/api/admin/invite-creator`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -316,16 +317,28 @@ export default function Admin() {
         body: JSON.stringify({ email: inviteEmail, commission_rate: inviteRate }),
       });
 
-      const data = await response.json();
-      if (response.ok) {
+      console.log(`[DATA DEBUG] Status: ${response.status} ${response.statusText}`);
+      const responseText = await response.text();
+      console.log(`[DATA DEBUG] Raw Body:`, responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error(`[DATA DEBUG] JSON Parse Error:`, parseError);
+      }
+
+      if (response.ok && data) {
         setInviteLink(data.inviteLink);
         toast.success("Invite link generated!");
       } else {
-        toast.error(data.error || "Failed to generate invite");
+        const errorMsg = data?.error || `API Error: ${response.status}`;
+        toast.error(errorMsg);
+        console.error(`[DATA DEBUG] Invitation failed:`, errorMsg, data);
       }
     } catch (error) {
-      console.error(error);
-      toast.error("An error occurred");
+      console.error(`[DATA DEBUG] Network/Fetch Error:`, error);
+      toast.error("An error occurred during call");
     } finally {
       setIsInviting(false);
     }
