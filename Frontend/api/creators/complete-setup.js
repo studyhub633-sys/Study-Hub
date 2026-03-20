@@ -56,27 +56,49 @@ export default async function handler(req, res) {
 
         // 3. Find or Create the User in Auth
         let userId;
-        const { data: usersResponse, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-        if (listError) return res.status(500).json({ error: `Auth list error: ${listError.message}` });
         
-        const existingUser = usersResponse?.users?.find(u => u.email === invite.email);
+        // Try creating the user first (cleanest path)
+        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: invite.email,
+            password: password,
+            email_confirm: true, 
+            user_metadata: { full_name: full_name || "Creator" }
+        });
 
-        if (existingUser) {
-            userId = existingUser.id;
-            const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(userId, { password });
-            if (updateAuthError) return res.status(500).json({ error: `Auth update error: ${updateAuthError.message}` });
-        } else {
-            const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-                email: invite.email,
-                password: password,
-                email_confirm: true, 
-                user_metadata: { full_name: full_name || "Creator" }
-            });
-
-            if (createError) {
+        if (createError) {
+            // Check if user already exists
+            if (createError.message.includes("already been registered") || createError.status === 422) {
+                // User exists, we need to find their ID
+                // We'll search the first few pages of users if necessary, or check profiles
+                const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+                    perPage: 1000 // Just get a large batch
+                });
+                
+                const foundUser = listData?.users?.find(u => u.email === invite.email);
+                
+                if (foundUser) {
+                    userId = foundUser.id;
+                    // Update their password so they can log in as a creator
+                    await supabaseAdmin.auth.admin.updateUserById(userId, { password });
+                } else {
+                    // Fallback: Check profiles table if they aren't in the first 1000 auth users
+                    const { data: profile } = await supabaseAdmin
+                        .from('profiles')
+                        .select('id')
+                        .eq('email', invite.email)
+                        .maybeSingle();
+                    
+                    if (profile) {
+                        userId = profile.id;
+                    } else {
+                        return res.status(500).json({ error: "User exists in Auth but could not be retrieved by the Admin API. Please contact support." });
+                    }
+                }
+            } else {
                 console.error("Auth Create Error:", createError);
                 return res.status(500).json({ error: `Auth error: ${createError.message}` });
             }
+        } else {
             userId = newUser.user.id;
         }
 
