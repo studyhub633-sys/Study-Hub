@@ -93,6 +93,7 @@ export default function UnlimitedQuizzes() {
     const [evaluating, setEvaluating] = useState(false);
     const [questionCount, setQuestionCount] = useState(0);
     const [correctCount, setCorrectCount] = useState(0);
+    const [previousQuestions, setPreviousQuestions] = useState<string[]>([]);
     const [limitReached, setLimitReached] = useState(false);
 
     // Check premium
@@ -122,9 +123,13 @@ export default function UnlimitedQuizzes() {
         setGenerating(true);
         setEvalResult(null);
         setStudentAnswer("");
+        setCurrentQuiz(null);
 
         try {
             const topicContext = topic ? ` specifically about "${topic}"` : "";
+            const avoidList = previousQuestions.length > 0
+                ? `\n\nIMPORTANT: Do NOT repeat any of these previously asked questions:\n${previousQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}\nGenerate a COMPLETELY DIFFERENT question.`
+                : "";
             const prompt = `Generate a single ${difficulty} difficulty GCSE ${subject} quiz question${topicContext}. 
 
 IMPORTANT: You MUST respond with ONLY valid JSON, no other text. Use this exact format:
@@ -134,7 +139,7 @@ Rules:
 - The question should test understanding, not just recall
 - Make it clear, specific, and answerable in 1-3 sentences
 - The answer should be concise but complete (1-3 sentences)
-- Do NOT include any text outside the JSON object`;
+- Do NOT include any text outside the JSON object${avoidList}`;
 
             const result = await chatWithAI(
                 { message: prompt, language: "en" },
@@ -181,6 +186,7 @@ Rules:
                 subject,
                 difficulty,
             });
+            setPreviousQuestions(prev => [...prev, parsed.question]);
             setQuestionCount(prev => prev + 1);
 
         } catch (error: any) {
@@ -249,6 +255,7 @@ Rules:
         setEvalResult(null);
         setQuestionCount(0);
         setCorrectCount(0);
+        setPreviousQuestions([]);
     };
 
     // Loading state
@@ -314,7 +321,7 @@ Rules:
                 )}
 
                 {/* Subject & Topic Selection */}
-                {!currentQuiz && (
+                {!currentQuiz && !generating && (
                     <Card className="border-2 border-violet-500/20 shadow-lg">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -385,6 +392,22 @@ Rules:
                                     Free users: 10 questions/day · <button onClick={() => navigate("/premium-dashboard")} className="text-violet-500 hover:underline font-medium">Upgrade for unlimited</button>
                                 </p>
                             )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Loading State */}
+                {!currentQuiz && generating && (
+                    <Card className="border-2 border-violet-500/20 shadow-lg">
+                        <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
+                            <div className="p-4 rounded-full bg-violet-500/10 animate-pulse">
+                                <Brain className="w-8 h-8 text-violet-500" />
+                            </div>
+                            <div className="text-center space-y-2">
+                                <p className="text-lg font-semibold">Generating your question...</p>
+                                <p className="text-sm text-muted-foreground">The AI is crafting a new {difficulty} {subject} question</p>
+                            </div>
+                            <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
                         </CardContent>
                     </Card>
                 )}
