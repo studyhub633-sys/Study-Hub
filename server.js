@@ -76,6 +76,7 @@ const apiDir = path.join(__dirname, 'Frontend', 'api', 'ai');
 const paymentsDir = path.join(__dirname, 'Frontend', 'api', 'payments');
 const authDir = path.join(__dirname, 'Frontend', 'api', 'auth');
 const adminDir = path.join(__dirname, 'Frontend', 'api', 'admin');
+const creatorsDir = path.join(__dirname, 'Frontend', 'api', 'creators');
 
 async function loadRoutes() {
     // Map of endpoint paths to { directory, filename }
@@ -108,6 +109,10 @@ async function loadRoutes() {
         '/api/admin/users/:id': { dir: adminDir, file: '[...path].js' },
         '/api/admin/users/:id/premium': { dir: adminDir, file: '[...path].js' },
         '/api/admin/users/:id/admin': { dir: adminDir, file: '[...path].js' },
+
+        // Creator Invite routes
+        '/api/creators/verify-token': { dir: creatorsDir, file: '[...path].js' },
+        '/api/creators/complete-setup': { dir: creatorsDir, file: '[...path].js' },
     };
 
     try {

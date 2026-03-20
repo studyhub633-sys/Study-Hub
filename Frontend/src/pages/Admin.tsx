@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { isAdmin } from "@/lib/premium";
 import {
@@ -29,7 +30,8 @@ import {
   TrendingUp,
   UserCheck,
   Users,
-  UserX
+  UserX,
+  Copy
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -69,6 +71,12 @@ export default function Admin() {
   const [userDetails, setUserDetails] = useState<any>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Invite creator states
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRate, setInviteRate] = useState("0.2");
+  const [inviteLink, setInviteLink] = useState("");
+  const [isInviting, setIsInviting] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -287,6 +295,42 @@ export default function Admin() {
     }
   };
 
+  const handleInviteCreator = async () => {
+    if (!inviteEmail) {
+      toast.error("Please enter an email address");
+      return;
+    }
+
+    setIsInviting(true);
+    setInviteLink("");
+    try {
+      const { data: { session } } = await supabase!.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch(`${API_BASE_URL}/api/admin/creators/invite`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ email: inviteEmail, commission_rate: inviteRate }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setInviteLink(data.inviteLink);
+        toast.success("Invite link generated!");
+      } else {
+        toast.error(data.error || "Failed to generate invite");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred");
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
   useEffect(() => {
     if (isUserAdmin) {
       loadUsers();
@@ -327,8 +371,15 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        {stats && (
+        <Tabs defaultValue="users" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="users">Users & Stats</TabsTrigger>
+            <TabsTrigger value="creators">Creators</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="users" className="space-y-6">
+            {/* Stats Cards */}
+            {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="glass-card p-4">
               <div className="flex items-center gap-2 mb-2">
@@ -567,6 +618,58 @@ export default function Admin() {
             </div>
           )}
         </div>
+        </TabsContent>
+
+          <TabsContent value="creators" className="space-y-6">
+            <div className="glass-card p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-foreground">Invite a Creator</h2>
+              </div>
+              <div className="max-w-md space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Email Address</label>
+                  <Input 
+                    type="email" 
+                    placeholder="creator@example.com" 
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Commission Rate (e.g. 0.2 for 20%)</label>
+                  <Input 
+                    type="number" 
+                    step="0.01"
+                    min="0"
+                    max="1"
+                    value={inviteRate}
+                    onChange={(e) => setInviteRate(e.target.value)}
+                  />
+                </div>
+                <Button onClick={handleInviteCreator} disabled={isInviting} className="w-full">
+                  {isInviting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Generate Invite Link
+                </Button>
+
+                {inviteLink && (
+                  <div className="mt-6 p-4 border rounded-lg bg-secondary/20 space-y-2">
+                    <p className="text-sm font-medium text-green-500">Invite generated successfully!</p>
+                    <p className="text-sm text-muted-foreground">Send this secure link to the creator. It will expire in 48 hours.</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Input readOnly value={inviteLink} className="font-mono text-xs text-muted-foreground" />
+                      <Button variant="outline" size="icon" onClick={() => {
+                        navigator.clipboard.writeText(inviteLink);
+                        toast.success("Copied to clipboard");
+                      }}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

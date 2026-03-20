@@ -53,6 +53,10 @@ export default async function handler(req, res) {
         }
     }
 
+    if (segments[0] === "creators" && segments[1] === "invite") {
+        if (req.method === 'POST') return handleInviteCreator(req, res);
+    }
+
     return res.status(404).json({ error: "Admin route not found" });
 }
 
@@ -216,5 +220,44 @@ async function handleDeleteUser(req, res, userId) {
     } catch (error) {
         console.error("Admin Delete User Error:", error);
         return res.status(500).json({ error: "Failed to delete user" });
+    }
+}
+
+// ─── Invite Creator ──────────────────────────────────────────────
+async function handleInviteCreator(req, res) {
+    if (req.method !== 'POST') return res.status(405).json({ error: "Method not allowed" });
+    const { email, commission_rate } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: "Email is required." });
+    }
+
+    try {
+        const { data: invite, error } = await supabase
+            .from('creator_invites')
+            .insert({
+                email,
+                commission_rate: parseFloat(commission_rate) || 0.2
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Construct the invite link using the request host or Vercel URL
+        const host = req.headers.host || "revisely.ai";
+        const protocol = host.includes("localhost") ? "http" : "https";
+        const inviteLink = `${protocol}://${host}/creator-setup?token=${invite.token}`;
+
+        return res.status(200).json({ 
+            message: "Invite generated successfully",
+            token: invite.token,
+            inviteLink
+        });
+    } catch (error) {
+        console.error("Admin Invite Creator Error:", error);
+        // Supabase unique constraint error code 23505 if resending to same email? 
+        // We didn't add a unique constraint on email intentionally so you can resend them.
+        return res.status(500).json({ error: "Failed to create invite token" });
     }
 }

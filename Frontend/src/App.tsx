@@ -53,6 +53,7 @@ const Challenges = lazy(() => import("./pages/Challenges"));
 const Docs = lazy(() => import("./pages/Docs"));
 const StudyTracker = lazy(() => import("./pages/StudyTracker"));
 const CreatorLogin = lazy(() => import("./pages/CreatorLogin"));
+const CreatorSetup = lazy(() => import("./pages/CreatorSetup"));
 const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const PremiumDashboard = lazy(() => import("./pages/PremiumDashboard"));
@@ -282,6 +283,10 @@ const App = () => {
                     <Route
                       path="/creator-login"
                       element={<CreatorLogin />}
+                    />
+                    <Route
+                      path="/creator-setup"
+                      element={<CreatorSetup />}
                     />
                     <Route
                       path="/creator-dashboard"
