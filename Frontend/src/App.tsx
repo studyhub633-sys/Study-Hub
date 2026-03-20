@@ -50,6 +50,10 @@ const BeyondTheoryLessons = lazy(() => import("./pages/premium/BeyondTheoryLesso
 const UnlimitedQuizzes = lazy(() => import("./pages/premium/UnlimitedQuizzes"));
 const Friends = lazy(() => import("./pages/Friends"));
 const Challenges = lazy(() => import("./pages/Challenges"));
+const Docs = lazy(() => import("./pages/Docs"));
+const StudyTracker = lazy(() => import("./pages/StudyTracker"));
+const CreatorLogin = lazy(() => import("./pages/CreatorLogin"));
+const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const PremiumDashboard = lazy(() => import("./pages/PremiumDashboard"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -256,6 +260,34 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <Challenges />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/docs"
+                      element={
+                        <ProtectedRoute>
+                          <Docs />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/study-tracker"
+                      element={
+                        <ProtectedRoute>
+                          <StudyTracker />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/creator-login"
+                      element={<CreatorLogin />}
+                    />
+                    <Route
+                      path="/creator-dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <CreatorDashboard />
                         </ProtectedRoute>
                       }
                     />

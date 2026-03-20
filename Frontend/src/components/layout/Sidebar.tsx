@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Crown,
+  FileEdit,
   FileText,
   Layers,
   LayoutDashboard,
@@ -22,6 +23,7 @@ import {
   Shield,
   Sun,
   Swords,
+  Timer,
   Trophy,
   Users,
   Zap
@@ -60,6 +62,8 @@ export function Sidebar() {
     { icon: Users, label: "Friends", path: "/friends" },
     { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
     { icon: Swords, label: "Challenges", path: "/challenges" },
+    { icon: FileEdit, label: "Docs", path: "/docs" },
+    { icon: Timer, label: "Study Tracker", path: "/study-tracker" },
     { icon: Zap, label: "Cram Mode", path: "/cram-mode", badge: "Coming Soon" },
     ...(isUserAdmin ? [{ icon: Shield, label: "Admin", path: "/admin" }] : []),
   ];

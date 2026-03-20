@@ -6,10 +6,12 @@ import {
     useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { CheckCircle2, Loader2, Tag, XCircle } from "lucide-react";
+import { CheckCircle2, Loader2, Tag, Users, XCircle } from "lucide-react";
 import { useTheme } from "next-themes";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+
+const CREATOR_CODE_DISCOUNT = 0.2; // 20% off for creator codes
 
 interface StripeCheckoutProps {
     onSuccess: () => void;
@@ -38,6 +40,7 @@ interface StripeCheckoutFormProps {
     clientSecret: string;
     finalPrice: number;
     discountCode: string;
+    creatorId?: string;
     onSuccess: () => void;
     onError?: (error: string) => void;
 }
@@ -46,6 +49,7 @@ function StripeCheckoutForm({
     clientSecret,
     finalPrice,
     discountCode,
+    creatorId,
     onSuccess,
     onError,
 }: StripeCheckoutFormProps) {
@@ -166,6 +170,23 @@ function StripeCheckoutForm({
                     );
                 }
 
+                // Record creator referral if applicable
+                if (creatorId && supabase) {
+                    try {
+                        const { data: { user: currentUser } } = await supabase.auth.getUser();
+                        if (currentUser) {
+                            await supabase.from("creator_referrals").insert({
+                                creator_id: creatorId,
+                                referred_user_id: currentUser.id,
+                                amount_paid: finalPrice,
+                                commission: finalPrice * 0.2,
+                            });
+                        }
+                    } catch (refError) {
+                        console.error("[Creator] Error recording referral:", refError);
+                    }
+                }
+
                 onSuccess();
             } else {
                 const msg =
@@ -228,6 +249,9 @@ function StripeCheckoutForm({
 }
 
 export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
+    // Creator code state
+    const [creatorId, setCreatorId] = useState<string | null>(null);
+    const [isCreatorCode, setIsCreatorCode] = useState(false);
     const { user, supabase } = useAuth();
     const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [loadingIntent, setLoadingIntent] = useState(false);
@@ -335,28 +359,61 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [finalPrice, user, supabase]);
 
-    const handleApplyCode = () => {
+    const handleApplyCode = async () => {
         const code = discountInput.trim().toUpperCase();
         setDiscountError(null);
         setCodeApplying(true);
 
-        setTimeout(() => {
-            if (DISCOUNT_CODES[code] !== undefined) {
-                setAppliedCode(code);
-                setDiscountInput("");
-                setDiscountError(null);
-                toast.success(`Discount code "${code}" applied! You save £${(ONE_TIME_PRICE * DISCOUNT_CODES[code]).toFixed(2)}.`);
-            } else {
-                setDiscountError("Invalid discount code. Please check and try again.");
-            }
+        // First check if it's a standard discount code
+        if (DISCOUNT_CODES[code] !== undefined) {
+            setAppliedCode(code);
+            setDiscountInput("");
+            setIsCreatorCode(false);
+            setCreatorId(null);
+            toast.success(`Discount code "${code}" applied! You save £${(ONE_TIME_PRICE * DISCOUNT_CODES[code]).toFixed(2)}.`);
             setCodeApplying(false);
-        }, 400); // brief artificial delay for UX
+            return;
+        }
+
+        // Then check if it's a creator code
+        if (supabase) {
+            try {
+                const { data: creator } = await supabase
+                    .from("creators")
+                    .select("id, code, commission_rate")
+                    .eq("code", code)
+                    .maybeSingle();
+
+                if (creator) {
+                    setAppliedCode(code);
+                    setDiscountInput("");
+                    setIsCreatorCode(true);
+                    setCreatorId(creator.id);
+                    // Use CREATOR_CODE_DISCOUNT for the discount
+                    DISCOUNT_CODES[code] = CREATOR_CODE_DISCOUNT;
+                    toast.success(`Creator code "${code}" applied! You save £${(ONE_TIME_PRICE * CREATOR_CODE_DISCOUNT).toFixed(2)}.`);
+                    setCodeApplying(false);
+                    return;
+                }
+            } catch {
+                // Table might not exist yet — fall through to error
+            }
+        }
+
+        setDiscountError("Invalid discount or creator code. Please check and try again.");
+        setCodeApplying(false);
     };
 
     const handleRemoveCode = () => {
+        // If it was a dynamically added creator code, clean it up
+        if (isCreatorCode && appliedCode && DISCOUNT_CODES[appliedCode] !== undefined) {
+            delete DISCOUNT_CODES[appliedCode];
+        }
         setAppliedCode(null);
         setDiscountError(null);
         setDiscountInput("");
+        setIsCreatorCode(false);
+        setCreatorId(null);
     };
 
     if (!STRIPE_PUBLISHABLE_KEY || !stripePromise) {
@@ -441,7 +498,7 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                                         if (discountInput.trim()) handleApplyCode();
                                     }
                                 }}
-                                placeholder="Discount code"
+                                placeholder="Discount or Creator code"
                                 className="w-full rounded-md border bg-card pl-8 pr-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                             />
                         </div>
@@ -485,6 +542,7 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                             clientSecret={clientSecret}
                             finalPrice={finalPrice}
                             discountCode={appliedCode ?? ""}
+                            creatorId={creatorId ?? undefined}
                             onSuccess={onSuccess}
                             onError={onError}
                         />
