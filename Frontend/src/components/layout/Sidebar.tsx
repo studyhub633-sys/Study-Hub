@@ -32,8 +32,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
-import { isAdmin } from "@/lib/premium";
-
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
@@ -42,13 +40,6 @@ export function Sidebar() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [isUserAdmin, setIsUserAdmin] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      isAdmin(supabase, user.id).then(setIsUserAdmin);
-    }
-  }, [user, supabase]);
 
   const navItems = [
     { icon: LayoutDashboard, label: t("nav.dashboard"), path: "/" },
@@ -65,7 +56,6 @@ export function Sidebar() {
     { icon: FileEdit, label: "Docs", path: "/docs" },
     { icon: Timer, label: "Study Tracker", path: "/study-tracker" },
     { icon: Zap, label: "Cram Mode", path: "/cram-mode", badge: "Coming Soon" },
-    ...(isUserAdmin ? [{ icon: Shield, label: "Admin", path: "/admin" }] : []),
   ];
 
   const bottomNavItems = [
