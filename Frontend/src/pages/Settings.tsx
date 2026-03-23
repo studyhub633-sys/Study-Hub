@@ -29,10 +29,12 @@ import {
   Shield,
   Trash2,
   User,
+  Users,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { isAdmin } from "@/lib/premium";
 
 export default function Settings() {
   const { supabase, user } = useAuth();
@@ -43,6 +45,13 @@ export default function Settings() {
   const [activeSection, setActiveSection] = useState("profile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      isAdmin(supabase, user.id).then(setIsUserAdmin);
+    }
+  }, [user, supabase]);
 
   const settingsSections = [
     { icon: User, label: t("settings.profile.title"), id: "profile" },
@@ -51,6 +60,7 @@ export default function Settings() {
     { icon: Shield, label: t("settings.privacy.title"), id: "privacy" },
     { icon: CreditCard, label: t("settings.subscription.title"), id: "subscription" },
     { icon: FileText, label: t("settings.legal.title"), id: "legal" },
+    { icon: Users, label: "Roles & Portals", id: "roles" },
   ];
 
   // Profile form state
@@ -704,6 +714,49 @@ export default function Settings() {
                         </div>
                         <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                       </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Roles Section */}
+                {activeSection === "roles" && (
+                  <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
+                    <h2 className="text-lg font-semibold text-foreground mb-6">Roles & Portals</h2>
+
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => navigate('/creator-login')}
+                        className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border hover:bg-muted transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                            <Users className="h-5 w-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium text-foreground">Creator Portal</p>
+                            <p className="text-sm text-muted-foreground">Access your creator dashboard or sign in to track referrals</p>
+                          </div>
+                        </div>
+                        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      </button>
+
+                      {isUserAdmin && (
+                        <button
+                          onClick={() => navigate('/admin')}
+                          className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border hover:bg-muted transition-colors group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                              <Shield className="h-5 w-5" />
+                            </div>
+                            <div className="text-left">
+                              <p className="font-medium text-foreground">Admin Dashboard</p>
+                              <p className="text-sm text-muted-foreground">Manage platform content and view user statistics</p>
+                            </div>
+                          </div>
+                          <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
