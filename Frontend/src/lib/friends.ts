@@ -14,6 +14,7 @@ export interface FriendProfile {
   avatar_url: string | null;
   xp: number;
   study_hours: number;
+  streak: number;
 }
 
 export interface Friendship {
@@ -40,7 +41,7 @@ export async function searchUsers(
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, full_name, email, avatar_url, xp, study_hours")
+      .select("id, full_name, email, avatar_url, xp, study_hours, streak")
       .neq("id", currentUserId)
       .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
       .limit(20);
@@ -57,6 +58,7 @@ export async function searchUsers(
       avatar_url: u.avatar_url,
       xp: u.xp || 0,
       study_hours: u.study_hours || 0,
+      streak: u.streak || 0,
     }));
   } catch (error) {
     console.error("Error searching users:", error);
@@ -181,8 +183,8 @@ export async function getFriends(
       .from("friendships")
       .select(`
         id, requester_id, addressee_id, status, created_at,
-        requester:profiles!friendships_requester_id_fkey(id, full_name, email, avatar_url, xp, study_hours),
-        addressee:profiles!friendships_addressee_id_fkey(id, full_name, email, avatar_url, xp, study_hours)
+        requester:profiles!friendships_requester_id_fkey(id, full_name, email, avatar_url, xp, study_hours, streak),
+        addressee:profiles!friendships_addressee_id_fkey(id, full_name, email, avatar_url, xp, study_hours, streak)
       `)
       .eq("status", "accepted")
       .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
@@ -204,6 +206,7 @@ export async function getFriends(
           avatar_url: friendProfile?.avatar_url || null,
           xp: friendProfile?.xp || 0,
           study_hours: friendProfile?.study_hours || 0,
+          streak: friendProfile?.streak || 0,
         },
       };
     });
@@ -225,7 +228,7 @@ export async function getPendingRequests(
       .from("friendships")
       .select(`
         id, requester_id, addressee_id, status, created_at,
-        requester:profiles!friendships_requester_id_fkey(id, full_name, email, avatar_url, xp, study_hours)
+        requester:profiles!friendships_requester_id_fkey(id, full_name, email, avatar_url, xp, study_hours, streak)
       `)
       .eq("status", "pending")
       .eq("addressee_id", userId);
@@ -244,6 +247,7 @@ export async function getPendingRequests(
         avatar_url: f.requester?.avatar_url || null,
         xp: f.requester?.xp || 0,
         study_hours: f.requester?.study_hours || 0,
+        streak: f.requester?.streak || 0,
       },
     }));
   } catch (error) {

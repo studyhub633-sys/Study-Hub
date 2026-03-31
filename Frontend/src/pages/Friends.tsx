@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import {
   Check,
   Clock,
+  Flame,
   Loader2,
   Search,
   Swords,
@@ -194,6 +195,9 @@ export default function Friends() {
                         <p className="font-semibold text-sm truncate">{result.full_name}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-2">
                           <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-amber-500" />{result.xp} XP</span>
+                          {result.streak > 0 && (
+                            <span className="flex items-center gap-1"><Flame className="w-3 h-3 text-orange-500" />{result.streak}d streak</span>
+                          )}
                         </p>
                       </div>
                       {alreadyFriend ? (
@@ -322,7 +326,7 @@ export default function Friends() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm truncate">{friendship.friend.full_name}</p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                         <span className="flex items-center gap-1">
                           <Zap className="w-3 h-3 text-amber-500" />
                           {friendship.friend.xp.toLocaleString()} XP
@@ -331,6 +335,12 @@ export default function Friends() {
                           <Trophy className="w-3 h-3 text-orange-500" />
                           {friendship.friend.study_hours}h studied
                         </span>
+                        {friendship.friend.streak > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Flame className="w-3 h-3 text-orange-400" />
+                            {friendship.friend.streak}d streak
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-2">

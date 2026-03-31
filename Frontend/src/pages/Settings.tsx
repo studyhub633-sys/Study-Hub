@@ -677,28 +677,41 @@ export default function Settings() {
                   </div>
                 )}
 
-                {/* Legal Section */}
                 {activeSection === "legal" && (
                   <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
                     <h2 className="text-lg font-semibold text-foreground mb-6">{t("settings.legal.title")}</h2>
 
                     <div className="space-y-3">
-                      <button
-                        onClick={() => navigate('/terms')}
-                        className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border hover:bg-muted transition-colors group"
-                      >
-                        <div className="flex items-center gap-3">
+                      {/* Inline T&C Summary */}
+                      <div className="p-4 rounded-xl bg-muted/50 border border-border">
+                        <div className="flex items-center gap-3 mb-3">
                           <div className="p-2 rounded-lg bg-primary/10 text-primary">
                             <FileText className="h-5 w-5" />
                           </div>
-                          <div className="text-left">
+                          <div>
                             <p className="font-medium text-foreground">{t("settings.legal.termsTitle")}</p>
-                            <p className="text-sm text-muted-foreground">{t("settings.legal.termsDescription")}</p>
+                            <p className="text-xs text-muted-foreground">Key points — last updated March 2026</p>
                           </div>
                         </div>
-                        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                      </button>
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          <p>• <strong className="text-foreground">Service:</strong> Revisely.ai provides AI-powered study tools for GCSE students. Free users receive limited daily usage; Premium unlocks full access.</p>
+                          <p>• <strong className="text-foreground">Payment:</strong> Premium is a one-time payment of £25 for the 2026 GCSE season. No recurring charges.</p>
+                          <p>• <strong className="text-foreground">Refunds:</strong> We offer a 30-day money-back guarantee. Contact support within 30 days of purchase.</p>
+                          <p>• <strong className="text-foreground">Content:</strong> AI-generated content is for study assistance only and may not always be 100% accurate. Always verify with your teacher.</p>
+                          <p>• <strong className="text-foreground">Data:</strong> We store only the minimum data needed to provide the service. See our Privacy Policy for full details.</p>
+                          <p>• <strong className="text-foreground">Age:</strong> You must be 13 or older to use Revisely.ai. Users under 16 should have parental consent.</p>
+                          <p>• <strong className="text-foreground">Conduct:</strong> You agree not to misuse the platform, share accounts, or attempt to circumvent usage limits.</p>
+                        </div>
+                        <button
+                          onClick={() => navigate('/terms')}
+                          className="mt-3 text-xs text-primary hover:underline flex items-center gap-1"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Read full Terms & Conditions
+                        </button>
+                      </div>
 
+                      {/* Privacy Policy link */}
                       <button
                         onClick={() => navigate('/privacy')}
                         className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border hover:bg-muted transition-colors group"
@@ -710,6 +723,23 @@ export default function Settings() {
                           <div className="text-left">
                             <p className="font-medium text-foreground">{t("settings.legal.privacyTitle")}</p>
                             <p className="text-sm text-muted-foreground">{t("settings.legal.privacyDescription")}</p>
+                          </div>
+                        </div>
+                        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      </button>
+
+                      {/* Returns / Refunds link */}
+                      <button
+                        onClick={() => navigate('/returns')}
+                        className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border hover:bg-muted transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400">
+                            <Shield className="h-5 w-5" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium text-foreground">Refund Policy</p>
+                            <p className="text-sm text-muted-foreground">30-day money-back guarantee details</p>
                           </div>
                         </div>
                         <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />

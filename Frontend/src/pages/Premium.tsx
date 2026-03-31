@@ -69,30 +69,38 @@ export default function Premium() {
     {
       icon: Zap,
       title: "Unlimited Quizzes",
-      description: "AI-generated quiz questions on any GCSE topic — answer and get instant right/wrong feedback. Free users: 10/day.",
+      description: "AI-generated quiz questions on any GCSE topic — answer and get instant right/wrong feedback. Free users: 5/day.",
       key: "unlimitedQuizzes"
     },
-    // 3. Tutoring
-    {
-      icon: Sparkles,
-      title: t("premium.features.studySuggestions.title"),
-      description: t("premium.features.studySuggestions.description"),
-      key: "studySuggestions"
-    },
-    // 4. Grade 9 Notes and Flashcards
-    {
-      icon: Brain,
-      title: "Grade 9 Premium Notes",
-      description: "Access exclusive Grade 9 notes and study materials",
-      key: "grade9Notes"
-    },
-    // Then the rest
+    // 3. Beyond Theory Lessons (explicitly placed 3rd)
     {
       icon: BookOpen,
       title: t("premium.features.beyondTheory.title"),
       description: t("premium.features.beyondTheory.description"),
       key: "beyondTheory"
     },
+    // 4. Tutoring / Virtual Sessions
+    {
+      icon: Sparkles,
+      title: t("premium.features.studySuggestions.title"),
+      description: t("premium.features.studySuggestions.description"),
+      key: "studySuggestions"
+    },
+    // 5. Grade 9 Notes and Flashcards
+    {
+      icon: Brain,
+      title: "Grade 9 Premium Notes & Flashcards",
+      description: "Exclusive Grade 9 notes and premium flashcard sets designed for top-mark achievement",
+      key: "grade9Notes"
+    },
+    // 6. AI Examiner (moved up — key differentiator)
+    {
+      icon: GraduationCap,
+      title: "AI Examiner",
+      description: "Upload your completed past papers for instant AI marking, grading, and personalised feedback",
+      key: "aiExaminer"
+    },
+    // Then the rest
     {
       icon: Clock,
       title: "Progress Analytics",
@@ -128,12 +136,6 @@ export default function Premium() {
       title: "AI Mind Map Generator",
       description: "Transform your notes into visual mind maps instantly with AI",
       key: "mindMap"
-    },
-    {
-      icon: GraduationCap,
-      title: "AI Examiner",
-      description: "Upload completed past papers for instant AI marking and grading",
-      key: "aiExaminer"
     },
     {
       icon: BarChart3,

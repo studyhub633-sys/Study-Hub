@@ -281,7 +281,7 @@ async function handleGetSubscription(req, res) {
     }
 }
 
-// ─── Cancel / Deactivate Premium ───────────────────────────────
+// ─── Cancel / Deactivate Premium + Stripe Refund ───────────────
 async function handleCancel(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -306,6 +306,39 @@ async function handleCancel(req, res) {
             return res.status(404).json({ error: 'No active premium access found.' });
         }
 
+        // ── Issue Stripe refund only within 14-day window ──
+        let refunded = false;
+        const intentId = subscription.stripe_payment_intent_id;
+        const REFUND_WINDOW_DAYS = 14;
+
+        const purchaseDate = new Date(subscription.current_period_start);
+        const daysSincePurchase = Math.floor((Date.now() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
+        const withinRefundWindow = daysSincePurchase <= REFUND_WINDOW_DAYS;
+
+        if (withinRefundWindow && intentId && !intentId.startsWith('free_')) {
+            try {
+                const refund = await stripe.refunds.create({
+                    payment_intent: intentId,
+                });
+                refunded = refund.status === 'succeeded' || refund.status === 'pending';
+                console.log(`[Stripe] Refund ${refund.id} created for user ${user.id} (status: ${refund.status}, days: ${daysSincePurchase})`);
+            } catch (refundError) {
+                // If the charge was already refunded, treat as success
+                if (refundError.code === 'charge_already_refunded') {
+                    console.log(`[Stripe] Charge already refunded for user ${user.id}`);
+                    refunded = true;
+                } else {
+                    console.error('[Stripe] Refund failed:', refundError.message);
+                    return res.status(500).json({
+                        error: 'Unable to process your refund. Please contact support.',
+                    });
+                }
+            }
+        } else if (!withinRefundWindow) {
+            console.log(`[Stripe] Refund window expired for user ${user.id} (${daysSincePurchase} days since purchase)`);
+        }
+
+        // ── Update subscription status ──
         const { error: updateError } = await supabase
             .from('subscriptions')
             .update({
@@ -321,17 +354,20 @@ async function handleCancel(req, res) {
             return res.status(500).json({ error: 'Failed to cancel premium.' });
         }
 
-        // Deactivate premium
+        // ── Deactivate premium on profile ──
         await supabase
             .from('profiles')
             .update({ is_premium: false })
             .eq('id', user.id);
 
-        console.log(`[Stripe] Deactivated premium for user ${user.id}`);
+        console.log(`[Stripe] Deactivated premium for user ${user.id} (refunded: ${refunded})`);
 
         return res.status(200).json({
             success: true,
-            message: 'Premium access has been deactivated.',
+            refunded,
+            message: refunded
+                ? 'Premium cancelled and payment refunded. It may take 5–10 business days to appear on your statement.'
+                : 'Premium access has been deactivated.',
         });
 
     } catch (error) {

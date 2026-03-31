@@ -5,8 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { hasPremium } from "@/lib/premium";
-import { Calculator, Loader2, TrendingDown, TrendingUp, Minus, Save, CheckCircle } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
+import { Calculator, CheckCircle, Cloud, Loader2, Minus, Save, TrendingDown, TrendingUp } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 interface SubjectGrade {
     name: string;
@@ -61,43 +61,84 @@ export default function PredictedGrades() {
     const [predictions, setPredictions] = useState<SubjectPrediction[] | null>(null);
     const [saved, setSaved] = useState(false);
 
-    // Storage key
     const storageKey = user ? `predicted_grades_${user.id}` : null;
 
-    // Load saved data on mount
+    // Load saved data on mount — Supabase first, localStorage as fallback
     useEffect(() => {
-        if (!storageKey) return;
-        try {
-            const savedData = localStorage.getItem(storageKey);
-            if (savedData) {
-                const parsed = JSON.parse(savedData);
-                if (parsed.subjects && Array.isArray(parsed.subjects) && parsed.subjects.length > 0) {
-                    setSubjects(parsed.subjects);
-                    // Auto-calculate if we have valid saved data
-                    const validSubjects = parsed.subjects.filter((s: SubjectGrade) => s.name && s.grade && s.target);
-                    if (validSubjects.length > 0) {
-                        calculatePredictions(parsed.subjects);
+        if (!user || !supabase) return;
+
+        const loadData = async () => {
+            // Try Supabase first
+            try {
+                const { data, error } = await supabase
+                    .from("predicted_grades")
+                    .select("subjects")
+                    .eq("user_id", user.id)
+                    .maybeSingle();
+
+                if (!error && data?.subjects && Array.isArray(data.subjects) && data.subjects.length > 0) {
+                    setSubjects(data.subjects);
+                    // Sync to localStorage as cache
+                    if (storageKey) {
+                        localStorage.setItem(storageKey, JSON.stringify({ subjects: data.subjects }));
+                    }
+                    const validSubjects = data.subjects.filter((s: SubjectGrade) => s.name && s.grade && s.target);
+                    if (validSubjects.length > 0) calculatePredictions(data.subjects);
+                    return;
+                }
+            } catch {
+                // Table may not exist yet — fall through to localStorage
+            }
+
+            // Fallback to localStorage
+            if (!storageKey) return;
+            try {
+                const savedData = localStorage.getItem(storageKey);
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    if (parsed.subjects && Array.isArray(parsed.subjects) && parsed.subjects.length > 0) {
+                        setSubjects(parsed.subjects);
+                        const validSubjects = parsed.subjects.filter((s: SubjectGrade) => s.name && s.grade && s.target);
+                        if (validSubjects.length > 0) calculatePredictions(parsed.subjects);
                     }
                 }
+            } catch (e) {
+                console.error("Error loading saved predicted grades:", e);
             }
-        } catch (e) {
-            console.error("Error loading saved predicted grades:", e);
-        }
-    }, [storageKey]);
+        };
 
-    // Save to localStorage whenever subjects change
-    const saveData = useCallback(() => {
-        if (!storageKey) return;
-        try {
-            localStorage.setItem(storageKey, JSON.stringify({ subjects }));
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2000);
-        } catch (e) {
-            console.error("Error saving predicted grades:", e);
-        }
-    }, [storageKey, subjects]);
+        loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, supabase]);
 
-    // Auto-save on subject changes (debounced)
+    // Save to both localStorage (instant) and Supabase (persistent)
+    const saveData = useCallback(async () => {
+        // Always write to localStorage immediately
+        if (storageKey) {
+            try {
+                localStorage.setItem(storageKey, JSON.stringify({ subjects }));
+            } catch { /* ignore */ }
+        }
+
+        // Persist to Supabase for cross-device access
+        if (user && supabase) {
+            try {
+                await supabase
+                    .from("predicted_grades")
+                    .upsert(
+                        { user_id: user.id, subjects, updated_at: new Date().toISOString() },
+                        { onConflict: "user_id" }
+                    );
+            } catch {
+                // Table may not exist — localStorage is the backup
+            }
+        }
+
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+    }, [storageKey, subjects, user, supabase]);
+
+    // Auto-save to localStorage on subject changes (debounced)
     useEffect(() => {
         if (!storageKey) return;
         const timer = setTimeout(() => {
@@ -317,7 +358,7 @@ export default function PredictedGrades() {
                             </div>
                             {saved && (
                                 <span className="flex items-center gap-1 text-xs text-green-500 font-medium animate-fade-in">
-                                    <CheckCircle className="w-3 h-3" /> Saved
+                                    <Cloud className="w-3 h-3" /> Saved to cloud
                                 </span>
                             )}
                         </div>
