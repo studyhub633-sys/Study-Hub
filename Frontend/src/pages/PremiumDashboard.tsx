@@ -102,7 +102,17 @@ export default function PremiumDashboard() {
             bg: "bg-violet-500/10",
             hoverBg: "bg-violet-500",
         },
-        // 3. AI Examiner (promoted - right after quizzes)
+        // 3. Beyond Theory Lessons
+        {
+            title: t('premium.features.beyondTheory.title'),
+            description: t('premium.features.beyondTheory.description'),
+            icon: BookOpen,
+            path: "/premium/beyond-theory-lessons",
+            color: "text-teal-500",
+            bg: "bg-teal-500/10",
+            hoverBg: "bg-teal-500",
+        },
+        // 4. AI Examiner (right after quizzes/beyond theory — most advertised position)
         {
             title: t('premium.features.aiExaminer.title'),
             description: t('premium.features.aiExaminer.description'),
@@ -112,7 +122,7 @@ export default function PremiumDashboard() {
             bg: "bg-rose-500/10",
             hoverBg: "bg-rose-500",
         },
-        // 4. Tutoring (Virtual Sessions)
+        // 5. Tutoring (Virtual Sessions)
         {
             title: t('premium.features.virtualSessions.title'),
             description: t('premium.features.virtualSessions.description'),
@@ -122,7 +132,7 @@ export default function PremiumDashboard() {
             bg: "bg-indigo-500/10",
             hoverBg: "bg-indigo-500",
         },
-        // 4. Grade 9 Notes and Flashcards
+        // 6. Grade 9 Notes
         {
             title: t('premium.features.grade9Notes.title'),
             description: t('premium.features.grade9Notes.description'),
@@ -132,6 +142,7 @@ export default function PremiumDashboard() {
             bg: "bg-emerald-500/10",
             hoverBg: "bg-emerald-500",
         },
+        // 7. Grade 9 Flashcards
         {
             title: "Grade 9 Flashcards",
             description: "Premium flashcards for rapid revision and retention",
@@ -141,7 +152,7 @@ export default function PremiumDashboard() {
             bg: "bg-pink-500/10",
             hoverBg: "bg-pink-500",
         },
-        // Creative Writing / Docs (Premium)
+        // 8. Creative Writing / Docs (Premium)
         {
             title: "Creative Writing",
             description: "Write essays, stories & creative pieces with AI-powered writing assistance and print support.",
@@ -169,15 +180,6 @@ export default function PremiumDashboard() {
             color: "text-green-500",
             bg: "bg-green-500/10",
             hoverBg: "bg-green-500",
-        },
-        {
-            title: t('premium.features.beyondTheory.title'),
-            description: t('premium.features.beyondTheory.description'),
-            icon: BookOpen,
-            path: "/premium/beyond-theory-lessons",
-            color: "text-teal-500",
-            bg: "bg-teal-500/10",
-            hoverBg: "bg-teal-500",
         },
         {
             title: t('premium.features.focusMode.title'),

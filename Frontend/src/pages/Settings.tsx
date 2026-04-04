@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
   Bell,
+  Bot,
   Camera,
   CreditCard,
   Crown,
@@ -57,6 +58,7 @@ export default function Settings() {
     { icon: User, label: t("settings.profile.title"), id: "profile" },
     { icon: Bell, label: t("settings.notifications.title"), id: "notifications" },
     { icon: Palette, label: t("settings.appearance.title"), id: "appearance" },
+    { icon: Bot, label: "AI Features", id: "ai" },
     { icon: Shield, label: t("settings.privacy.title"), id: "privacy" },
     { icon: CreditCard, label: t("settings.subscription.title"), id: "subscription" },
     { icon: FileText, label: t("settings.legal.title"), id: "legal" },
@@ -83,6 +85,25 @@ export default function Settings() {
     newContentAlerts: false,
     achievementNotifications: true,
   });
+
+  // AI Features toggle state
+  const [aiEnabled, setAiEnabled] = useState(() => {
+    const stored = localStorage.getItem('ai_features_enabled');
+    return stored === null ? true : stored === 'true';
+  });
+
+  const handleAiToggle = (enabled: boolean) => {
+    setAiEnabled(enabled);
+    localStorage.setItem('ai_features_enabled', String(enabled));
+    // Dispatch event so other components can react
+    window.dispatchEvent(new CustomEvent('aiToggleChanged', { detail: { enabled } }));
+    toast({
+      title: enabled ? "AI Features Enabled" : "AI Features Disabled",
+      description: enabled
+        ? "AI-powered features are now visible across the app."
+        : "AI-powered features have been hidden. You can re-enable them anytime.",
+    });
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -556,6 +577,42 @@ export default function Settings() {
                             </>
                           )}
                         </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Features Section */}
+                {activeSection === "ai" && (
+                  <div className="glass-card p-6 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
+                    <h2 className="text-lg font-semibold text-foreground mb-6">AI Features</h2>
+
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-foreground">Enable AI Features</p>
+                          <p className="text-sm text-muted-foreground">
+                            Toggle AI-powered features like AI Tutor, AI quiz generation, and AI writing assistance across the app.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={aiEnabled}
+                          onCheckedChange={handleAiToggle}
+                        />
+                      </div>
+
+                      {!aiEnabled && (
+                        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                          <p className="text-sm text-amber-700 dark:text-amber-300">
+                            <strong>AI features are currently disabled.</strong> The AI Tutor, AI-generated quizzes, and AI writing assistant will be hidden from the interface. You can re-enable them at any time.
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="pt-4 border-t border-border">
+                        <p className="text-xs text-muted-foreground">
+                          When disabled, all AI-powered features will be hidden from the sidebar and dashboard. Your existing data and notes are not affected.
+                        </p>
                       </div>
                     </div>
                   </div>

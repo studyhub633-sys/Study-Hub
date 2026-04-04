@@ -314,7 +314,53 @@ export default function Friends() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <>
+                {/* Duolingo-style XP Competition Widget */}
+                <div className="mb-4 p-4 rounded-xl bg-gradient-to-r from-violet-500/10 via-blue-500/10 to-cyan-500/10 border border-violet-500/20">
+                  <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-amber-500" />
+                    Friend Rankings
+                  </h3>
+                  <div className="space-y-2">
+                    {[...friends]
+                      .sort((a, b) => (b.friend.xp || 0) - (a.friend.xp || 0))
+                      .slice(0, 5)
+                      .map((friendship, idx) => (
+                        <div
+                          key={friendship.id}
+                          className="flex items-center gap-3 py-1.5"
+                        >
+                          <span className={cn(
+                            "w-5 text-xs font-bold text-center",
+                            idx === 0 ? "text-amber-500" : idx === 1 ? "text-slate-400" : idx === 2 ? "text-amber-600" : "text-muted-foreground"
+                          )}>
+                            {idx + 1}
+                          </span>
+                          <Avatar className="h-7 w-7">
+                            <AvatarImage src={friendship.friend.avatar_url || undefined} />
+                            <AvatarFallback className="text-xs">{friendship.friend.full_name?.[0] || "?"}</AvatarFallback>
+                          </Avatar>
+                          <span className="flex-1 text-sm font-medium truncate">{friendship.friend.full_name}</span>
+                          <div className="flex items-center gap-3 text-xs">
+                            <span className="flex items-center gap-1 text-amber-500 font-semibold">
+                              <Zap className="w-3 h-3" />
+                              {(friendship.friend.xp || 0).toLocaleString()}
+                            </span>
+                            {friendship.friend.streak > 0 && (
+                              <span className="flex items-center gap-1 text-orange-400">
+                                <Flame className="w-3 h-3" />
+                                {friendship.friend.streak}d
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Friends list */}
+                <div className="space-y-2">
+
                 {friends.map((friendship) => (
                   <div
                     key={friendship.id}
@@ -370,6 +416,7 @@ export default function Friends() {
                   </div>
                 ))}
               </div>
+              </>
             )}
           </CardContent>
         </Card>

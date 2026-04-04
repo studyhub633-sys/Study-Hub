@@ -39,14 +39,27 @@ export function Sidebar() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [aiEnabled, setAiEnabled] = useState(() => {
+    const stored = localStorage.getItem('ai_features_enabled');
+    return stored === null ? true : stored === 'true';
+  });
 
-  const navItems = [
+  // Listen for AI toggle changes from Settings
+  useEffect(() => {
+    const handleAiToggle = (e: CustomEvent) => {
+      setAiEnabled(e.detail?.enabled ?? true);
+    };
+    window.addEventListener('aiToggleChanged', handleAiToggle as EventListener);
+    return () => window.removeEventListener('aiToggleChanged', handleAiToggle as EventListener);
+  }, []);
+
+  const allNavItems = [
     { icon: LayoutDashboard, label: t("nav.dashboard"), path: "/" },
     { icon: BookOpen, label: t("nav.notes"), path: "/notes" },
     { icon: Layers, label: t("nav.flashcards"), path: "/flashcards" },
     { icon: FileText, label: t("nav.pastPapers"), path: "/past-papers" },
     { icon: Brain, label: t("nav.knowledge"), path: "/knowledge" },
-    { icon: Bot, label: t("nav.aiTutor"), path: "/ai-tutor" },
+    { icon: Bot, label: t("nav.aiTutor"), path: "/ai-tutor", isAI: true },
     { icon: Library, label: t("nav.library"), path: "/library" },
     { icon: Award, label: t("nav.extracurricular"), path: "/extracurricular" },
     { icon: Users, label: "Friends", path: "/friends" },
@@ -56,6 +69,12 @@ export function Sidebar() {
     { icon: Timer, label: "Study Tracker", path: "/study-tracker" },
     { icon: Zap, label: "Cram Mode", path: "/cram-mode", badge: "Coming Soon" },
   ];
+
+  // Filter out AI items when AI features are disabled
+  const navItems = aiEnabled
+    ? allNavItems
+    : allNavItems.filter(item => !(item as any).isAI);
+
 
   const bottomNavItems = [
     { icon: Settings, label: t("common.settings"), path: "/settings" },

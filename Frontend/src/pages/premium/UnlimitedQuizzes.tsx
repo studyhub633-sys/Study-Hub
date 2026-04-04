@@ -24,6 +24,7 @@ import {
     CheckCircle2,
     Crown,
     Eye,
+    GraduationCap,
     HelpCircle,
     Loader2,
     RotateCcw,
@@ -670,6 +671,23 @@ Rules:
                                                     </>
                                                 )}
                                             </Button>
+                                        </div>
+
+                                        {/* AI Examiner Promotion Banner */}
+                                        <div
+                                            className="mt-4 p-4 rounded-xl bg-gradient-to-r from-rose-500/10 via-pink-500/10 to-purple-500/10 border border-rose-500/20 cursor-pointer hover:border-rose-500/40 transition-all group"
+                                            onClick={() => navigate('/premium/ai-examiner')}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2.5 rounded-xl bg-rose-500/15 text-rose-500 group-hover:bg-rose-500/25 transition-colors">
+                                                    <GraduationCap className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-semibold text-sm text-foreground">Want exam-style marking?</p>
+                                                    <p className="text-xs text-muted-foreground">Try AI Examiner — get detailed mark schemes and examiner feedback on your answers →</p>
+                                                </div>
+                                                <ArrowRight className="w-4 h-4 text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </div>
                                         </div>
                                     </div>
                                 )}
