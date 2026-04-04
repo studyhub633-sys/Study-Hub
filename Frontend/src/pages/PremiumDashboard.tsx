@@ -39,6 +39,7 @@ import {
     Check,
     CheckCircle,
     Crown,
+    FileEdit,
     FileText,
     GraduationCap,
     Layers,
@@ -139,6 +140,16 @@ export default function PremiumDashboard() {
             color: "text-pink-500",
             bg: "bg-pink-500/10",
             hoverBg: "bg-pink-500",
+        },
+        // Creative Writing / Docs (Premium)
+        {
+            title: "Creative Writing",
+            description: "Write essays, stories & creative pieces with AI-powered writing assistance and print support.",
+            icon: FileEdit,
+            path: "/docs",
+            color: "text-emerald-600",
+            bg: "bg-emerald-600/10",
+            hoverBg: "bg-emerald-600",
         },
         // Then the rest
         {
@@ -264,6 +275,12 @@ export default function PremiumDashboard() {
             icon: Brain,
             title: t('premium.features.grade9Notes.title'),
             description: t('premium.features.grade9Notes.description'),
+        },
+        // Creative Writing / Docs
+        {
+            icon: FileEdit,
+            title: "Creative Writing",
+            description: "Rich document editor with AI writing assistant (Grammarly-style) and print support.",
         },
         // Then the rest
         {
