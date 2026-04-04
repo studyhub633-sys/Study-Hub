@@ -696,7 +696,7 @@ export default function Settings() {
                         <div className="space-y-2 text-sm text-muted-foreground">
                           <p>• <strong className="text-foreground">Service:</strong> Revisely.ai provides AI-powered study tools for GCSE students. Free users receive limited daily usage; Premium unlocks full access.</p>
                           <p>• <strong className="text-foreground">Payment:</strong> Premium is a one-time payment of £25 for the 2026 GCSE season. No recurring charges.</p>
-                          <p>• <strong className="text-foreground">Refunds:</strong> We offer a 30-day money-back guarantee. Contact support within 30 days of purchase.</p>
+                          <p>• <strong className="text-foreground">Refunds:</strong> We offer a 14-day money-back guarantee. Contact support within 14 days of purchase.</p>
                           <p>• <strong className="text-foreground">Content:</strong> AI-generated content is for study assistance only and may not always be 100% accurate. Always verify with your teacher.</p>
                           <p>• <strong className="text-foreground">Data:</strong> We store only the minimum data needed to provide the service. See our Privacy Policy for full details.</p>
                           <p>• <strong className="text-foreground">Age:</strong> You must be 13 or older to use Revisely.ai. Users under 16 should have parental consent.</p>
@@ -739,7 +739,7 @@ export default function Settings() {
                           </div>
                           <div className="text-left">
                             <p className="font-medium text-foreground">Refund Policy</p>
-                            <p className="text-sm text-muted-foreground">30-day money-back guarantee details</p>
+                            <p className="text-sm text-muted-foreground">14-day money-back guarantee details</p>
                           </div>
                         </div>
                         <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
