@@ -55,11 +55,11 @@ export function Sidebar() {
 
   const allNavItems = [
     { icon: LayoutDashboard, label: t("nav.dashboard"), path: "/" },
-    { icon: BookOpen, label: t("nav.notes"), path: "/notes" },
     { icon: Layers, label: t("nav.flashcards"), path: "/flashcards" },
+    { icon: Bot, label: t("nav.aiTutor"), path: "/ai-tutor", isAI: true },
+    { icon: BookOpen, label: t("nav.notes"), path: "/notes" },
     { icon: FileText, label: t("nav.pastPapers"), path: "/past-papers" },
     { icon: Brain, label: t("nav.knowledge"), path: "/knowledge" },
-    { icon: Bot, label: t("nav.aiTutor"), path: "/ai-tutor", isAI: true },
     { icon: Library, label: t("nav.library"), path: "/library" },
     { icon: Award, label: t("nav.extracurricular"), path: "/extracurricular" },
     { icon: Users, label: "Friends", path: "/friends" },

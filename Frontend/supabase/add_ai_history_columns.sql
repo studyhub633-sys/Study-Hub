@@ -37,7 +37,7 @@ DROP CONSTRAINT IF EXISTS ai_usage_tracking_feature_type_check;
 
 ALTER TABLE public.ai_usage_tracking 
 ADD CONSTRAINT ai_usage_tracking_feature_type_check 
-CHECK (feature_type IN ('knowledge_organizer', 'flashcards', 'question', 'answer_evaluation', 'chat', 'simple_question', 'question_generation'));
+CHECK (feature_type IN ('knowledge_organizer', 'flashcards', 'question', 'answer_evaluation', 'chat', 'simple_question', 'question_generation', 'generate-flashcards', 'generate-question', 'generate-simple-question', 'mind-map', 'grade-exam'));
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS ai_usage_tracking_user_id_idx ON public.ai_usage_tracking(user_id);

@@ -4,6 +4,7 @@ import {
   BookOpen,
   Bot,
   Brain,
+  Crown,
   FileText,
   Layers,
   LayoutDashboard,
@@ -12,12 +13,13 @@ import { NavLink, useLocation } from "react-router-dom";
 
 const mobileNavItems = [
   { icon: LayoutDashboard, label: "Home", path: "/" },
-  { icon: BookOpen, label: "Notes", path: "/notes" },
   { icon: Layers, label: "Cards", path: "/flashcards" },
+  { icon: Bot, label: "AI Tutor", path: "/ai-tutor" },
+  { icon: BookOpen, label: "Notes", path: "/notes" },
   { icon: FileText, label: "Papers", path: "/past-papers" },
   { icon: Brain, label: "Knowledge", path: "/knowledge" },
-  { icon: Bot, label: "AI Tutor", path: "/ai-tutor" },
   { icon: Award, label: "Extra", path: "/extracurricular" },
+  { icon: Crown, label: "Premium", path: "/premium-dashboard", isPremium: true },
 ];
 
 export function MobileNav() {
@@ -28,20 +30,27 @@ export function MobileNav() {
       <div className="flex items-center px-4 py-2 overflow-x-auto no-scrollbar justify-between sm:justify-around gap-2">
         {mobileNavItems.map((item) => {
           const isActive = location.pathname === item.path;
+          const isPremium = (item as any).isPremium;
           return (
             <NavLink
               key={item.path}
               to={item.path}
               className={cn(
                 "flex flex-col items-center gap-1 px-2 py-2 rounded-xl transition-all duration-200 min-w-[60px] flex-shrink-0",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground"
+                isPremium
+                  ? isActive
+                    ? "text-amber-400"
+                    : "text-amber-500/70"
+                  : isActive
+                    ? "text-primary"
+                    : "text-muted-foreground"
               )}
             >
               <div className={cn(
                 "p-2 rounded-xl transition-all duration-200",
-                isActive && "bg-primary/10"
+                isPremium
+                  ? isActive && "bg-amber-500/15"
+                  : isActive && "bg-primary/10"
               )}>
                 <item.icon className={cn("h-5 w-5", isActive && "animate-bounce-subtle")} />
               </div>
