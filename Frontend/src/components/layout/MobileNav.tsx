@@ -6,6 +6,7 @@ import {
   Brain,
   Crown,
   FileText,
+  HelpCircle,
   Layers,
   LayoutDashboard,
 } from "lucide-react";
@@ -13,10 +14,10 @@ import { NavLink, useLocation } from "react-router-dom";
 
 const mobileNavItems = [
   { icon: LayoutDashboard, label: "Home", path: "/" },
-  { icon: Layers, label: "Cards", path: "/flashcards" },
+  { icon: HelpCircle, label: "Quizzes", path: "/premium/unlimited-quizzes" },
   { icon: Bot, label: "AI Tutor", path: "/ai-tutor" },
+  { icon: Layers, label: "Cards", path: "/flashcards" },
   { icon: BookOpen, label: "Notes", path: "/notes" },
-  { icon: FileText, label: "Papers", path: "/past-papers" },
   { icon: Brain, label: "Knowledge", path: "/knowledge" },
   { icon: Award, label: "Extra", path: "/extracurricular" },
   { icon: Crown, label: "Premium", path: "/premium-dashboard", isPremium: true },

@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Crown,
   FileText,
+  HelpCircle,
   Layers,
   LayoutDashboard,
   Library,
@@ -55,8 +56,9 @@ export function Sidebar() {
 
   const allNavItems = [
     { icon: LayoutDashboard, label: t("nav.dashboard"), path: "/" },
-    { icon: Layers, label: t("nav.flashcards"), path: "/flashcards" },
+    { icon: HelpCircle, label: "Quizzes", path: "/premium/unlimited-quizzes" },
     { icon: Bot, label: t("nav.aiTutor"), path: "/ai-tutor", isAI: true },
+    { icon: Layers, label: t("nav.flashcards"), path: "/flashcards" },
     { icon: BookOpen, label: t("nav.notes"), path: "/notes" },
     { icon: FileText, label: t("nav.pastPapers"), path: "/past-papers" },
     { icon: Brain, label: t("nav.knowledge"), path: "/knowledge" },
