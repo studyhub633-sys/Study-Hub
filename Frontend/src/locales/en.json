@@ -54,7 +54,7 @@
         "getStarted": "Get Started",
         "featuresTitle": "Everything You Need to Succeed",
         "featuresSubtitle": "Powerful tools designed to help you study smarter, not harder",
-        "whyChoose": "Why Choose Revisely.ai?",
+        "whyChoose": "Why Choose Revizely.ai?",
         "whyChooseSubtitle": "Join thousands of students who are already improving their study habits",
         "stayUpdated": "Stay Updated",
         "newsletterDescription": "Subscribe to our newsletter for study tips, feature updates, and exclusive content.",
@@ -197,7 +197,7 @@
         "faq": "FAQ",
         "contactUs": "Contact Us",
         "account": "Account",
-        "copyright": "© 2026 Revisely.ai. All rights reserved.",
+        "copyright": "© 2026 Revizely.ai. All rights reserved.",
         "terms": "Terms",
         "returns": "Returns"
     },
@@ -251,7 +251,7 @@
         "switchToDark": "Switch to dark theme",
         "switchToLight": "Switch to light theme",
         "generateWithAI": "Generate with AI",
-        "learnSmarter": "Revise wisely with Revisely"
+        "learnSmarter": "Revise wisely with REVIZELY"
     },
     "auth": {
         "welcomeBack": "Welcome Back",
@@ -303,7 +303,7 @@
             "yourBenefits": "Your Premium Benefits",
             "premiumFeatures": "Premium Features",
             "benefitsDescriptionPremium": "You have full access to these exclusive features",
-            "benefitsDescriptionFree": "Everything you get when you upgrade to Revisely.ai Premium",
+            "benefitsDescriptionFree": "Everything you get when you upgrade to Revizely.ai Premium",
             "available": "Available",
             "comingSoon": "Coming Soon",
             "unlimitedAI": "Unlimited AI Content Generation",
@@ -381,7 +381,7 @@
                 "description": "Access exclusive Grade 9 notes and study materials for top marks."
             },
             "workExperience": {
-                "title": "Revisely.ai Work Experience",
+                "title": "Revizely.ai Work Experience",
                 "description": "Exclusive work experience opportunities for premium members"
             },
             "predictedPapers": {
@@ -536,7 +536,7 @@
         "smartLinkDesc": "Found a paper link on PMT or PapaCambridge? Paste it below and we'll auto-format it for you.",
         "addWithSmartParser": "Add with Smart Parser",
         "working": "Working Magic...",
-        "note": "Note: This uses URLs only. Revisely.ai does not host or redistribute any PDF files.",
+        "note": "Note: This uses URLs only. Revizely.ai does not host or redistribute any PDF files.",
         "verified": "Verified",
         "addToLibrary": "Add to Library",
         "alreadyAdded": "Already Added"

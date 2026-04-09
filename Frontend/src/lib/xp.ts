@@ -1,5 +1,5 @@
 /**
- * XP System for Revisely.ai
+ * XP System for Revizely.ai
  * 
  * Tracks experience points for gamification.
  * XP is stored in the profiles table and awarded for various activities.

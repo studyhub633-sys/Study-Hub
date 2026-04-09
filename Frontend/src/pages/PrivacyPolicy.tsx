@@ -39,10 +39,10 @@ export default function PrivacyPolicy() {
                         {/* 1. Who we are */}
                         <h3 className="text-lg font-semibold mt-6 mb-3">1. Who we are</h3>
                         <p className="text-muted-foreground">
-                            1.1 This Privacy Policy explains how REVISELY ("we", "us", "our") collects, uses, discloses and protects your personal data when you visit www.revisely.ai, create an account, use our revision platform and subscription services, or otherwise interact with us.
+                            1.1 This Privacy Policy explains how REVIZELY ("we", "us", "our") collects, uses, discloses and protects your personal data when you visit www.revizely.ai, create an account, use our revision platform and subscription services, or otherwise interact with us.
                         </p>
                         <p className="text-muted-foreground mt-2">
-                            1.2 We are the data controller for the purposes of the UK General Data Protection Regulation ("UK GDPR") and the Data Protection Act 2018. Our contact details are: REVISELY LTD, 61 Bridge Street, Kington, HR5 3DJ, hello@revisely.ai.
+                            1.2 We are the data controller for the purposes of the UK General Data Protection Regulation ("UK GDPR") and the Data Protection Act 2018. Our contact details are: REVIZELY LTD, 61 Bridge Street, Kington, HR5 3DJ, hello@revizely.ai.
                         </p>
 
                         {/* 2. Personal data we collect */}
@@ -173,7 +173,7 @@ export default function PrivacyPolicy() {
                             <li><strong>Right to withdraw consent:</strong> where we rely on consent, you may withdraw it at any time (this will not affect the lawfulness of processing before withdrawal).</li>
                         </ul>
                         <p className="text-muted-foreground mt-2">
-                            To exercise any of these rights, please contact us at hello@revisely.ai. We may need to verify your identity before responding.
+                            To exercise any of these rights, please contact us at hello@revizely.ai. We may need to verify your identity before responding.
                         </p>
 
                         {/* 12. Children's privacy */}
@@ -218,7 +218,7 @@ export default function PrivacyPolicy() {
                             16.1 If you have any questions, concerns or requests regarding this Privacy Policy or our data protection practices, please contact us at:
                         </p>
                         <ul className="list-none pl-6 mt-2 space-y-1 text-muted-foreground">
-                            <li><strong>Email:</strong> hello@revisely.ai</li>
+                            <li><strong>Email:</strong> hello@revizely.ai</li>
                             <li><strong>Postal address:</strong> 61 Bridge Street, Kington, HR5 3DJ</li>
                         </ul>
                         <p className="text-muted-foreground mt-2">

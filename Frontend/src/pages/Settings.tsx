@@ -751,12 +751,12 @@ export default function Settings() {
                           </div>
                         </div>
                         <div className="space-y-2 text-sm text-muted-foreground">
-                          <p>• <strong className="text-foreground">Service:</strong> Revisely.ai provides AI-powered study tools for GCSE students. Free users receive limited daily usage; Premium unlocks full access.</p>
-                          <p>• <strong className="text-foreground">Payment:</strong> Premium is a one-time payment of £25 for the 2026 GCSE season. No recurring charges.</p>
+                          <p>• <strong className="text-foreground">Service:</strong> Revizely.ai provides AI-powered study tools for GCSE students. Free users receive limited daily usage; Premium unlocks full access.</p>
+                          <p>• <strong className="text-foreground">Payment:</strong> Premium is available as weekly (£0.99), monthly (£3.99), or yearly (£25) plans. No auto-renewal — access expires at the end of each period.</p>
                           <p>• <strong className="text-foreground">Refunds:</strong> We offer a 14-day money-back guarantee. Contact support within 14 days of purchase.</p>
                           <p>• <strong className="text-foreground">Content:</strong> AI-generated content is for study assistance only and may not always be 100% accurate. Always verify with your teacher.</p>
                           <p>• <strong className="text-foreground">Data:</strong> We store only the minimum data needed to provide the service. See our Privacy Policy for full details.</p>
-                          <p>• <strong className="text-foreground">Age:</strong> You must be 13 or older to use Revisely.ai. Users under 16 should have parental consent.</p>
+                          <p>• <strong className="text-foreground">Age:</strong> You must be 13 or older to use Revizely.ai. Users under 16 should have parental consent.</p>
                           <p>• <strong className="text-foreground">Conduct:</strong> You agree not to misuse the platform, share accounts, or attempt to circumvent usage limits.</p>
                         </div>
                         <button

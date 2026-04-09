@@ -25,12 +25,12 @@ export default function Returns() {
               <CardHeader>
                 <CardTitle>Digital Services Refund Policy</CardTitle>
                 <CardDescription>
-                  Revisely.ai provides digital subscription services
+                  Revizely.ai provides digital subscription services
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-muted-foreground">
                 <p>
-                  Since Revisely.ai is a digital service providing access to online study tools and features,
+                  Since Revizely.ai is a digital service providing access to online study tools and features,
                   we operate under specific refund policies designed for digital products.
                 </p>
               </CardContent>

@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { StripeCheckout } from "@/components/premium/StripeCheckout";
+import { StripeCheckout, PLANS, PlanType } from "@/components/premium/StripeCheckout";
 import { TermsDialog } from "@/components/premium/TermsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,7 @@ export default function Premium() {
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [showTerms, setShowTerms] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>("monthly");
   const [hasPredictedPapers, setHasPredictedPapers] = useState(false);
   const [hasWorkExperience, setHasWorkExperience] = useState(false);
   const [checkingContent, setCheckingContent] = useState(true);
@@ -207,7 +208,8 @@ export default function Premium() {
     }
   };
 
-  const handleSubscribe = () => {
+  const handleSubscribe = (plan?: PlanType) => {
+    if (plan) setSelectedPlan(plan);
     setShowTerms(true);
   };
 
@@ -265,7 +267,7 @@ export default function Premium() {
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-premium/10 text-premium mb-6">
             <Crown className="h-5 w-5" />
-            <span className="font-semibold">Revisely.ai Premium</span>
+            <span className="font-semibold">Revizely.ai Premium</span>
           </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             {isPremium ? (
@@ -310,23 +312,23 @@ export default function Premium() {
                     </div>
                     <div className="text-center md:text-left">
                       <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start">
-                        <span className="text-sm font-semibold text-emerald-500 uppercase tracking-wide">🎉 Limited Time Offer</span>
+                        <span className="text-sm font-semibold text-emerald-500 uppercase tracking-wide">🎉 Plans from just</span>
                       </div>
                       <h3 className="text-2xl md:text-3xl font-bold text-foreground mt-1">
-                        <span className="text-emerald-500">£25</span> for the full 2026 GCSE Season!
+                        <span className="text-emerald-500">£0.99</span>/week!
                       </h3>
                       <p className="text-muted-foreground mt-1">
-                        Get complete access to all premium features until your exams are done
+                        Choose weekly, monthly, or full season access
                       </p>
                     </div>
                   </div>
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/30 whitespace-nowrap"
-                    onClick={() => handleSubscribe()}
+                    onClick={() => handleSubscribe("weekly")}
                   >
                     <Crown className="mr-2 h-5 w-5" />
-                    Claim Offer
+                    Get Started
                   </Button>
                 </div>
               </div>
@@ -344,11 +346,16 @@ export default function Premium() {
                   <h3 className="text-lg font-semibold text-foreground">{t("premium.status.active")}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Premium — One-Time Purchase
+                  Premium — {subscription.plan_type === 'weekly' ? 'Weekly Plan' : subscription.plan_type === 'monthly' ? 'Monthly Plan' : 'Yearly Plan'}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Purchased: {new Date(subscription.current_period_start).toLocaleDateString()}
                 </p>
+                {subscription.current_period_end && (
+                  <p className="text-sm text-muted-foreground">
+                    Expires: {new Date(subscription.current_period_end).toLocaleDateString()}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -376,69 +383,104 @@ export default function Premium() {
           ))}
         </div>
 
-        {/* Pricing Card — One-Time Payment */}
+        {/* Pricing Cards — 3 Plan Options */}
         {!isPremium && (
-          <div className="max-w-lg mx-auto mb-12">
-            <div
-              className="relative rounded-2xl p-6 md:p-8 border-2 border-premium shadow-lg transition-all duration-300 animate-scale-in"
-              style={{ animationDelay: "0.3s", opacity: 0 }}
-            >
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="premium-badge">
-                  <Sparkles className="h-3 w-3 fill-current" />
-                  One-Time Payment
-                </span>
-              </div>
+          <div className="max-w-4xl mx-auto mb-12">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">Choose Your Plan</h2>
+              <p className="text-muted-foreground mt-2">Flexible pricing — cancel anytime</p>
+            </div>
 
-              <div className="text-center mb-6">
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  Premium Access
-                </h3>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-foreground">£25.00</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">One-time payment — no recurring charges</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Full access to all premium features for the 2026 GCSE season
-                </p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              {PLANS.map((plan, idx) => {
+                const isPopular = plan.badge === "Popular";
+                const isBestValue = plan.badge === "Best Value";
+                return (
+                  <div
+                    key={plan.type}
+                    className={cn(
+                      "relative rounded-2xl p-6 border-2 shadow-lg transition-all duration-300 animate-scale-in hover:shadow-xl hover:scale-[1.02]",
+                      isPopular
+                        ? "border-primary bg-primary/5"
+                        : isBestValue
+                        ? "border-emerald-500 bg-emerald-500/5"
+                        : "border-border"
+                    )}
+                    style={{ animationDelay: `${0.1 + 0.15 * idx}s`, opacity: 0 }}
+                  >
+                    {plan.badge && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span
+                          className={cn(
+                            "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap",
+                            isBestValue
+                              ? "bg-emerald-500 text-white"
+                              : "bg-primary text-primary-foreground"
+                          )}
+                        >
+                          <Sparkles className="h-3 w-3 fill-current inline-block mr-1 -mt-0.5" />
+                          {plan.badge}
+                        </span>
+                      </div>
+                    )}
 
-              <ul className="space-y-3 mb-6">
-                {[
-                  "All premium features",
-                  "No recurring charges",
-                  "Priority new features",
-                  "Exclusive content",
-                ].map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-sm text-foreground">
-                    <CheckCircle className="h-4 w-4 text-secondary flex-shrink-0" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
+                    <div className="text-center mb-5 mt-2">
+                      <h3 className="text-lg font-semibold text-foreground mb-2">{plan.label}</h3>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-4xl font-bold text-foreground">£{plan.price.toFixed(2)}</span>
+                        <span className="text-sm text-muted-foreground">{plan.period}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>
+                    </div>
 
-              <Button
-                className="w-full bg-premium hover:bg-premium/90 text-premium-foreground"
-                onClick={() => handleSubscribe()}
-                disabled={loading || isPremium}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {t("premium.dashboard.processing")}
-                  </>
-                ) : isPremium ? (
-                  <>
-                    <Check className="h-4 w-4 mr-2" />
-                    {t("premium.dashboard.alreadyPremium")}
-                  </>
-                ) : (
-                  <>
-                    <Rocket className="h-4 w-4 mr-2" />
-                    Buy Premium — £25
-                  </>
-                )}
-              </Button>
+                    <ul className="space-y-2.5 mb-6">
+                      {[
+                        "All premium features",
+                        "No auto-renewal",
+                        "Priority new features",
+                        "Exclusive content",
+                      ].map((feature) => (
+                        <li key={feature} className="flex items-center gap-2 text-sm text-foreground">
+                          <CheckCircle className="h-4 w-4 text-secondary flex-shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button
+                      className={cn(
+                        "w-full",
+                        isPopular
+                          ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                          : isBestValue
+                          ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                          : "bg-premium hover:bg-premium/90 text-premium-foreground"
+                      )}
+                      onClick={() => handleSubscribe(plan.type)}
+                      disabled={loading || isPremium}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          {t("premium.dashboard.processing")}
+                        </>
+                      ) : isPremium ? (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          {t("premium.dashboard.alreadyPremium")}
+                        </>
+                      ) : (
+                        <>
+                          <Rocket className="h-4 w-4 mr-2" />
+                          {plan.type === "yearly"
+                            ? `Buy — £${plan.price.toFixed(2)}`
+                            : `Subscribe — £${plan.price.toFixed(2)}${plan.period}`}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -496,10 +538,10 @@ export default function Premium() {
               </div>
 
               <h4 className="font-semibold text-lg text-foreground mb-2 group-hover:text-premium transition-colors">
-                Revisely.ai Work Experience
+                Revizely.ai Work Experience
               </h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Exclusive work experience opportunities specifically for Revisely.ai premium members
+                Exclusive work experience opportunities specifically for Revizely.ai premium members
               </p>
 
               {hasWorkExperience && (
@@ -688,10 +730,15 @@ export default function Premium() {
               Complete Payment securely with card
             </DialogTitle>
             <DialogDescription>
-              Pay £25.00 one-time to unlock all premium features.
+              {selectedPlan === "weekly"
+                ? "Subscribe for £0.99/week — no auto-renewal."
+                : selectedPlan === "monthly"
+                ? "Subscribe for £3.99/month — no auto-renewal."
+                : "Subscribe for £25.00/year — no auto-renewal."}
             </DialogDescription>
           </DialogHeader>
           <StripeCheckout
+            initialPlan={selectedPlan}
             onSuccess={handlePaymentSuccess}
             onError={(err) => console.error("Payment error:", err)}
           />

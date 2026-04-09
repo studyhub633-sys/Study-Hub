@@ -39,7 +39,7 @@ export function TermsDialog({ open, onOpenChange, onAccept }: TermsDialogProps) 
                                 1. Payment Agreement
                             </h3>
                             <p>
-                                By purchasing Revisely.ai Premium, you agree to pay the applicable premium fee using our secure card payment provider (such as Stripe). If we later introduce recurring plans, details will be clearly shown before you confirm payment.
+                                By purchasing Revizely.ai Premium, you agree to pay the applicable premium fee using our secure card payment provider (such as Stripe). If we later introduce recurring plans, details will be clearly shown before you confirm payment.
                             </p>
                         </section>
 
@@ -76,7 +76,7 @@ export function TermsDialog({ open, onOpenChange, onAccept }: TermsDialogProps) 
                         <div className="p-4 bg-muted/50 rounded-lg border border-dashed border-border">
                             <p className="font-medium text-foreground mb-1">Confirmation</p>
                             <p className="text-xs">
-                                By clicking "Accept & Continue to Payment", you confirm that you have read and understood these terms and agree to the Revisely.ai Premium Subscription Terms.
+                                By clicking "Accept & Continue to Payment", you confirm that you have read and understood these terms and agree to the Revizely.ai Premium Subscription Terms.
                             </p>
                         </div>
                     </div>

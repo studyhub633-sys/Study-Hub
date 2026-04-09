@@ -1,5 +1,5 @@
 /**
- * Payment Client for Revisely.ai
+ * Payment Client for Revizely.ai
  * Handles premium payment integration (Stripe or other providers)
  */
 
@@ -55,7 +55,7 @@ export async function createPayment(
       return { error: "Not authenticated. Please sign in." };
     }
 
-    console.log(`[Payment Client] Activating premium via one-time payment`);
+    console.log(`[Payment Client] Activating premium via payment`);
 
     const response = await fetch(`${API_BASE_URL}/api/payments/create-payment`, {
       method: "POST",

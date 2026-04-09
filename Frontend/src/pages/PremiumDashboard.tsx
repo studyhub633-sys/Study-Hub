@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { StripeCheckout } from "@/components/premium/StripeCheckout";
+import { StripeCheckout, PLANS, PlanType } from "@/components/premium/StripeCheckout";
 import { TermsDialog } from "@/components/premium/TermsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,6 +75,7 @@ export default function PremiumDashboard() {
     const [loading, setLoading] = useState(false);
     const [showTerms, setShowTerms] = useState(false);
     const [showPayment, setShowPayment] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState<PlanType>("monthly");
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [hasPredictedPapers, setHasPredictedPapers] = useState(false);
     const [hasWorkExperience, setHasWorkExperience] = useState(false);
@@ -407,7 +408,8 @@ export default function PremiumDashboard() {
         }
     };
 
-    const handleSubscribe = () => {
+    const handleSubscribe = (plan?: PlanType) => {
+        if (plan) setSelectedPlan(plan);
         setShowTerms(true);
     };
 
@@ -484,10 +486,10 @@ export default function PremiumDashboard() {
                                         LIMITED TIME OFFER
                                     </h3>
                                     <p className="text-foreground font-medium">
-                                        Get full 2026 GCSE Season Access for just <span className="text-xl font-bold text-red-500">£25</span>!
+                                        Plans from just <span className="text-xl font-bold text-red-500">£0.99</span>/week!
                                     </p>
                                     <p className="text-sm text-muted-foreground mt-1">
-                                        Unlock everything you need for your exams.
+                                        Choose weekly, monthly, or full season access.
                                     </p>
                                 </div>
                             )}
@@ -516,11 +518,16 @@ export default function PremiumDashboard() {
                                     <h3 className="text-lg font-semibold text-foreground">{t('premium.dashboard.activeSubscription')}</h3>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    Premium — One-Time Purchase
+                                    Premium — {subscription.plan_type === 'weekly' ? 'Weekly Plan' : subscription.plan_type === 'monthly' ? 'Monthly Plan' : 'Yearly Plan'}
                                 </p>
                                 <p className="text-sm text-muted-foreground">
                                     Purchased: {new Date(subscription.current_period_start).toLocaleDateString()}
                                 </p>
+                                {subscription.current_period_end && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Expires: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                    </p>
+                                )}
                             </div>
                             <Button
                                 variant="outline"
@@ -702,70 +709,102 @@ export default function PremiumDashboard() {
                 {/* Sales Content (Only for non-premium users) */}
                 {!isPremium && (
                     <div id="pricing-section" className="space-y-12 pt-12 border-t border-border/50">
-                        {/* Pricing Card — One-Time Payment */}
+                        {/* Pricing Cards — 3 Plan Options */}
                         <div className="text-center mb-8">
-                            <h2 className="text-3xl font-bold mb-4">Get Premium</h2>
-                            <p className="text-muted-foreground">One-time payment — no recurring charges</p>
+                            <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
+                            <p className="text-muted-foreground">Flexible pricing — cancel anytime</p>
                         </div>
 
-                        <div className="max-w-lg mx-auto">
-                            <div
-                                className="relative rounded-2xl p-6 md:p-8 border-2 border-premium shadow-lg transition-all duration-300 animate-scale-in"
-                                style={{ animationDelay: "0.3s", opacity: 0 }}
-                            >
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                    <span className="premium-badge">
-                                        <Sparkles className="h-3 w-3 fill-current" />
-                                        One-Time Payment
-                                    </span>
-                                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto">
+                            {PLANS.map((plan, idx) => {
+                                const isPopular = plan.badge === "Popular";
+                                const isBestValue = plan.badge === "Best Value";
+                                return (
+                                    <div
+                                        key={plan.type}
+                                        className={cn(
+                                            "relative rounded-2xl p-6 border-2 shadow-lg transition-all duration-300 animate-scale-in hover:shadow-xl hover:scale-[1.02]",
+                                            isPopular
+                                                ? "border-primary bg-primary/5"
+                                                : isBestValue
+                                                ? "border-emerald-500 bg-emerald-500/5"
+                                                : "border-border"
+                                        )}
+                                        style={{ animationDelay: `${0.1 + 0.15 * idx}s`, opacity: 0 }}
+                                    >
+                                        {plan.badge && (
+                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                                <span
+                                                    className={cn(
+                                                        "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap",
+                                                        isBestValue
+                                                            ? "bg-emerald-500 text-white"
+                                                            : "bg-primary text-primary-foreground"
+                                                    )}
+                                                >
+                                                    <Sparkles className="h-3 w-3 fill-current inline-block mr-1 -mt-0.5" />
+                                                    {plan.badge}
+                                                </span>
+                                            </div>
+                                        )}
 
-                                <div className="text-center mb-6">
-                                    <h3 className="text-lg font-semibold text-foreground mb-2">Premium Access</h3>
-                                    <div className="flex items-baseline justify-center gap-1">
-                                        <span className="text-4xl font-bold text-foreground">£25.00</span>
+                                        <div className="text-center mb-5 mt-2">
+                                            <h3 className="text-lg font-semibold text-foreground mb-2">{plan.label}</h3>
+                                            <div className="flex items-baseline justify-center gap-1">
+                                                <span className="text-4xl font-bold text-foreground">£{plan.price.toFixed(2)}</span>
+                                                <span className="text-sm text-muted-foreground">{plan.period}</span>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>
+                                        </div>
+
+                                        <ul className="space-y-2.5 mb-6">
+                                            {[
+                                                "All premium features",
+                                                "No auto-renewal",
+                                                "Priority new features",
+                                                "Exclusive content",
+                                            ].map((feature) => (
+                                                <li key={feature} className="flex items-center gap-2 text-sm text-foreground">
+                                                    <CheckCircle className="h-4 w-4 text-secondary flex-shrink-0" />
+                                                    {feature}
+                                                </li>
+                                            ))}
+                                        </ul>
+
+                                        <Button
+                                            className={cn(
+                                                "w-full",
+                                                isPopular
+                                                    ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                                                    : isBestValue
+                                                    ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                                                    : "bg-premium hover:bg-premium/90 text-premium-foreground"
+                                            )}
+                                            onClick={() => handleSubscribe(plan.type)}
+                                            disabled={loading || isPremium}
+                                        >
+                                            {loading ? (
+                                                <>
+                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                    {t('premium.dashboard.processing')}
+                                                </>
+                                            ) : isPremium ? (
+                                                <>
+                                                    <Check className="h-4 w-4 mr-2" />
+                                                    {t('premium.dashboard.alreadyPremium')}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Rocket className="h-4 w-4 mr-2" />
+                                                    {plan.type === "yearly"
+                                                        ? `Buy — £${plan.price.toFixed(2)}`
+                                                        : `Subscribe — £${plan.price.toFixed(2)}${plan.period}`}
+                                                </>
+                                            )}
+                                        </Button>
                                     </div>
-                                    <p className="text-xs text-muted-foreground mt-1">One-time payment — no recurring charges</p>
-                                    <p className="text-sm text-muted-foreground mt-2">Full access to all premium features for the 2026 GCSE season</p>
-                                </div>
-
-                                <ul className="space-y-3 mb-6">
-                                    {[
-                                        "All premium features",
-                                        "No recurring charges",
-                                        "Priority new features",
-                                        "Exclusive content",
-                                    ].map((feature) => (
-                                        <li key={feature} className="flex items-center gap-2 text-sm text-foreground">
-                                            <CheckCircle className="h-4 w-4 text-secondary flex-shrink-0" />
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <Button
-                                    className="w-full bg-premium hover:bg-premium/90 text-premium-foreground"
-                                    onClick={() => handleSubscribe()}
-                                    disabled={loading || isPremium}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                            {t('premium.dashboard.processing')}
-                                        </>
-                                    ) : isPremium ? (
-                                        <>
-                                            <Check className="h-4 w-4 mr-2" />
-                                            {t('premium.dashboard.alreadyPremium')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Rocket className="h-4 w-4 mr-2" />
-                                            Buy Premium — £25
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
+                                );
+                            })}
                         </div>
 
                         {/* Guarantee */}
@@ -795,10 +834,15 @@ export default function PremiumDashboard() {
                             Complete Payment securely with card
                         </DialogTitle>
                         <DialogDescription>
-                            Pay £25.00 one-time to unlock all premium features.
+                            {selectedPlan === "weekly"
+                                ? "Subscribe for £0.99/week — no auto-renewal."
+                                : selectedPlan === "monthly"
+                                ? "Subscribe for £3.99/month — no auto-renewal."
+                                : "Subscribe for £25.00/year — no auto-renewal."}
                         </DialogDescription>
                     </DialogHeader>
                     <StripeCheckout
+                        initialPlan={selectedPlan}
                         onSuccess={handlePaymentSuccess}
                         onError={(err) => console.error("Payment error:", err)}
                     />

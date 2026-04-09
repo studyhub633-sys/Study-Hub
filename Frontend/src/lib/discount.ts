@@ -1,5 +1,5 @@
 /**
- * Discount code management for Revisely.ai
+ * Discount code management for Revizely.ai
  */
 
 export interface DiscountCode {

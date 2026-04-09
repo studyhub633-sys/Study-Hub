@@ -39,13 +39,13 @@ export default function Contact() {
         const mailtoBody = encodeURIComponent(
             `Name: ${name}\nEmail: ${email}\n\n${message}`
         );
-        window.location.href = `mailto:hello@revisely.ai?subject=${mailtoSubject}&body=${mailtoBody}`;
+        window.location.href = `mailto:hello@revizely.ai?subject=${mailtoSubject}&body=${mailtoBody}`;
 
         setTimeout(() => {
             setLoading(false);
             toast({
                 title: "Email client opened",
-                description: "Your default email app should have opened with your message. If not, please email us directly at hello@revisely.ai",
+                description: "Your default email app should have opened with your message. If not, please email us directly at hello@revizely.ai",
             });
         }, 1000);
     };
@@ -84,10 +84,10 @@ export default function Contact() {
                             <div>
                                 <h3 className="font-semibold text-sm">Email</h3>
                                 <a
-                                    href="mailto:hello@revisely.ai"
+                                    href="mailto:hello@revizely.ai"
                                     className="text-primary hover:underline text-sm"
                                 >
-                                    hello@revisely.ai
+                                    hello@revizely.ai
                                 </a>
                             </div>
                         </CardContent>
@@ -101,7 +101,7 @@ export default function Contact() {
                             <div>
                                 <h3 className="font-semibold text-sm">Address</h3>
                                 <p className="text-sm text-muted-foreground">
-                                    REVISELY LTD
+                                    REVIZELY LTD
                                     <br />
                                     61 Bridge Street
                                     <br />
@@ -189,8 +189,8 @@ export default function Contact() {
                             </Button>
                             <p className="text-xs text-center text-muted-foreground">
                                 Or email us directly at{" "}
-                                <a href="mailto:hello@revisely.ai" className="text-primary hover:underline">
-                                    hello@revisely.ai
+                                <a href="mailto:hello@revizely.ai" className="text-primary hover:underline">
+                                    hello@revizely.ai
                                 </a>
                             </p>
                         </form>

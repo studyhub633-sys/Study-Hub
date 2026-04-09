@@ -6,6 +6,25 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2024-06-20",
 });
 
+// ─── Plan Prices (GBP) ───────────────────────────────────────────
+const PLAN_PRICES = {
+    weekly:   0.99,
+    monthly:  3.99,
+    yearly:   25.00,
+};
+
+// How long each plan lasts
+function getPlanPeriodEnd(planType, fromDate = new Date()) {
+    const d = new Date(fromDate);
+    switch (planType) {
+        case 'weekly':  d.setDate(d.getDate() + 7); break;
+        case 'monthly': d.setMonth(d.getMonth() + 1); break;
+        case 'yearly':  d.setFullYear(d.getFullYear() + 1); break;
+        default: return null;
+    }
+    return d.toISOString();
+}
+
 // ─── Discount Codes ──────────────────────────────────────────────
 // code -> discount fraction (e.g. 0.2 = 20% off)
 const DISCOUNT_CODES = {
@@ -38,13 +57,13 @@ export default async function handler(req, res) {
     }
 }
 
-// ─── Create Stripe PaymentIntent (one-time) ─────────
+// ─── Create Stripe PaymentIntent ─────────────────────
 async function handleCreatePayment(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
         const user = await verifyAuth(req);
-        const { amount, currency, provider, discountCode } = req.body || {};
+        const { amount, currency, provider, discountCode, planType } = req.body || {};
 
         if (provider !== "stripe") {
             return res.status(400).json({ error: "Unsupported payment provider." });
@@ -53,6 +72,9 @@ async function handleCreatePayment(req, res) {
         if (amount === undefined || amount === null || !currency) {
             return res.status(400).json({ error: "Amount and currency are required." });
         }
+
+        // Validate plan type
+        const validPlan = planType && PLAN_PRICES[planType] ? planType : 'yearly';
 
         // Validate and apply discount code (server-side authoritative check)
         let finalAmount = amount;
@@ -89,11 +111,11 @@ async function handleCreatePayment(req, res) {
                 .from('subscriptions')
                 .insert({
                     user_id: user.id,
-                    plan_type: 'one_time',
+                    plan_type: validPlan,
                     status: 'active',
                     stripe_payment_intent_id: `free_${Math.random().toString(36).substring(2, 15)}`,
                     current_period_start: now.toISOString(),
-                    current_period_end: null,
+                    current_period_end: getPlanPeriodEnd(validPlan, now),
                 })
                 .select('id')
                 .single();
@@ -118,10 +140,10 @@ async function handleCreatePayment(req, res) {
                 currency: currency.toLowerCase(),
                 status: 'succeeded',
                 stripe_payment_intent_id: null,
-                plan_type: 'one_time',
+                plan_type: validPlan,
             });
 
-            console.log(`Activated free one-time premium for user ${user.id} with code ${appliedCode}`);
+            console.log(`Activated free ${validPlan} premium for user ${user.id} with code ${appliedCode}`);
 
             return res.status(200).json({
                 clientSecret: null,
@@ -135,7 +157,7 @@ async function handleCreatePayment(req, res) {
             currency: currency.toLowerCase(),       // "GBP" -> "gbp"
             metadata: {
                 user_id: user.id,
-                plan_type: "one_time",
+                plan_type: validPlan,
                 ...(appliedCode ? { discount_code: appliedCode, original_amount: Math.round(amount * 100) } : {}),
             },
         });
@@ -160,7 +182,7 @@ async function handleConfirmStripe(req, res) {
 
     try {
         const user = await verifyAuth(req);
-        const { paymentIntentId } = req.body || {};
+        const { paymentIntentId, planType } = req.body || {};
 
         if (!paymentIntentId) {
             return res.status(400).json({ error: 'Stripe paymentIntentId is required.' });
@@ -185,17 +207,18 @@ async function handleConfirmStripe(req, res) {
         }
 
         const now = new Date();
+        const validPlan = planType && PLAN_PRICES[planType] ? planType : (paymentIntent.metadata?.plan_type || 'yearly');
 
-        // Insert active one-time purchase record
+        // Insert active purchase record
         const { data: newSub, error: dbError } = await supabase
             .from('subscriptions')
             .insert({
                 user_id: user.id,
-                plan_type: 'one_time',
+                plan_type: validPlan,
                 status: 'active',
                 stripe_payment_intent_id: paymentIntentId,
                 current_period_start: now.toISOString(),
-                current_period_end: null,
+                current_period_end: getPlanPeriodEnd(validPlan, now),
             })
             .select('id')
             .single();
@@ -224,10 +247,10 @@ async function handleConfirmStripe(req, res) {
             currency: paymentIntent.currency,
             status: paymentIntent.status,
             stripe_payment_intent_id: paymentIntentId,
-            plan_type: 'one_time',
+            plan_type: validPlan,
         });
 
-        console.log(`[Stripe] Activated one-time premium for user ${user.id} (paymentIntent: ${paymentIntentId})`);
+        console.log(`[Stripe] Activated ${validPlan} premium for user ${user.id} (paymentIntent: ${paymentIntentId})`);
 
         return res.status(200).json({
             subscriptionId: newSub.id,
@@ -264,6 +287,35 @@ async function handleGetSubscription(req, res) {
         if (error) {
             console.error('[DB] Failed to fetch subscription:', error);
             return res.status(500).json({ error: 'Failed to fetch subscription.' });
+        }
+
+        // ── Auto-expire weekly / monthly subs past their period end ──
+        if (subscription && subscription.current_period_end) {
+            const expiry = new Date(subscription.current_period_end);
+            if (expiry < new Date()) {
+                console.log(`[Subscription] Auto-expiring ${subscription.plan_type} sub ${subscription.id} for user ${user.id} (expired: ${subscription.current_period_end})`);
+
+                // Mark subscription as expired
+                await supabase
+                    .from('subscriptions')
+                    .update({
+                        status: 'expired',
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', subscription.id);
+
+                // Deactivate premium on profile
+                await supabase
+                    .from('profiles')
+                    .update({ is_premium: false })
+                    .eq('id', user.id);
+
+                return res.status(200).json({
+                    subscription: { ...subscription, status: 'expired' },
+                    isPremium: false,
+                    expired: true,
+                });
+            }
         }
 
         return res.status(200).json({
@@ -306,11 +358,11 @@ async function handleCancel(req, res) {
             return res.status(404).json({ error: 'No active premium access found.' });
         }
 
-        // ── Issue Stripe refund only within 14-day window ──
-        let refunded = false;
         const intentId = subscription.stripe_payment_intent_id;
-        const REFUND_WINDOW_DAYS = 14;
 
+        // ── Refund logic (all plans, within 14-day window) ──
+        let refunded = false;
+        const REFUND_WINDOW_DAYS = 14;
         const purchaseDate = new Date(subscription.current_period_start);
         const daysSincePurchase = Math.floor((Date.now() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
         const withinRefundWindow = daysSincePurchase <= REFUND_WINDOW_DAYS;
@@ -323,7 +375,6 @@ async function handleCancel(req, res) {
                 refunded = refund.status === 'succeeded' || refund.status === 'pending';
                 console.log(`[Stripe] Refund ${refund.id} created for user ${user.id} (status: ${refund.status}, days: ${daysSincePurchase})`);
             } catch (refundError) {
-                // If the charge was already refunded, treat as success
                 if (refundError.code === 'charge_already_refunded') {
                     console.log(`[Stripe] Charge already refunded for user ${user.id}`);
                     refunded = true;
@@ -343,7 +394,7 @@ async function handleCancel(req, res) {
             .from('subscriptions')
             .update({
                 status: 'canceled',
-                cancel_at_period_end: true,
+                cancel_at_period_end: false,
                 canceled_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
             })
@@ -360,14 +411,16 @@ async function handleCancel(req, res) {
             .update({ is_premium: false })
             .eq('id', user.id);
 
-        console.log(`[Stripe] Deactivated premium for user ${user.id} (refunded: ${refunded})`);
+        console.log(`[Stripe] Deactivated ${subscription.plan_type} premium for user ${user.id} (refunded: ${refunded})`);
+
+        const message = refunded
+            ? 'Premium cancelled and payment refunded. It may take 5–10 business days to appear on your statement.'
+            : 'Premium access has been deactivated.';
 
         return res.status(200).json({
             success: true,
             refunded,
-            message: refunded
-                ? 'Premium cancelled and payment refunded. It may take 5–10 business days to appear on your statement.'
-                : 'Premium access has been deactivated.',
+            message,
         });
 
     } catch (error) {

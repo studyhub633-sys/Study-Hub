@@ -411,8 +411,8 @@ export default function GlobalLibrary() {
                                 <p className="font-medium text-foreground mb-1">Copyright Notice</p>
                                 <p>
                                     All past examination papers are the copyright of their respective exam boards (AQA, Pearson Edexcel, OCR, Eduqas/WJEC).
-                                    Revisely.ai does not host, store, or reproduce any exam board content. Links open directly on the official exam board websites.
-                                    Revisely.ai is not affiliated with, endorsed by, or connected to any exam board.
+                                    Revizely.ai does not host, store, or reproduce any exam board content. Links open directly on the official exam board websites.
+                                    Revizely.ai is not affiliated with, endorsed by, or connected to any exam board.
                                 </p>
                             </div>
                         </div>

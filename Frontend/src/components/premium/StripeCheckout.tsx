@@ -16,9 +16,48 @@ const CREATOR_CODE_DISCOUNT = 0.2; // 20% off for creator codes
 interface StripeCheckoutProps {
     onSuccess: () => void;
     onError?: (error: string) => void;
+    /** Pre-select a plan when the checkout opens */
+    initialPlan?: PlanType;
 }
 
-const ONE_TIME_PRICE = 25.0;
+// ─── Plan definitions ───────────────────────────────────────────
+export type PlanType = "weekly" | "monthly" | "yearly";
+
+export interface PlanOption {
+    type: PlanType;
+    label: string;
+    price: number;
+    period: string;
+    description: string;
+    badge?: string;
+}
+
+export const PLANS: PlanOption[] = [
+    {
+        type: "weekly",
+        label: "Weekly",
+        price: 0.99,
+        period: "/ week",
+        description: "Cancel anytime",
+    },
+    {
+        type: "monthly",
+        label: "Monthly",
+        price: 3.99,
+        period: "/ month",
+        description: "Save vs weekly",
+        badge: "Popular",
+    },
+    {
+        type: "yearly",
+        label: "Yearly",
+        price: 25.0,
+        period: "/ year",
+        description: "Best value — full year access",
+        badge: "Best Value",
+    },
+];
+
 const CURRENCY = "GBP";
 
 // Valid discount codes: code -> discount fraction (e.g. 0.2 = 20% off)
@@ -41,6 +80,7 @@ interface StripeCheckoutFormProps {
     finalPrice: number;
     discountCode: string;
     creatorId?: string;
+    selectedPlan: PlanType;
     onSuccess: () => void;
     onError?: (error: string) => void;
 }
@@ -50,6 +90,7 @@ function StripeCheckoutForm({
     finalPrice,
     discountCode,
     creatorId,
+    selectedPlan,
     onSuccess,
     onError,
 }: StripeCheckoutFormProps) {
@@ -61,6 +102,8 @@ function StripeCheckoutForm({
     const isDark = resolvedTheme === "dark";
     const cardTextColor = isDark ? "#ffffff" : "#09090b";
     const cardPlaceholderColor = isDark ? "#a1a1aa" : "#71717a";
+
+    const planInfo = PLANS.find((p) => p.type === selectedPlan)!;
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -141,6 +184,7 @@ function StripeCheckoutForm({
                                 },
                                 body: JSON.stringify({
                                     paymentIntentId: paymentIntent.id,
+                                    planType: selectedPlan,
                                 }),
                             },
                         );
@@ -204,6 +248,13 @@ function StripeCheckoutForm({
         }
     };
 
+    const periodLabel =
+        selectedPlan === "weekly"
+            ? "/week"
+            : selectedPlan === "monthly"
+            ? "/month"
+            : "/year";
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="rounded-md border bg-card px-3 py-2">
@@ -236,19 +287,25 @@ function StripeCheckoutForm({
                         <span>Processing payment…</span>
                     </>
                 ) : (
-                    <span>Pay £{finalPrice.toFixed(2)} securely with card</span>
+                    <span>Pay £{finalPrice.toFixed(2)}{periodLabel} securely with card</span>
                 )}
             </button>
 
             <p className="text-center text-xs text-muted-foreground">
                 🔒 Payments are processed securely by Stripe. Your premium
                 activates once the payment succeeds.
+                <span className="block mt-1">
+                    No auto-renewal — your access expires at the end of the period.
+                </span>
             </p>
         </form>
     );
 }
 
-export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
+export function StripeCheckout({ onSuccess, onError, initialPlan }: StripeCheckoutProps) {
+    // Plan selection state
+    const [selectedPlan, setSelectedPlan] = useState<PlanType>(initialPlan ?? "monthly");
+
     // Creator code state
     const [creatorId, setCreatorId] = useState<string | null>(null);
     const [isCreatorCode, setIsCreatorCode] = useState(false);
@@ -262,14 +319,17 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
     const [discountError, setDiscountError] = useState<string | null>(null);
     const [codeApplying, setCodeApplying] = useState(false);
 
+    const planOption = PLANS.find((p) => p.type === selectedPlan)!;
+    const basePrice = planOption.price;
+
     const discountFraction = appliedCode ? (DISCOUNT_CODES[appliedCode] ?? 0) : 0;
     const finalPrice = parseFloat(
-        (ONE_TIME_PRICE * (1 - discountFraction)).toFixed(2)
+        (basePrice * (1 - discountFraction)).toFixed(2)
     );
-    const savedAmount = parseFloat((ONE_TIME_PRICE - finalPrice).toFixed(2));
+    const savedAmount = parseFloat((basePrice - finalPrice).toFixed(2));
 
-    // Track which price we last created a PaymentIntent for so we can recreate when discount changes
-    const lastPriceRef = useRef<number | null>(null);
+    // Track which price + plan we last created a PaymentIntent for so we can recreate when anything changes
+    const lastKeyRef = useRef<string | null>(null);
 
     const API_BASE_URL =
         import.meta.env.VITE_API_URL ||
@@ -290,10 +350,9 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                 throw new Error("Not authenticated");
             }
 
-            // Send the base price (ONE_TIME_PRICE) when a discount code is applied,
-            // so the backend applies the discount once. Otherwise we'd double-apply
-            // (frontend already discounted, then backend discounts again).
-            const amountToSend = appliedCode ? ONE_TIME_PRICE : price;
+            // Send the base price when a discount code is applied,
+            // so the backend applies the discount once.
+            const amountToSend = appliedCode ? basePrice : price;
 
             const response = await fetch(
                 `${API_BASE_URL}/api/payments/create-payment`,
@@ -308,6 +367,7 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                         amount: amountToSend,
                         currency: CURRENCY,
                         discountCode: appliedCode ?? undefined,
+                        planType: selectedPlan,
                     }),
                 },
             );
@@ -338,7 +398,7 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
             }
 
             setClientSecret(data.clientSecret);
-            lastPriceRef.current = price;
+            lastKeyRef.current = `${selectedPlan}:${price}`;
         } catch (err: any) {
             console.error("[Stripe Checkout] Error creating payment intent:", err);
             const msg =
@@ -351,13 +411,14 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
         }
     };
 
-    // Create/recreate PaymentIntent whenever finalPrice changes
+    // Create/recreate PaymentIntent whenever finalPrice or plan changes
+    const intentKey = `${selectedPlan}:${finalPrice}`;
     useEffect(() => {
-        if (lastPriceRef.current !== finalPrice) {
+        if (lastKeyRef.current !== intentKey) {
             createPaymentIntent(finalPrice);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [finalPrice, user, supabase]);
+    }, [intentKey, user, supabase]);
 
     const handleApplyCode = async () => {
         const code = discountInput.trim().toUpperCase();
@@ -370,7 +431,7 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
             setDiscountInput("");
             setIsCreatorCode(false);
             setCreatorId(null);
-            toast.success(`Discount code "${code}" applied! You save £${(ONE_TIME_PRICE * DISCOUNT_CODES[code]).toFixed(2)}.`);
+            toast.success(`Discount code "${code}" applied! You save £${(basePrice * DISCOUNT_CODES[code]).toFixed(2)}.`);
             setCodeApplying(false);
             return;
         }
@@ -391,7 +452,7 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                     setCreatorId(creator.id);
                     // Use CREATOR_CODE_DISCOUNT for the discount
                     DISCOUNT_CODES[code] = CREATOR_CODE_DISCOUNT;
-                    toast.success(`Creator code "${code}" applied! You save £${(ONE_TIME_PRICE * CREATOR_CODE_DISCOUNT).toFixed(2)}.`);
+                    toast.success(`Creator code "${code}" applied! You save £${(basePrice * CREATOR_CODE_DISCOUNT).toFixed(2)}.`);
                     setCodeApplying(false);
                     return;
                 }
@@ -433,6 +494,49 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
 
     return (
         <div className="space-y-5">
+            {/* Plan selector */}
+            <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">Choose your plan</p>
+                <div className="grid grid-cols-3 gap-2">
+                    {PLANS.map((plan) => {
+                        const isSelected = selectedPlan === plan.type;
+                        return (
+                            <button
+                                key={plan.type}
+                                type="button"
+                                onClick={() => setSelectedPlan(plan.type)}
+                                className={`relative rounded-xl border-2 p-3 text-center transition-all duration-200 ${
+                                    isSelected
+                                        ? "border-primary bg-primary/5 shadow-md ring-1 ring-primary/20"
+                                        : "border-border hover:border-primary/40 hover:bg-muted/50"
+                                }`}
+                            >
+                                {plan.badge && (
+                                    <span
+                                        className={`absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap ${
+                                            plan.type === "yearly"
+                                                ? "bg-emerald-500 text-white"
+                                                : "bg-primary text-primary-foreground"
+                                        }`}
+                                    >
+                                        {plan.badge}
+                                    </span>
+                                )}
+                                <p className="text-lg font-bold text-foreground mt-1">
+                                    £{plan.price.toFixed(2)}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">
+                                    {plan.period}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
+                                    {plan.label}
+                                </p>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
             {/* Price summary */}
             <div className="text-center p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20">
                 <p className="text-sm text-muted-foreground mb-1">
@@ -441,7 +545,7 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                 {appliedCode ? (
                     <>
                         <p className="text-lg line-through text-muted-foreground/60">
-                            £{ONE_TIME_PRICE.toFixed(2)}
+                            £{basePrice.toFixed(2)}
                         </p>
                         <p className="text-3xl font-bold text-green-500">
                             £{finalPrice.toFixed(2)}
@@ -453,10 +557,14 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                 ) : (
                     <>
                         <p className="text-3xl font-bold text-foreground">
-                            £{ONE_TIME_PRICE.toFixed(2)}
+                            £{basePrice.toFixed(2)}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                            One-time payment — no recurring charges
+                            {selectedPlan === "weekly"
+                                ? "Billed once — access for 7 days"
+                                : selectedPlan === "monthly"
+                                ? "Billed once — access for 30 days"
+                                : "Billed once — access for 12 months"}
                         </p>
                     </>
                 )}
@@ -543,6 +651,7 @@ export function StripeCheckout({ onSuccess, onError }: StripeCheckoutProps) {
                             finalPrice={finalPrice}
                             discountCode={appliedCode ?? ""}
                             creatorId={creatorId ?? undefined}
+                            selectedPlan={selectedPlan}
                             onSuccess={onSuccess}
                             onError={onError}
                         />

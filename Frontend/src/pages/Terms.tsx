@@ -25,10 +25,10 @@ export default function Terms() {
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">1. About us and these terms</h2>
               <p className="text-muted-foreground leading-relaxed">
-                1.1 These Terms and Conditions ("Terms") govern your access to and use of the REVISELY website, web application and related services located at www.revisely.ai (the "Website") and any content, materials, products or services offered through it (together, the "Services").
+                1.1 These Terms and Conditions ("Terms") govern your access to and use of the REVIZELY website, web application and related services located at www.revizely.ai (the "Website") and any content, materials, products or services offered through it (together, the "Services").
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
-                1.2 The Website is operated by REVISELY LTD, a company registered in the United Kingdom with company number 17046803 and registered office at 61 Bridge Street, Kington, HR5 3DJ ("REVISELY", "we", "us", "our").
+                1.2 The Website is operated by REVIZELY LTD, a company registered in the United Kingdom with company number 17046803 and registered office at 61 Bridge Street, Kington, HR5 3DJ ("REVIZELY", "we", "us", "our").
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
                 1.3 By accessing or using the Website or Services, you agree to be bound by these Terms. If you do not agree, you must not use the Website or Services.
@@ -59,7 +59,7 @@ export default function Terms() {
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">3. Subscription services and payments</h2>
               <p className="text-muted-foreground leading-relaxed">
-                3.1 Certain content and features on REVISELY are available only to paying subscribers ("Subscription"). Details of Subscription plans, pricing and term lengths are described on the Website from time to time.
+                3.1 Certain content and features on REVIZELY are available only to paying subscribers ("Subscription"). Details of Subscription plans, pricing and term lengths are described on the Website from time to time.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
                 3.2 By starting a Subscription, you authorise us and our third‑party payment processors (including Wise and Stripe) to charge you the Subscription fee and any applicable taxes at the rate notified to you at the time of purchase.
@@ -68,7 +68,7 @@ export default function Terms() {
                 3.3 Unless otherwise stated, Subscriptions are provided on a recurring basis (e.g. monthly, termly, annually) and will automatically renew at the end of each billing period, using the payment method you provided, until you cancel.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
-                3.4 You can cancel your Subscription at any time via your account settings or by contacting us at hello@revisely.ai. Cancellation will take effect at the end of your current billing period, and you will retain access to paid features until that date. We do not provide pro‑rated refunds for unused periods unless required by applicable law or explicitly stated otherwise in writing.
+                3.4 You can cancel your Subscription at any time via your account settings or by contacting us at hello@revizely.ai. Cancellation will take effect at the end of your current billing period, and you will retain access to paid features until that date. We do not provide pro‑rated refunds for unused periods unless required by applicable law or explicitly stated otherwise in writing.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
                 3.5 We may change our Subscription prices or structure from time to time. Any changes will take effect at the start of your next billing period and we will give you reasonable prior notice where required. If you do not agree to the change, you may cancel your Subscription before the new price takes effect.
@@ -103,7 +103,7 @@ export default function Terms() {
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">5. Intellectual property</h2>
               <p className="text-muted-foreground leading-relaxed">
-                5.1 All content on the Website, including (without limitation) text, questions, model answers, explanations, diagrams, videos, images, graphics, logos, icons, user interface design and software code, is owned by or licensed to REVISELY and is protected by copyright, trade marks and other intellectual property rights.
+                5.1 All content on the Website, including (without limitation) text, questions, model answers, explanations, diagrams, videos, images, graphics, logos, icons, user interface design and software code, is owned by or licensed to REVIZELY and is protected by copyright, trade marks and other intellectual property rights.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
                 5.2 Subject to your compliance with these Terms and payment of any applicable Subscription fees, we grant you a limited, non‑exclusive, non‑transferable, revocable licence to access and use the Website and Services for your own personal, non‑commercial educational use only.
@@ -116,7 +116,7 @@ export default function Terms() {
                 <li>Remove, alter or obscure any copyright, trade mark or other proprietary rights notices on the Website or in any of its content.</li>
               </ul>
               <p className="text-muted-foreground leading-relaxed mt-2">
-                5.4 All trade marks, logos and trade names displayed on the Website (including "REVISELY" and any related marks) are the property of REVISELY or their respective owners. You may not use these marks without our prior written consent.
+                5.4 All trade marks, logos and trade names displayed on the Website (including "REVIZELY" and any related marks) are the property of REVIZELY or their respective owners. You may not use these marks without our prior written consent.
               </p>
             </section>
 
@@ -127,7 +127,7 @@ export default function Terms() {
                 6.1 You may be able to submit, upload, post or otherwise share content on or through the Website (for example, comments, questions, answers, notes or other materials) ("User Content").
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
-                6.2 You remain the owner of any intellectual property rights you hold in your User Content. However, by submitting User Content, you grant REVISELY a worldwide, non‑exclusive, royalty‑free, transferable, sub‑licensable licence to use, host, store, reproduce, modify, create derivative works of, communicate, publish, publicly display and distribute your User Content in connection with operating, improving and promoting the Website and Services.
+                6.2 You remain the owner of any intellectual property rights you hold in your User Content. However, by submitting User Content, you grant REVIZELY a worldwide, non‑exclusive, royalty‑free, transferable, sub‑licensable licence to use, host, store, reproduce, modify, create derivative works of, communicate, publish, publicly display and distribute your User Content in connection with operating, improving and promoting the Website and Services.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
                 6.3 You are solely responsible for your User Content and for ensuring that it:
@@ -146,7 +146,7 @@ export default function Terms() {
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">7. No guarantee of exam results</h2>
               <p className="text-muted-foreground leading-relaxed">
-                7.1 REVISELY provides revision resources, practice questions, model answers, explanations and related content for educational support only.
+                7.1 REVIZELY provides revision resources, practice questions, model answers, explanations and related content for educational support only.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-2">
                 7.2 We do not guarantee that use of the Website or Services will result in any particular exam grade, academic outcome, admission to an institution, or other result.
@@ -210,7 +210,7 @@ export default function Terms() {
             <section>
               <h2 className="text-2xl font-semibold text-foreground mb-4">11. Indemnity</h2>
               <p className="text-muted-foreground leading-relaxed">
-                11.1 You agree to indemnify and hold harmless REVISELY, its directors, officers, employees and contractors from and against any and all claims, liabilities, damages, losses, costs and expenses (including reasonable legal fees) arising out of or in connection with:
+                11.1 You agree to indemnify and hold harmless REVIZELY, its directors, officers, employees and contractors from and against any and all claims, liabilities, damages, losses, costs and expenses (including reasonable legal fees) arising out of or in connection with:
               </p>
               <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4 mt-2">
                 <li>Your breach of these Terms.</li>
@@ -259,7 +259,7 @@ export default function Terms() {
                 15.1 If you have any questions about these Terms, please contact us at:
               </p>
               <ul className="list-none space-y-1 text-muted-foreground ml-4 mt-2">
-                <li><strong>Email:</strong> hello@revisely.ai</li>
+                <li><strong>Email:</strong> hello@revizely.ai</li>
                 <li><strong>Postal address:</strong> 61 Bridge Street, Kington, HR5 3DJ</li>
               </ul>
             </section>

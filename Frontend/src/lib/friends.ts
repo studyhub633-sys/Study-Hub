@@ -1,5 +1,5 @@
 /**
- * Friends system for Revisely.ai
+ * Friends system for Revizely.ai
  * 
  * Manages friendships: search, send/accept/reject requests, list friends.
  * Uses a `friendships` table in Supabase.

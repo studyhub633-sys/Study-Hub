@@ -1,5 +1,5 @@
 -- =========================================================
--- Social Features Migration for Revisely.ai
+-- Social Features Migration for REVIZELY.ai
 -- Run this in your Supabase SQL Editor
 -- =========================================================
 
