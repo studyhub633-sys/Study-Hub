@@ -5,16 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -23,10 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import {
-    cancelSubscription as cancelPaymentSubscription,
-    getSubscription as getPaymentSubscription,
-} from "@/lib/payment-client";
+import { getSubscription as getPaymentSubscription } from "@/lib/payment-client";
 import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
@@ -53,7 +40,6 @@ import {
     Timer,
     Trophy,
     Users,
-    XCircle,
     Zap
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -72,11 +58,9 @@ export default function PremiumDashboard() {
     const [isPremium, setIsPremium] = useState(false);
     const [checking, setChecking] = useState(true);
     const [subscription, setSubscription] = useState<any>(null);
-    const [loading, setLoading] = useState(false);
     const [showTerms, setShowTerms] = useState(false);
     const [showPayment, setShowPayment] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<PlanType>("monthly");
-    const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [hasPredictedPapers, setHasPredictedPapers] = useState(false);
     const [hasWorkExperience, setHasWorkExperience] = useState(false);
     const [checkingContent, setCheckingContent] = useState(true);
@@ -427,28 +411,6 @@ export default function PremiumDashboard() {
         navigate("/premium-dashboard", { replace: true });
     };
 
-    const handleCancel = async () => {
-        if (!supabase) return;
-
-        setLoading(true);
-        try {
-            const result = await cancelPaymentSubscription(supabase);
-
-            if (result.error) {
-                toast.error(result.error);
-                return;
-            }
-
-            setShowCancelDialog(false);
-            toast.success(result.message || "Premium access has been cancelled.");
-            await checkPremiumStatus();
-        } catch (error: any) {
-            toast.error(error.message || "Failed to cancel subscription.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     if (checking) {
         return (
             <AppLayout>
@@ -532,76 +494,14 @@ export default function PremiumDashboard() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setShowCancelDialog(true)}
-                                disabled={loading}
-                                className="shrink-0 border-red-500/40 text-red-500 hover:bg-red-500/10 hover:text-red-600 hover:border-red-500"
+                                onClick={() => navigate("/settings", { state: { section: "subscription" } })}
+                                className="shrink-0"
                             >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Cancel Premium
+                                Manage in Settings
                             </Button>
                         </div>
                     </div>
                 )}
-
-                {/* Cancel Premium Confirmation Dialog */}
-                <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle className="flex items-center gap-2">
-                                <XCircle className="h-5 w-5 text-red-500" />
-                                Cancel Premium Access?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="space-y-2">
-                                {(() => {
-                                    const purchaseDate = subscription ? new Date(subscription.current_period_start) : new Date();
-                                    const daysSincePurchase = Math.floor((Date.now() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
-                                    const withinRefundWindow = daysSincePurchase <= 14;
-                                    const daysRemaining = 14 - daysSincePurchase;
-
-                                    return withinRefundWindow ? (
-                                        <>
-                                            <span className="block">
-                                                Are you sure? You will receive a
-                                                <strong> full refund</strong> to your original payment method, but you will
-                                                <strong> lose access immediately</strong> to all premium features.
-                                            </span>
-                                            <span className="block text-xs text-muted-foreground">
-                                                You have {daysRemaining} day{daysRemaining !== 1 ? 's' : ''} left in your 14-day refund window. Refunds typically take 5–10 business days to appear on your statement.
-                                            </span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span className="block">
-                                                Are you sure? Your 14-day refund window has passed, so
-                                                <strong> no refund will be issued</strong>. You will
-                                                <strong> lose access immediately</strong> to all premium features.
-                                            </span>
-                                            <span className="block text-xs text-muted-foreground">
-                                                If you change your mind, you'll need to purchase again.
-                                            </span>
-                                        </>
-                                    );
-                                })()}
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel disabled={loading}>
-                                No, keep my Premium
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={handleCancel}
-                                disabled={loading}
-                                className="bg-red-500 hover:bg-red-600 text-white"
-                            >
-                                {loading ? (
-                                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Cancelling…</>
-                                ) : (
-                                    "Yes, cancel my Premium"
-                                )}
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
 
                 {/* Features Grid (Dashboard Tools) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -781,14 +681,9 @@ export default function PremiumDashboard() {
                                                     : "bg-premium hover:bg-premium/90 text-premium-foreground"
                                             )}
                                             onClick={() => handleSubscribe(plan.type)}
-                                            disabled={loading || isPremium}
+                                            disabled={isPremium}
                                         >
-                                            {loading ? (
-                                                <>
-                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                    {t('premium.dashboard.processing')}
-                                                </>
-                                            ) : isPremium ? (
+                                            {isPremium ? (
                                                 <>
                                                     <Check className="h-4 w-4 mr-2" />
                                                     {t('premium.dashboard.alreadyPremium')}

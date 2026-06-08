@@ -34,8 +34,19 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { CancellationReasonDialog } from "@/components/settings/CancellationReasonDialog";
+import {
+  cancelSubscription as cancelPaymentSubscription,
+  getSubscription as getPaymentSubscription,
+} from "@/lib/payment-client";
 import { isAdmin } from "@/lib/premium";
+import {
+  getBillingPeriodStart,
+  getCoolingOffDaysRemaining,
+  isWithinCoolingOffPeriod,
+  type CancellationReasonId,
+} from "@/lib/subscription-utils";
 
 export default function Settings() {
   const { supabase, user } = useAuth();
@@ -43,10 +54,17 @@ export default function Settings() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("profile");
+  const location = useLocation();
+  const [activeSection, setActiveSection] = useState(
+    (location.state as { section?: string } | null)?.section || "profile"
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const [subscription, setSubscription] = useState<any>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -160,6 +178,84 @@ export default function Settings() {
 
     fetchProfile();
   }, [user, supabase]);
+
+  useEffect(() => {
+    if (!user || !profileData.is_premium) {
+      setSubscription(null);
+      return;
+    }
+
+    const fetchSubscription = async () => {
+      setSubscriptionLoading(true);
+      try {
+        const result = await getPaymentSubscription(supabase);
+        if (!result.error) {
+          setSubscription(result.subscription || null);
+        }
+      } catch (error) {
+        console.error("Error fetching subscription:", error);
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    };
+
+    fetchSubscription();
+  }, [user, supabase, profileData.is_premium]);
+
+  const handleCancelSubscription = async (
+    reason: CancellationReasonId,
+    reasonDetail?: string
+  ) => {
+    const result = await cancelPaymentSubscription(supabase, { reason, reasonDetail });
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    toast({
+      title: "Subscription updated",
+      description: result.message,
+    });
+
+    if (result.canceledImmediately) {
+      setProfileData((prev) => ({ ...prev, is_premium: false }));
+      setSubscription(null);
+    } else if (result.cancelAtPeriodEnd) {
+      setSubscription((prev: any) =>
+        prev ? { ...prev, cancel_at_period_end: true } : prev
+      );
+    }
+  };
+
+  const handleDeleteAccount = async (
+    reason: CancellationReasonId,
+    reasonDetail?: string
+  ) => {
+    if (!user) return;
+
+    if (profileData.is_premium && subscription && !subscription.cancel_at_period_end) {
+      const cancelResult = await cancelPaymentSubscription(supabase, { reason, reasonDetail });
+      if (cancelResult.error) {
+        throw new Error(cancelResult.error);
+      }
+    }
+
+    const tables = ["notes", "flashcards", "past_papers", "knowledge_organizers", "extracurriculars"];
+
+    for (const table of tables) {
+      await supabase.from(table).delete().eq("user_id", user.id);
+    }
+
+    await supabase.from("profiles").delete().eq("id", user.id);
+    await supabase.auth.signOut();
+
+    toast({
+      title: t("settings.privacy.deletionInitiated"),
+      description: t("settings.privacy.deletionInitiatedDesc"),
+    });
+
+    window.location.href = "/landing";
+  };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -631,50 +727,7 @@ export default function Settings() {
                         </p>
                         <Button
                           variant="destructive"
-                          onClick={async () => {
-                            if (!confirm(t("settings.privacy.deleteConfirm1"))) {
-                              return;
-                            }
-
-                            if (!confirm(t("settings.privacy.deleteConfirm2"))) {
-                              return;
-                            }
-
-                            setSaving(true);
-                            try {
-                              // Delete all user data first (cascade should handle this, but let's be explicit)
-                              const tables = ["notes", "flashcards", "past_papers", "knowledge_organizers", "extracurriculars"];
-
-                              for (const table of tables) {
-                                await supabase.from(table).delete().eq("user_id", user?.id);
-                              }
-
-                              // Delete profile
-                              await supabase.from("profiles").delete().eq("id", user?.id);
-
-                              // Sign out
-                              await supabase.auth.signOut();
-
-                              // Note: We can't delete the auth user directly from client
-                              // The user will need to contact support or we need a backend endpoint
-                              toast({
-                                title: t("settings.privacy.deletionInitiated"),
-                                description: t("settings.privacy.deletionInitiatedDesc"),
-                              });
-
-                              // Redirect to landing
-                              window.location.href = "/landing";
-                            } catch (error: any) {
-                              console.error("Error deleting account:", error);
-                              toast({
-                                title: t("common.error"),
-                                description: error.message || "Failed to delete account. Please contact support.",
-                                variant: "destructive",
-                              });
-                            } finally {
-                              setSaving(false);
-                            }
-                          }}
+                          onClick={() => setShowDeleteDialog(true)}
                           disabled={saving}
                         >
                           {saving ? (
@@ -700,7 +753,7 @@ export default function Settings() {
                     <h2 className="text-lg font-semibold text-foreground mb-6">{t("settings.subscription.title")}</h2>
 
                     <div className="p-4 rounded-xl bg-muted/50 border border-border mb-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-4">
                         <div>
                           <p className="font-semibold text-foreground">
                             {profileData.is_premium ? t("settings.subscription.premiumPlan") : t("settings.subscription.freePlan")}
@@ -710,15 +763,41 @@ export default function Settings() {
                               ? t("settings.subscription.premiumDesc")
                               : t("settings.subscription.freeDesc")}
                           </p>
+                          {profileData.is_premium && subscription && (
+                            <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+                              <p>
+                                Plan:{" "}
+                                {subscription.plan_type === "weekly"
+                                  ? "Weekly"
+                                  : subscription.plan_type === "monthly"
+                                    ? "Monthly"
+                                    : "Yearly"}
+                              </p>
+                              {subscription.current_period_end && (
+                                <p>
+                                  {subscription.cancel_at_period_end ? "Access until" : "Expires"}:{" "}
+                                  {new Date(subscription.current_period_end).toLocaleDateString("en-GB")}
+                                </p>
+                              )}
+                              {subscription.cancel_at_period_end && (
+                                <p className="text-amber-600 dark:text-amber-400">
+                                  Cancellation scheduled — premium access remains until your billing period ends.
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
                         {!profileData.is_premium && (
-                          <Button className="bg-premium hover:bg-premium/90 text-premium-foreground">
+                          <Button
+                            className="bg-premium hover:bg-premium/90 text-premium-foreground"
+                            onClick={() => navigate("/premium-dashboard")}
+                          >
                             <Crown className="h-4 w-4 mr-2" />
                             {t("settings.subscription.upgradeToPremium")}
                           </Button>
                         )}
-                        {profileData.is_premium && (
-                          <div className="flex items-center text-green-500 font-medium">
+                        {profileData.is_premium && !subscription?.cancel_at_period_end && (
+                          <div className="flex items-center text-green-500 font-medium shrink-0">
                             <Shield className="h-4 w-4 mr-2" />
                             {t("settings.subscription.active")}
                           </div>
@@ -730,6 +809,60 @@ export default function Settings() {
                       <p className="text-sm text-muted-foreground">
                         {t("settings.subscription.upgradeHint")}
                       </p>
+                    )}
+
+                    {profileData.is_premium && (
+                      <div className="space-y-4">
+                        {subscriptionLoading ? (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Loading subscription details…
+                          </div>
+                        ) : subscription && !subscription.cancel_at_period_end ? (
+                          <>
+                            {(() => {
+                              const periodStart = getBillingPeriodStart(subscription);
+                              const withinCoolingOff = isWithinCoolingOffPeriod(periodStart);
+                              const daysRemaining = getCoolingOffDaysRemaining(periodStart);
+
+                              return (
+                                <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                                  {withinCoolingOff ? (
+                                    <p>
+                                      You are within the 14-day cooling-off period ({daysRemaining} day
+                                      {daysRemaining !== 1 ? "s" : ""} remaining). Cancelling now will end premium access
+                                      immediately and issue a full refund to your original payment method.
+                                    </p>
+                                  ) : (
+                                    <p>
+                                      The 14-day cooling-off period has ended. Cancelling will keep your premium access
+                                      active until the end of your current billing period. No refund will be issued.
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })()}
+
+                            <Button
+                              variant="outline"
+                              className="border-red-500/40 text-red-500 hover:bg-red-500/10 hover:text-red-600"
+                              onClick={() => setShowCancelDialog(true)}
+                            >
+                              Cancel Premium
+                            </Button>
+                          </>
+                        ) : subscription?.cancel_at_period_end ? (
+                          <p className="text-sm text-muted-foreground">
+                            Your subscription is already scheduled to end. You can keep using premium features until your
+                            access period expires.
+                          </p>
+                        ) : null}
+
+                        <p className="text-xs text-muted-foreground">
+                          Plans do not auto-renew. Under UK consumer law, a full refund is only available within 14 days
+                          of each purchase or renewal.
+                        </p>
+                      </div>
                     )}
                   </div>
                 )}
@@ -852,6 +985,26 @@ export default function Settings() {
           </div>
         </div>
       </div>
+      <CancellationReasonDialog
+        open={showCancelDialog}
+        onOpenChange={setShowCancelDialog}
+        mode="subscription"
+        onConfirm={handleCancelSubscription}
+      />
+
+      <CancellationReasonDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        mode="account"
+        onConfirm={async (reason, reasonDetail) => {
+          setSaving(true);
+          try {
+            await handleDeleteAccount(reason, reasonDetail);
+          } finally {
+            setSaving(false);
+          }
+        }}
+      />
     </AppLayout>
   );
 }

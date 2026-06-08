@@ -11,10 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  cancelSubscription as cancelPaymentSubscription,
-  getSubscription as getPaymentSubscription,
-} from "@/lib/payment-client";
+import { getSubscription as getPaymentSubscription } from "@/lib/payment-client";
 import { hasPremium } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 import {
@@ -225,29 +222,6 @@ export default function Premium() {
     setIsPremium(true);
     await checkPremiumStatus();
     navigate("/premium", { replace: true });
-  };
-
-
-
-  const handleCancel = async () => {
-    if (!supabase) return;
-
-    setLoading(true);
-    try {
-      const result = await cancelPaymentSubscription(supabase);
-
-      if (result.error) {
-        toast.error(result.error);
-        return;
-      }
-
-      toast.success(result.message || "Subscription cancelled successfully.");
-      await checkPremiumStatus();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to cancel subscription.");
-    } finally {
-      setLoading(false);
-    }
   };
 
   if (checkingStatus) {

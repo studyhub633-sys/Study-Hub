@@ -13,6 +13,17 @@ const PLAN_PRICES = {
     yearly:   25.00,
 };
 
+const COOLING_OFF_MS = 14 * 24 * 60 * 60 * 1000;
+
+const CANCELLATION_REASONS = new Set([
+    'too_expensive',
+    'not_using',
+    'missing_features',
+    'found_alternative',
+    'technical_issues',
+    'other',
+]);
+
 // How long each plan lasts
 function getPlanPeriodEnd(planType, fromDate = new Date()) {
     const d = new Date(fromDate);
@@ -333,12 +344,79 @@ async function handleGetSubscription(req, res) {
     }
 }
 
-// ─── Cancel / Deactivate Premium + Stripe Refund ───────────────
+async function getLatestPaidPeriodStart(subscription) {
+    const { data: payment } = await supabase
+        .from('payments')
+        .select('created_at, status, stripe_payment_intent_id, amount')
+        .eq('subscription_id', subscription.id)
+        .in('status', ['succeeded', 'requires_capture'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (payment?.created_at) {
+        return {
+            periodStart: new Date(payment.created_at),
+            payment,
+        };
+    }
+
+    return {
+        periodStart: subscription.current_period_start
+            ? new Date(subscription.current_period_start)
+            : new Date(subscription.created_at),
+        payment: null,
+    };
+}
+
+function isWithinCoolingOffPeriod(periodStart) {
+    return Date.now() - periodStart.getTime() < COOLING_OFF_MS;
+}
+
+async function updateSubscriptionCancellation(subscriptionId, fields) {
+    const withFeedback = {
+        ...fields,
+        cancellation_reason: fields.cancellation_reason,
+        cancellation_detail: fields.cancellation_detail,
+    };
+
+    const { error } = await supabase
+        .from('subscriptions')
+        .update(withFeedback)
+        .eq('id', subscriptionId);
+
+    if (!error) return null;
+
+    const { cancellation_reason, cancellation_detail, ...withoutFeedback } = withFeedback;
+    const { error: fallbackError } = await supabase
+        .from('subscriptions')
+        .update(withoutFeedback)
+        .eq('id', subscriptionId);
+
+    if (fallbackError) return fallbackError;
+
+    console.log(
+        `[Cancel] Stored cancellation without feedback columns for subscription ${subscriptionId}: ${fields.cancellation_reason}`
+    );
+    return null;
+}
+
+// ─── Cancel Premium (cooling-off refund OR cancel at period end) ──
 async function handleCancel(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
         const user = await verifyAuth(req);
+        const { reason, reasonDetail } = req.body || {};
+
+        if (!reason || !CANCELLATION_REASONS.has(reason)) {
+            return res.status(400).json({ error: 'Please select a cancellation reason.' });
+        }
+
+        const detail = typeof reasonDetail === 'string' ? reasonDetail.trim() : '';
+        if (reason === 'other' && detail.length < 3) {
+            return res.status(400).json({ error: 'Please tell us more about why you are cancelling.' });
+        }
 
         const { data: subscription, error: fetchError } = await supabase
             .from('subscriptions')
@@ -358,69 +436,106 @@ async function handleCancel(req, res) {
             return res.status(404).json({ error: 'No active premium access found.' });
         }
 
-        const intentId = subscription.stripe_payment_intent_id;
-
-        // ── Refund logic (all plans, within 14-day window) ──
-        let refunded = false;
-        const REFUND_WINDOW_DAYS = 14;
-        const purchaseDate = new Date(subscription.current_period_start);
-        const daysSincePurchase = Math.floor((Date.now() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
-        const withinRefundWindow = daysSincePurchase <= REFUND_WINDOW_DAYS;
-
-        if (withinRefundWindow && intentId && !intentId.startsWith('free_')) {
-            try {
-                const refund = await stripe.refunds.create({
-                    payment_intent: intentId,
-                });
-                refunded = refund.status === 'succeeded' || refund.status === 'pending';
-                console.log(`[Stripe] Refund ${refund.id} created for user ${user.id} (status: ${refund.status}, days: ${daysSincePurchase})`);
-            } catch (refundError) {
-                if (refundError.code === 'charge_already_refunded') {
-                    console.log(`[Stripe] Charge already refunded for user ${user.id}`);
-                    refunded = true;
-                } else {
-                    console.error('[Stripe] Refund failed:', refundError.message);
-                    return res.status(500).json({
-                        error: 'Unable to process your refund. Please contact support.',
-                    });
-                }
-            }
-        } else if (!withinRefundWindow) {
-            console.log(`[Stripe] Refund window expired for user ${user.id} (${daysSincePurchase} days since purchase)`);
+        if (subscription.cancel_at_period_end) {
+            return res.status(400).json({
+                error: 'Your subscription is already scheduled to end at the close of the current billing period.',
+            });
         }
 
-        // ── Update subscription status ──
-        const { error: updateError } = await supabase
-            .from('subscriptions')
-            .update({
+        const { periodStart, payment } = await getLatestPaidPeriodStart(subscription);
+        const withinCoolingOff = isWithinCoolingOffPeriod(periodStart);
+        const intentId = payment?.stripe_payment_intent_id || subscription.stripe_payment_intent_id;
+
+        console.log(
+            `[Cancel] user=${user.id} reason=${reason} withinCoolingOff=${withinCoolingOff} periodStart=${periodStart.toISOString()}`
+        );
+
+        let refunded = false;
+
+        if (withinCoolingOff) {
+            if (intentId && !intentId.startsWith('free_') && payment?.status !== 'refunded') {
+                try {
+                    const refund = await stripe.refunds.create({
+                        payment_intent: intentId,
+                        reason: 'requested_by_customer',
+                    });
+                    refunded = refund.status === 'succeeded' || refund.status === 'pending';
+                    console.log(`[Stripe] Refund ${refund.id} created for user ${user.id} (status: ${refund.status})`);
+
+                    await supabase
+                        .from('payments')
+                        .update({ status: 'refunded' })
+                        .eq('subscription_id', subscription.id)
+                        .eq('stripe_payment_intent_id', intentId);
+                } catch (refundError) {
+                    if (refundError.code === 'charge_already_refunded') {
+                        console.log(`[Stripe] Charge already refunded for user ${user.id}`);
+                        refunded = true;
+                    } else {
+                        console.error('[Stripe] Refund failed:', refundError.message);
+                        return res.status(500).json({
+                            error: 'Unable to process your refund. Please contact support.',
+                        });
+                    }
+                }
+            }
+
+            const updateError = await updateSubscriptionCancellation(subscription.id, {
                 status: 'canceled',
                 cancel_at_period_end: false,
                 canceled_at: new Date().toISOString(),
+                cancellation_reason: reason,
+                cancellation_detail: detail || null,
                 updated_at: new Date().toISOString(),
-            })
-            .eq('id', subscription.id);
+            });
+
+            if (updateError) {
+                console.error('[DB] Failed to update subscription:', updateError);
+                return res.status(500).json({ error: 'Failed to cancel premium.' });
+            }
+
+            await supabase
+                .from('profiles')
+                .update({ is_premium: false })
+                .eq('id', user.id);
+
+            const message = refunded
+                ? 'Premium cancelled and your payment has been refunded. It may take 5–10 business days to appear on your statement.'
+                : 'Premium access has been cancelled.';
+
+            return res.status(200).json({
+                success: true,
+                refunded,
+                canceledImmediately: true,
+                message,
+            });
+        }
+
+        // Outside the 14-day cooling-off period: no refund, keep access until period end
+        const updateError = await updateSubscriptionCancellation(subscription.id, {
+            cancel_at_period_end: true,
+            canceled_at: new Date().toISOString(),
+            cancellation_reason: reason,
+            cancellation_detail: detail || null,
+            updated_at: new Date().toISOString(),
+        });
 
         if (updateError) {
-            console.error('[DB] Failed to update subscription:', updateError);
+            console.error('[DB] Failed to schedule cancellation:', updateError);
             return res.status(500).json({ error: 'Failed to cancel premium.' });
         }
 
-        // ── Deactivate premium on profile ──
-        await supabase
-            .from('profiles')
-            .update({ is_premium: false })
-            .eq('id', user.id);
-
-        console.log(`[Stripe] Deactivated ${subscription.plan_type} premium for user ${user.id} (refunded: ${refunded})`);
-
-        const message = refunded
-            ? 'Premium cancelled and payment refunded. It may take 5–10 business days to appear on your statement.'
-            : 'Premium access has been deactivated.';
+        const periodEnd = subscription.current_period_end
+            ? new Date(subscription.current_period_end).toLocaleDateString('en-GB')
+            : 'the end of your billing period';
 
         return res.status(200).json({
             success: true,
-            refunded,
-            message,
+            refunded: false,
+            canceledImmediately: false,
+            cancelAtPeriodEnd: true,
+            accessUntil: subscription.current_period_end,
+            message: `Your subscription has been cancelled. You will keep premium access until ${periodEnd}. No refund is available after the 14-day cooling-off period.`,
         });
 
     } catch (error) {

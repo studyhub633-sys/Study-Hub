@@ -125,15 +125,27 @@ export async function getSubscription(supabaseClient?: any) {
   }
 }
 
+export interface CancelSubscriptionParams {
+  reason: string;
+  reasonDetail?: string;
+}
+
 /**
- * Cancel / deactivate premium
+ * Cancel premium (cooling-off refund or cancel at period end)
  */
-export async function cancelSubscription(supabaseClient?: any) {
+export async function cancelSubscription(
+  supabaseClient?: any,
+  params?: CancelSubscriptionParams
+) {
   try {
     const token = await getAuthToken(supabaseClient);
 
     if (!token) {
       return { error: "Not authenticated" };
+    }
+
+    if (!params?.reason) {
+      return { error: "Please select a cancellation reason." };
     }
 
     const response = await fetch(`${API_BASE_URL}/api/payments/cancel`, {
@@ -142,6 +154,7 @@ export async function cancelSubscription(supabaseClient?: any) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify(params),
     });
 
     const data = await response.json();

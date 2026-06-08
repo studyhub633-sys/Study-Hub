@@ -69,7 +69,7 @@ export function TermsDialog({ open, onOpenChange, onAccept }: TermsDialogProps) 
                                 4. Cancellation & Refunds
                             </h3>
                             <p>
-                                You may cancel your subscription at any time. After cancellation, you will retain premium access until the end of your current billing period. Refund requests are handled on a case-by-case basis within 7 days of purchase.
+                                You may cancel from Settings at any time. Within 14 days of purchase or renewal, cancellation includes a full refund and immediate loss of premium access. After 14 days, cancellation keeps access until the end of your billing period with no refund.
                             </p>
                         </section>
 

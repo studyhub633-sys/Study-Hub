@@ -42,18 +42,19 @@ export default function Returns() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 text-muted-foreground">
-                  <h3 className="font-semibold text-foreground">14-Day Money-Back Guarantee</h3>
+                  <h3 className="font-semibold text-foreground">14-Day Cooling-Off Period</h3>
                   <p>
-                    If you're not satisfied with your Premium subscription, you may request a full refund within
-                    14 days of your initial purchase. This guarantee applies to your first subscription only.
+                    Under UK consumer law, you may cancel within 14 days of each purchase or renewal and receive a
+                    full refund. After that period, you can still cancel from Settings, but premium access continues
+                    until the end of your billing period and no refund is issued.
                   </p>
                 </div>
                 <div className="space-y-2 text-muted-foreground">
-                  <h3 className="font-semibold text-foreground">How to Request a Refund</h3>
+                  <h3 className="font-semibold text-foreground">How to Cancel or Request a Refund</h3>
                   <p>
-                    To request a refund, please contact our support team through the Settings page or email us directly.
-                    Include your account email and the reason for your refund request. Refunds will be processed within
-                    5-10 business days to your original payment method.
+                    Go to Settings → Subscription to cancel premium. If you are within the 14-day cooling-off period, a
+                    full refund is processed automatically when you cancel. Refunds typically appear within 5–10
+                    business days on your original payment method.
                   </p>
                 </div>
               </CardContent>
