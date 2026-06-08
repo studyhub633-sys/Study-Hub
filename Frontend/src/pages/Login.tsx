@@ -22,7 +22,7 @@ export default function Login() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate("/");
+      navigate("/", { replace: true });
     }
   }, [user, authLoading, navigate]);
 

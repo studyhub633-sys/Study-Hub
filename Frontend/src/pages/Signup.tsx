@@ -28,15 +28,14 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [welcomeStep, setWelcomeStep] = useState(1);
   const submittingRef = useRef(false);
   const { signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!authLoading && user && !success) {
-      navigate("/");
+    if (!authLoading && user && success) {
+      navigate("/onboarding", { replace: true });
     }
   }, [user, authLoading, navigate, success]);
 
@@ -99,34 +98,20 @@ export default function Signup() {
         <CardContent>
           {/* Replace success generic area with multi-step success screen */}
           {success ? (
-            <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {welcomeStep === 1 && (
-                <>
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <AnimatedLogoIcon />
-                  </div>
-                  <h3 className="text-2xl font-bold tracking-tight">Welcome to Study Hub!</h3>
-                  <p className="text-muted-foreground text-sm">
-                    We're thrilled to have you join our community. Your journey to better studying starts here.
-                  </p>
-                  <Button className="w-full mt-6" onClick={() => setWelcomeStep(2)}>
-                    Continue
-                  </Button>
-                </>
-              )}
-              {welcomeStep === 2 && (
-                <>
-                  <div className="py-4">
-                    <h3 className="text-2xl font-bold tracking-tight text-primary mb-2">Enjoy your stay! 🎉</h3>
-                    <p className="text-muted-foreground">
-                      You are all set up. Dive in and explore all the tools we have prepared for you.
-                    </p>
-                  </div>
-                  <Button className="w-full mt-6" onClick={() => navigate("/")}>
-                    Start Studying
-                  </Button>
-                </>
-              )}
+            <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 py-6">
+              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                <AnimatedLogoIcon />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold tracking-tight">Account created!</h3>
+                <p className="text-muted-foreground text-sm">
+                  Next, tell us about your studies so we can personalise your dashboard.
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                Taking you to setup...
+              </div>
             </div>
           ) : (
             <>

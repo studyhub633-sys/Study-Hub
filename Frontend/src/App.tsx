@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { OnboardingProvider } from "@/contexts/OnboardingContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -61,6 +62,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Returns = lazy(() => import("./pages/Returns"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Signup = lazy(() => import("./pages/Signup"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Contact = lazy(() => import("./pages/Contact"));
 
@@ -94,6 +96,7 @@ const App = () => {
             <Sonner />
             <LanguagePermissionModal />
             <AuthProvider>
+              <OnboardingProvider>
               <BrowserRouter>
                 <CookieBanner />
                 <Suspense fallback={<PageLoader />}>
@@ -108,6 +111,14 @@ const App = () => {
                     <Route path="/returns" element={<Returns />} />
                     <Route path="/privacy" element={<PrivacyPolicy />} />
                     <Route path="/contact" element={<Contact />} />
+                    <Route
+                      path="/onboarding"
+                      element={
+                        <ProtectedRoute allowIncompleteOnboarding>
+                          <Onboarding />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route
                       path="/"
                       element={
@@ -420,6 +431,7 @@ const App = () => {
                   </Routes>
                 </Suspense>
               </BrowserRouter>
+              </OnboardingProvider>
             </AuthProvider>
           </TooltipProvider>
         </LanguageProvider>
