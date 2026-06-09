@@ -50,13 +50,20 @@ export type ProfileOnboardingRow = {
 
 export function isProfileOnboardingComplete(profile: ProfileOnboardingRow | null | undefined): boolean {
   if (!profile) return false;
-  if (profile.onboarding_completed) return true;
+  if (profile.onboarding_completed === true) return true;
 
-  return Boolean(
+  const hasCoreFields = Boolean(
     profile.full_name?.trim() &&
       profile.year_group?.trim() &&
       profile.subjects?.trim()
   );
+
+  if (!hasCoreFields) return false;
+
+  // Legacy profiles (before study_level existed) only need the core fields above.
+  if (profile.study_level === undefined) return true;
+
+  return Boolean(profile.study_level.trim());
 }
 
 export async function fetchOnboardingStatus(supabase: SupabaseClient, userId: string) {
@@ -66,7 +73,18 @@ export async function fetchOnboardingStatus(supabase: SupabaseClient, userId: st
     .eq("id", userId)
     .maybeSingle();
 
-  if (error) throw error;
+  if (!error) {
+    return isProfileOnboardingComplete(data);
+  }
 
-  return isProfileOnboardingComplete(data);
+  // Fallback when onboarding columns have not been migrated yet
+  const { data: fallbackData, error: fallbackError } = await supabase
+    .from("profiles")
+    .select("full_name, year_group, subjects")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (fallbackError) throw fallbackError;
+
+  return isProfileOnboardingComplete(fallbackData);
 }

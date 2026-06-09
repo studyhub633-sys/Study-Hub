@@ -27,7 +27,7 @@ const LOADING_MESSAGES = [
 
 export default function Onboarding() {
   const { user, supabase } = useAuth();
-  const { markOnboardingComplete } = useOnboarding();
+  const { markOnboardingComplete, refreshOnboardingStatus } = useOnboarding();
   const navigate = useNavigate();
 
   const [fullName, setFullName] = useState("");
@@ -104,6 +104,7 @@ export default function Onboarding() {
           email: user.email,
           full_name: fullName.trim(),
           year_group: yearGroup,
+          study_level: studyLevel,
           subjects: selectedSubjects.join(", "),
         };
 
@@ -113,6 +114,7 @@ export default function Onboarding() {
         }
       }
 
+      await refreshOnboardingStatus();
       markOnboardingComplete();
       setLoadingMaterials(true);
 

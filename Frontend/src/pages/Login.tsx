@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOnboarding } from "@/contexts/OnboardingContext";
 import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,14 +18,15 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { signIn, user, loading: authLoading } = useAuth();
+  const { onboardingComplete, checking } = useOnboarding();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!authLoading && user) {
-      navigate("/", { replace: true });
+    if (!authLoading && user && !checking) {
+      navigate(onboardingComplete === false ? "/onboarding" : "/", { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, checking, onboardingComplete, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +35,6 @@ export default function Login() {
 
     try {
       await signIn(email, password);
-      navigate("/");
     } catch (err: any) {
       setError(err.message || "Failed to sign in. Please check your credentials.");
     } finally {

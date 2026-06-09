@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOnboarding } from "@/contexts/OnboardingContext";
 import { ArrowLeft, Eye, EyeOff, HelpCircle, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,14 +31,21 @@ export default function Signup() {
   const [success, setSuccess] = useState(false);
   const submittingRef = useRef(false);
   const { signUp, user, loading: authLoading } = useAuth();
+  const { onboardingComplete, checking, refreshOnboardingStatus } = useOnboarding();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!authLoading && user && success) {
-      navigate("/onboarding", { replace: true });
+    if (user && success) {
+      refreshOnboardingStatus();
     }
-  }, [user, authLoading, navigate, success]);
+  }, [user, success, refreshOnboardingStatus]);
+
+  useEffect(() => {
+    if (!authLoading && user && success && !checking) {
+      navigate(onboardingComplete === false ? "/onboarding" : "/", { replace: true });
+    }
+  }, [user, authLoading, checking, onboardingComplete, navigate, success]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

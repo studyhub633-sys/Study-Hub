@@ -133,6 +133,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     if (!data.user) throw new Error("Failed to create user");
 
+    const { error: profileError } = await supabase.from("profiles").upsert(
+      {
+        id: data.user.id,
+        email: data.user.email,
+        onboarding_completed: false,
+      },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+
+    if (profileError) {
+      await supabase.from("profiles").upsert(
+        { id: data.user.id, email: data.user.email },
+        { onConflict: "id", ignoreDuplicates: true }
+      );
+    }
+
     // If session was returned, user is already signed in — done!
     if (data.session) {
       return "auto-confirmed";
