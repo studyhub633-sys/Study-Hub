@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOnboarding } from "@/contexts/OnboardingContext";
 import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,15 +17,15 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { signIn, user, loading: authLoading } = useAuth();
-  const { onboardingComplete, checking } = useOnboarding();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!authLoading && user && !checking) {
-      navigate(onboardingComplete === false ? "/onboarding" : "/", { replace: true });
+    // Signing in never leads to onboarding; that only happens right after sign-up.
+    if (!authLoading && user) {
+      navigate("/", { replace: true });
     }
-  }, [user, authLoading, checking, onboardingComplete, navigate]);
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

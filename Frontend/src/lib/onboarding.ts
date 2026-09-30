@@ -66,6 +66,34 @@ export function isProfileOnboardingComplete(profile: ProfileOnboardingRow | null
   return Boolean(profile.study_level.trim());
 }
 
+// Onboarding is only required right after a brand-new account is created.
+// signUp() marks the new user id here; existing users signing in never have this flag.
+const PENDING_ONBOARDING_KEY = "revizely:pending-onboarding";
+
+export function markOnboardingPending(userId: string) {
+  try {
+    localStorage.setItem(PENDING_ONBOARDING_KEY, userId);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export function isOnboardingPending(userId: string): boolean {
+  try {
+    return localStorage.getItem(PENDING_ONBOARDING_KEY) === userId;
+  } catch {
+    return false;
+  }
+}
+
+export function clearOnboardingPending() {
+  try {
+    localStorage.removeItem(PENDING_ONBOARDING_KEY);
+  } catch {
+    // ignore storage errors
+  }
+}
+
 export async function fetchOnboardingStatus(supabase: SupabaseClient, userId: string) {
   const { data, error } = await supabase
     .from("profiles")

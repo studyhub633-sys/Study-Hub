@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { fetchOnboardingStatus } from "@/lib/onboarding";
+import { clearOnboardingPending, fetchOnboardingStatus, isOnboardingPending } from "@/lib/onboarding";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 
 interface OnboardingContextType {
@@ -26,10 +26,12 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setChecking(true);
     try {
       const complete = await fetchOnboardingStatus(supabase, user.id);
-      setOnboardingComplete(complete);
+      // Only force onboarding for accounts created via sign-up in this flow.
+      // Existing users signing in are never sent to onboarding.
+      setOnboardingComplete(complete || !isOnboardingPending(user.id));
     } catch (error) {
       console.error("Failed to check onboarding status:", error);
-      setOnboardingComplete(false);
+      setOnboardingComplete(!isOnboardingPending(user.id));
     } finally {
       setChecking(false);
     }
@@ -40,6 +42,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [refreshOnboardingStatus]);
 
   const markOnboardingComplete = useCallback(() => {
+    clearOnboardingPending();
     setOnboardingComplete(true);
   }, []);
 

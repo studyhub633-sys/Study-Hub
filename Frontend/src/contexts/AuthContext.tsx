@@ -1,4 +1,5 @@
 import { createClient, Session, SupabaseClient, User } from "@supabase/supabase-js";
+import { markOnboardingPending } from "@/lib/onboarding";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
@@ -132,6 +133,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
     if (!data.user) throw new Error("Failed to create user");
+
+    // Brand-new account: onboarding is required once, right after sign-up.
+    markOnboardingPending(data.user.id);
 
     const { error: profileError } = await supabase.from("profiles").upsert(
       {
